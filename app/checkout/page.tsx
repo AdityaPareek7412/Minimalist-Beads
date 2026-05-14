@@ -17,6 +17,7 @@ export default function CheckoutPage() {
     lastName: "",
     email: "",
     phone: "",
+    countryCode: "+91",
     street: "",
     city: "",
     state: "",
@@ -117,31 +118,41 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">
-                        First Name
+                        First Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         required
+                        placeholder="Enter first name"
                         value={formData.firstName}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setFormData({ ...formData, firstName: e.target.value })
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
+                          if (errors.firstName) setErrors({...errors, firstName: ''})
+                        }}
+                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
+                          errors.firstName ? 'border-red-400' : 'border-gray-300'
+                        }`}
                       />
+                      {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">
-                        Last Name
+                        Last Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         required
+                        placeholder="Enter last name"
                         value={formData.lastName}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setFormData({ ...formData, lastName: e.target.value })
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
+                          if (errors.lastName) setErrors({...errors, lastName: ''})
+                        }}
+                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
+                          errors.lastName ? 'border-red-400' : 'border-gray-300'
+                        }`}
                       />
+                      {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
                     </div>
                   </div>
 
@@ -149,31 +160,63 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">
-                        Email
+                        Email <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="email"
                         required
+                        placeholder="yourname@email.com"
                         value={formData.email}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setFormData({ ...formData, email: e.target.value })
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
+                          if (errors.email) setErrors({...errors, email: ''})
+                        }}
+                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
+                          errors.email ? 'border-red-400' : 'border-gray-300'
+                        }`}
                       />
+                      {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">
-                        Phone
+                        Phone <span className="text-red-500">*</span>
                       </label>
-                      <input
-                        type="tel"
-                        required
-                        value={formData.phone}
-                        onChange={(e) =>
-                          setFormData({ ...formData, phone: e.target.value })
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
-                      />
+                      <div className="flex gap-2">
+                        <select
+                          value={formData.countryCode || "+91"}
+                          onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
+                          className="w-28 px-2 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white text-sm"
+                        >
+                          <option value="+91">🇮🇳 +91</option>
+                          <option value="+1">🇺🇸 +1</option>
+                          <option value="+44">🇬🇧 +44</option>
+                          <option value="+61">🇦🇺 +61</option>
+                          <option value="+971">🇦🇪 +971</option>
+                          <option value="+65">🇸🇬 +65</option>
+                          <option value="+81">🇯🇵 +81</option>
+                          <option value="+49">🇩🇪 +49</option>
+                          <option value="+33">🇫🇷 +33</option>
+                          <option value="+86">🇨🇳 +86</option>
+                          <option value="+977">🇳🇵 +977</option>
+                          <option value="+880">🇧🇩 +880</option>
+                          <option value="+94">🇱🇰 +94</option>
+                          <option value="+92">🇵🇰 +92</option>
+                        </select>
+                        <input
+                          type="tel"
+                          required
+                          placeholder="10-digit number"
+                          value={formData.phone}
+                          onChange={(e) => {
+                            setFormData({ ...formData, phone: e.target.value })
+                            if (errors.phone) setErrors({...errors, phone: ''})
+                          }}
+                          className={`flex-1 px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
+                            errors.phone ? 'border-red-400' : 'border-gray-300'
+                          }`}
+                        />
+                      </div>
+                      {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                     </div>
                   </div>
 
@@ -202,45 +245,60 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">
-                        City
+                        City <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         required
+                        placeholder="City"
                         value={formData.city}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setFormData({ ...formData, city: e.target.value })
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
+                          if (errors.city) setErrors({...errors, city: ''})
+                        }}
+                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
+                          errors.city ? 'border-red-400' : 'border-gray-300'
+                        }`}
                       />
+                      {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">
-                        State
+                        State <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         required
+                        placeholder="State"
                         value={formData.state}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setFormData({ ...formData, state: e.target.value })
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
+                          if (errors.state) setErrors({...errors, state: ''})
+                        }}
+                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
+                          errors.state ? 'border-red-400' : 'border-gray-300'
+                        }`}
                       />
+                      {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">
-                        Postal Code
+                        Pin Code <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         required
+                        placeholder="6-digit"
                         value={formData.postalCode}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setFormData({ ...formData, postalCode: e.target.value })
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
+                          if (errors.postalCode) setErrors({...errors, postalCode: ''})
+                        }}
+                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
+                          errors.postalCode ? 'border-red-400' : 'border-gray-300'
+                        }`}
                       />
+                      {errors.postalCode && <p className="text-red-500 text-xs mt-1">{errors.postalCode}</p>}
                     </div>
                   </div>
 

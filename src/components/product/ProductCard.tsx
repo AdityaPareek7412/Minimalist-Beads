@@ -5,7 +5,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Product } from "@/types"
-import { Heart, ShoppingBag, ShoppingCart, Zap } from "lucide-react"
+import { Heart, ShoppingBag, ShoppingCart, Plus, Minus } from "lucide-react"
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import { useCart } from "@/context/cartContext"
 import { useState, useRef } from "react"
@@ -18,10 +18,9 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
-  const { addToCart } = useCart()
+  const { addToCart, cart, updateQuantity, removeFromCart } = useCart()
   const router = useRouter()
   const [isHovered, setIsHovered] = useState(false)
-  const [showQuickAdd, setShowQuickAdd] = useState(false)
   
   // 3D Tilt Effect
   const ref = useRef<HTMLDivElement>(null)
@@ -57,13 +56,36 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const mainImage = product.images?.[0]
   const hoverImage = product.images?.[1]
 
-  const [isAdded, setIsAdded] = useState(false)
+  // Check if product is already in cart and get its quantity
+  const cartItem = cart.find((item) => item.productId === product.id)
+  const cartQty = cartItem ? cartItem.quantity : 0
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     addToCart(product, 1)
-    setIsAdded(true)
-    setTimeout(() => setIsAdded(false), 2000)
+  }
+
+  const handleIncrement = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    addToCart(product, 1)
+  }
+
+  const handleDecrement = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (cartQty <= 1) {
+      removeFromCart(product.id)
+    } else {
+      updateQuantity(product.id, cartQty - 1)
+    }
+  }
+
+  const handleGoToCart = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    router.push('/cart')
   }
 
   return (
@@ -131,55 +153,73 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             )}
           </motion.div>
 
-          {/* Quick Actions */}
-          {isHovered && product.stock > 0 && (
+          {/* Quick Actions on Hover - only show if NOT in cart */}
+          {isHovered && product.stock > 0 && cartQty === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{ transform: "translateZ(90px)" }}
+              className="absolute bottom-4 left-4 right-4 flex gap-2 z-20"
+            >
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleAddToCart}
+                className="flex-1 bg-white text-black py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2 font-bold shadow-xl"
+              >
+                <ShoppingBag size={18} />
+                Add to Cart
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-12 h-12 bg-white/20 backdrop-blur-xl border border-white/30 text-white rounded-xl hover:bg-white/30 transition flex items-center justify-center shadow-xl"
+              >
+                <Heart size={20} />
+              </motion.button>
+            </motion.div>
+          )}
+
+          {/* Persistent Quantity Controls - when item IS in cart */}
+          {cartQty > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               style={{ transform: "translateZ(90px)" }}
               className="absolute bottom-4 left-4 right-4 flex flex-col gap-2 z-20"
             >
-              {!isAdded ? (
-                <div className="flex gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleAddToCart}
-                    className="flex-1 bg-white text-black py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2 font-bold shadow-xl"
-                  >
-                    <ShoppingBag size={18} />
-                    Add to Cart
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-12 h-12 bg-white/20 backdrop-blur-xl border border-white/30 text-white rounded-xl hover:bg-white/30 transition flex items-center justify-center shadow-xl"
-                  >
-                    <Heart size={20} />
-                  </motion.button>
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={(e) => { e.preventDefault(); router.push('/cart'); }}
-                    className="flex-1 bg-white text-black py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2 font-bold shadow-xl"
-                  >
-                    <ShoppingCart size={18} />
-                    Go to Cart
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={(e) => { e.preventDefault(); router.push('/checkout'); }}
-                    className="flex-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2 font-bold shadow-xl"
-                  >
-                    <Zap size={18} />
-                    Buy Now
-                  </motion.button>
-                </div>
-              )}
+              {/* Quantity Controls */}
+              <div className="flex items-center justify-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleDecrement}
+                  className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center font-bold shadow-xl hover:bg-red-50 transition"
+                >
+                  <Minus size={16} />
+                </motion.button>
+                <span className="w-12 h-10 bg-white text-black rounded-xl flex items-center justify-center text-lg font-black shadow-xl">
+                  {cartQty}
+                </span>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleIncrement}
+                  className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center font-bold shadow-xl hover:bg-green-50 transition"
+                >
+                  <Plus size={16} />
+                </motion.button>
+              </div>
+              {/* Go to Cart */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleGoToCart}
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-2.5 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2 font-bold shadow-xl"
+              >
+                <ShoppingCart size={16} />
+                Go to Cart
+              </motion.button>
             </motion.div>
           )}
         </motion.div>
