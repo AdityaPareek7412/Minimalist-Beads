@@ -3,9 +3,7 @@ import { FeaturedProducts } from "@/components/sections/FeaturedProducts"
 import { CategoriesSection } from "@/components/sections/CategoriesSection"
 import { WhyChooseUs } from "@/components/sections/WhyChooseUs"
 import { NewsletterSection } from "@/components/sections/NewsletterSection"
-import { PrismaClient } from "@prisma/client"
-
-const prisma = new PrismaClient()
+import prisma from "@/lib/prisma"
 
 export const dynamic = "force-dynamic"
 

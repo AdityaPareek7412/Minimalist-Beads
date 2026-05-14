@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { PrismaClient } from "@prisma/client"
+import prisma from "@/lib/prisma"
 import { v2 as cloudinary } from "cloudinary"
-
-const prisma = new PrismaClient()
 
 export const dynamic = "force-dynamic"
 

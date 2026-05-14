@@ -1,8 +1,6 @@
-import { PrismaClient } from "@prisma/client"
 import { notFound } from "next/navigation"
 import ProductDetailsClient from "./ProductDetailsClient"
-
-const prisma = new PrismaClient()
+import prisma from "@/lib/prisma"
 
 export const dynamic = "force-dynamic"
 
