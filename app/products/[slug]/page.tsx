@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { Heart, Share2, ShoppingBag, ShoppingCart, Zap, Check } from "lucide-react"
 import { motion } from "framer-motion"
 import { useCart } from "@/context/cartContext"
+import { useWishlist } from "@/context/wishlistContext"
 import { ProductCard } from "@/components/product/ProductCard"
 import { formatPrice } from "@/lib/utils/helpers"
 import { mockProducts, categories } from "@/data/products"
@@ -31,6 +32,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   const [selectedImage, setSelectedImage] = useState(0)
   const [isAdded, setIsAdded] = useState(false)
   const { addToCart } = useCart()
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
   const router = useRouter()
 
   const handleAddToCart = () => {
@@ -246,11 +248,20 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
             {/* Wishlist & Share */}
             <div className="flex gap-2">
-              <button className="flex-1 py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2">
-                <Heart size={20} />
-                Add to Wishlist
+              <button 
+                onClick={() => {
+                  if (isInWishlist(product.id)) {
+                    removeFromWishlist(product.id)
+                  } else {
+                    addToWishlist(product)
+                  }
+                }}
+                className={`flex-1 py-3 border ${isInWishlist(product.id) ? 'border-red-400 bg-red-50 text-red-500' : 'border-gray-300 text-gray-900'} rounded-lg font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2`}
+              >
+                <Heart size={20} className={isInWishlist(product.id) ? "fill-current text-red-500" : ""} />
+                {isInWishlist(product.id) ? "Saved" : "Add to Wishlist"}
               </button>
-              <button className="flex-1 py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2">
+              <button className="flex-1 py-3 border border-gray-300 text-gray-900 rounded-lg font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2">
                 <Share2 size={20} />
                 Share
               </button>

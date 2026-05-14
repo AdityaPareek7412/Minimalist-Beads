@@ -8,6 +8,7 @@ import { Product } from "@/types"
 import { Heart, ShoppingBag, ShoppingCart, Plus, Minus } from "lucide-react"
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import { useCart } from "@/context/cartContext"
+import { useWishlist } from "@/context/wishlistContext"
 import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { calculateDiscount, formatPrice } from "@/lib/utils/helpers"
@@ -19,6 +20,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const { addToCart, cart, updateQuantity, removeFromCart } = useCart()
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
   const router = useRouter()
   const [isHovered, setIsHovered] = useState(false)
   
@@ -173,9 +175,21 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="w-12 h-12 bg-white/20 backdrop-blur-xl border border-white/30 text-white rounded-xl hover:bg-white/30 transition flex items-center justify-center shadow-xl"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (isInWishlist(product.id)) {
+                    removeFromWishlist(product.id)
+                  } else {
+                    addToWishlist(product)
+                  }
+                }}
+                className={`w-12 h-12 backdrop-blur-xl border rounded-xl transition flex items-center justify-center shadow-xl ${
+                  isInWishlist(product.id)
+                    ? 'bg-red-500/20 border-red-500/50 text-red-500 hover:bg-red-500/30'
+                    : 'bg-white/20 border-white/30 text-white hover:bg-white/30'
+                }`}
               >
-                <Heart size={20} />
+                <Heart size={20} className={isInWishlist(product.id) ? "fill-current" : ""} />
               </motion.button>
             </motion.div>
           )}

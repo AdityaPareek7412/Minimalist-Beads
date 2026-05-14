@@ -7,6 +7,8 @@ import { Header } from "@/components/common/Header"
 import { Footer } from "@/components/common/Footer"
 import { CartProvider } from "@/context/cartContext"
 
+import { WishlistProvider } from "@/context/wishlistContext"
+
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -32,11 +34,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="font-sans antialiased bg-black text-white min-h-screen">
-        <CartProvider>
-          <Header />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-        </CartProvider>
+        <WishlistProvider>
+          <CartProvider>
+            <Header />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+          </CartProvider>
+        </WishlistProvider>
       </body>
     </html>
   )

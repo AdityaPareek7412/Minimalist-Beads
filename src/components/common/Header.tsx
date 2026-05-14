@@ -5,13 +5,16 @@
 import Link from "next/link"
 import { useState } from "react"
 import { useCart } from "@/context/cartContext"
+import { useWishlist } from "@/context/wishlistContext"
 import { Heart, ShoppingBag, Search, Menu, X } from "lucide-react"
 import { motion } from "framer-motion"
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const { getCartCount } = useCart()
+  const { wishlistItems } = useWishlist()
   const cartCount = getCartCount()
+  const wishlistCount = wishlistItems.length
 
   const navItems = [
     { name: "RESIN ART", href: "/shop?category=resin-art" },
@@ -63,6 +66,11 @@ export function Header() {
             </button>
             <Link href="/wishlist" className="p-2 hover:bg-white/10 rounded-lg transition relative">
               <Heart size={20} className="text-gray-300 hover:text-white" />
+              {wishlistCount > 0 && (
+                <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                  {wishlistCount}
+                </span>
+              )}
             </Link>
             <Link href="/cart" className="p-2 hover:bg-white/10 rounded-lg transition relative">
               <ShoppingBag size={20} className="text-gray-300 hover:text-white" />
