@@ -70,20 +70,20 @@ export default function AdminCouponsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
                 <input type="text" required value={code} onChange={(e) => setCode(e.target.value)} placeholder="e.g. DIWALI20"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none uppercase font-mono" />
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none uppercase font-mono text-gray-900 font-bold" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                  <select value={type} onChange={(e) => setType(e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none">
-                    <option value="percentage">Percentage (%)</option>
-                    <option value="fixed">Fixed (₹)</option>
+                  <select value={type} onChange={(e) => setType(e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none text-gray-900 font-bold">
+                    <option value="percentage" className="text-gray-900 bg-white">Percentage (%)</option>
+                    <option value="fixed" className="text-gray-900 bg-white">Fixed (₹)</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
                   <input type="number" required value={value} onChange={(e) => setValue(e.target.value)} placeholder="20"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none" />
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none text-gray-900 font-bold" />
                 </div>
               </div>
               <div>

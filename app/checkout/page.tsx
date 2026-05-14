@@ -312,7 +312,7 @@ export default function CheckoutPage() {
                 ) : (
                   <div className="flex gap-2">
                     <input type="text" placeholder="COUPON CODE" value={couponCode} onChange={e => setCouponCode(e.target.value)}
-                      className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none text-xs font-bold uppercase placeholder-gray-300" />
+                      className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none text-xs font-bold uppercase placeholder-gray-400 text-gray-900" />
                     <button onClick={validateCoupon} disabled={couponLoading} className="px-5 py-2 bg-gray-900 text-white text-xs font-bold rounded-xl hover:bg-black transition-all">
                       {couponLoading ? "..." : "Apply"}
                     </button>
@@ -335,10 +335,12 @@ export default function CheckoutPage() {
               </div>
 
               <div className="mt-8 p-4 bg-pink-50/50 rounded-2xl border border-pink-100/50">
-                <p className="text-[10px] text-pink-500 font-black text-center uppercase tracking-widest">
+                <p className="text-[10px] text-pink-500 font-black text-center uppercase tracking-widest leading-relaxed">
                   {shipping === 0 
                     ? "🎉 You have UNLOCKED Free Shipping!" 
-                    : `Free shipping on orders above ${formatPrice(settings.freeShippingLimit)}`}
+                    : subtotal < settings.freeShippingLimit 
+                      ? `Add ${formatPrice(settings.freeShippingLimit - subtotal)} more for FREE shipping!`
+                      : `Free shipping on orders above ${formatPrice(settings.freeShippingLimit)}`}
                 </p>
               </div>
             </div>
