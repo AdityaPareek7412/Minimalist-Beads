@@ -29,7 +29,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json()
-    const { name, price, description, categoryId, imageBase64 } = data
+    const { name, price, description, categoryId, imageBase64, featured } = data
 
     if (!name || !price || !categoryId || !imageBase64) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
         price: parseFloat(price),
         description,
         categoryId,
+        featured: featured || false,
         images: {
           create: [
             {

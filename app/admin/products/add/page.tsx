@@ -12,6 +12,7 @@ export default function AddProductPage() {
   const [categoryId, setCategoryId] = useState("")
   const [categories, setCategories] = useState<any[]>([])
   const [image, setImage] = useState<string | null>(null)
+  const [isFeatured, setIsFeatured] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
@@ -41,7 +42,7 @@ export default function AddProductPage() {
       const res = await fetch("/api/admin/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, price, description, categoryId, imageBase64: image }),
+        body: JSON.stringify({ name, price, description, categoryId, imageBase64: image, featured: isFeatured }),
       })
 
       const data = await res.json()
@@ -161,6 +162,19 @@ export default function AddProductPage() {
                 placeholder="Tell your customers about this aesthetic piece..."
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all resize-none"
               ></textarea>
+            </div>
+            
+            <div className="flex items-center gap-3 p-4 bg-pink-50/50 rounded-xl border border-pink-100">
+              <input
+                type="checkbox"
+                id="isFeatured"
+                checked={isFeatured}
+                onChange={(e) => setIsFeatured(e.target.checked)}
+                className="w-5 h-5 rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+              />
+              <label htmlFor="isFeatured" className="text-sm font-medium text-gray-900 cursor-pointer">
+                Mark as <span className="text-pink-600 font-bold uppercase tracking-wider">Featured</span> (Shows at the top of the store)
+              </label>
             </div>
 
             <div className="pt-4">

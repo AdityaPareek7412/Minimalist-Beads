@@ -3,7 +3,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useCart } from "@/context/cartContext"
 import { useWishlist } from "@/context/wishlistContext"
 import { Heart, ShoppingBag, Search, Menu, X } from "lucide-react"
@@ -11,20 +11,35 @@ import { motion } from "framer-motion"
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const [settings, setSettings] = useState<any>(null)
   const { getCartCount } = useCart()
   const { wishlistItems } = useWishlist()
+  
+  useEffect(() => {
+    fetch("/api/admin/settings")
+      .then(res => res.json())
+      .then(data => setSettings(data))
+      .catch(() => {})
+  }, [])
+
   const cartCount = getCartCount()
   const wishlistCount = wishlistItems.length
 
   const navItems = [
     { name: "RESIN ART", href: "/shop?category=resin-art" },
-    { name: "AESTHETIC RINGS", href: "/shop?category=rings" },
-    { name: "HANDMADE", href: "/shop?category=handmade" },
-    { name: "LIMITED DROPS", href: "/shop?category=limited" },
+    { name: "AESTHETIC RINGS", href: "/shop?category=aesthetic-rings" },
+    { name: "HANDMADE", href: "/shop?category=handmade-charms" },
+    { name: "LIMITED DROPS", href: "/shop?category=limited-drops" },
+    { name: "ALL PRODUCTS", href: "/shop" },
   ]
 
   return (
     <header className="sticky top-0 z-50 w-full bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-lg">
+      {settings?.announcement && (
+        <div className="bg-pink-600 text-white text-center py-2 text-xs font-bold tracking-widest uppercase">
+          {settings.announcement}
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}

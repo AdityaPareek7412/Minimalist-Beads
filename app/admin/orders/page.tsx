@@ -1,8 +1,7 @@
-import { PrismaClient } from "@prisma/client"
+import prisma from "@/lib/prisma"
 import { formatPrice } from "@/lib/utils/helpers"
 import LogoutButton from "./LogoutButton"
-
-const prisma = new PrismaClient()
+import DeleteOrderButton from "./DeleteOrderButton"
 
 // Force dynamic to always fetch the latest orders
 export const dynamic = "force-dynamic"
@@ -13,11 +12,28 @@ export default async function AdminOrdersPage() {
     include: {
       shippingAddress: true,
       items: {
-        include: { product: true }
+        include: { 
+          product: {
+            include: { images: true }
+          }
+        }
       },
       payment: true
     }
   })
+
+  // Helper to format date in IST
+  const formatIST = (date: Date) => {
+    return new Intl.DateTimeFormat('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Kolkata'
+    }).format(new Date(date))
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -39,8 +55,13 @@ export default async function AdminOrdersPage() {
         ) : (
           <div className="space-y-6">
             {orders.map((order) => (
-              <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row gap-6">
+              <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row gap-6 relative group">
                 
+                {/* Delete Button - Absolute Positioned */}
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <DeleteOrderButton orderId={order.id} />
+                </div>
+
                 {/* Order Summary */}
                 <div className="flex-1 space-y-4">
                   <div className="flex items-center gap-3">
@@ -51,9 +72,7 @@ export default async function AdminOrdersPage() {
                       {order.payment?.paymentMethod === 'COD' ? '💵 COD' : '💳 Online Payment'}
                     </span>
                     <span className="text-sm text-gray-400">
-                      {new Date(order.createdAt).toLocaleDateString('en-IN', {
-                        day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                      })}
+                      {formatIST(order.createdAt)}
                     </span>
                   </div>
 
@@ -79,35 +98,35 @@ export default async function AdminOrdersPage() {
                     {order.items.map((item) => (
                       <div key={item.id} className="flex justify-between text-sm items-center">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+                          <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center border border-gray-100 shadow-sm">
                             {item.product.images && item.product.images.length > 0 ? (
                               <img src={item.product.images[0]?.url} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <span className="text-xs text-gray-400">No img</span>
+                              <span className="text-[10px] text-gray-400 font-medium">No Image</span>
                             )}
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">{item.product.name}</p>
-                            <p className="text-gray-500">Qty: {item.quantity}</p>
+                            <p className="font-semibold text-gray-900">{item.product.name}</p>
+                            <p className="text-gray-500 text-xs font-medium">Qty: {item.quantity} × {formatPrice(item.price)}</p>
                           </div>
                         </div>
-                        <span className="font-medium text-gray-900">{formatPrice(item.total)}</span>
+                        <span className="font-bold text-gray-900">{formatPrice(item.total)}</span>
                       </div>
                     ))}
                   </div>
                   
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-600">Subtotal</span>
-                      <span>{formatPrice(order.subtotal)}</span>
+                  <div className="mt-6 pt-4 border-t-2 border-gray-50">
+                    <div className="flex justify-between text-sm mb-1.5">
+                      <span className="text-gray-500 font-medium">Subtotal</span>
+                      <span className="font-bold text-gray-900">{formatPrice(order.subtotal)}</span>
                     </div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-gray-600">Shipping</span>
-                      <span>{formatPrice(order.shippingCost)}</span>
+                    <div className="flex justify-between text-sm mb-3">
+                      <span className="text-gray-500 font-medium">Shipping</span>
+                      <span className="font-bold text-gray-900">{formatPrice(order.shippingCost)}</span>
                     </div>
-                    <div className="flex justify-between font-bold text-gray-900 text-lg">
-                      <span>Total Amount</span>
-                      <span className="text-pink-600">{formatPrice(order.total)}</span>
+                    <div className="flex justify-between items-center bg-pink-50/50 p-3 rounded-xl border border-pink-100/50">
+                      <span className="font-bold text-gray-900">Total Amount</span>
+                      <span className="text-2xl font-black text-pink-600 drop-shadow-sm">{formatPrice(order.total)}</span>
                     </div>
                   </div>
                 </div>

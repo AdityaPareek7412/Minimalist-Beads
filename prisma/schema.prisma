@@ -294,6 +294,18 @@ model Coupon {
 }
 
 // Enums
+// Site Settings model
+model SiteSettings {
+  id                String   @id @default("default")
+  shippingFee       Float    @default(50)
+  freeShippingLimit Float    @default(500)
+  taxRate           Float    @default(0)
+  supportEmail      String?
+  supportPhone      String?
+  announcement      String?
+  updatedAt         DateTime @updatedAt
+}
+
 enum OrderStatus {
   PENDING
   CONFIRMED

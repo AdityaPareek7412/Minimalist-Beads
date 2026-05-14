@@ -2,33 +2,43 @@
 
 "use client"
 
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Truck, Leaf, Heart, Sparkles } from "lucide-react"
 
-const features = [
-  {
-    icon: Truck,
-    title: "Fast Shipping",
-    description: "Free delivery on orders above ₹500. Delivered in 3-5 business days.",
-  },
-  {
-    icon: Leaf,
-    title: "Eco-Friendly",
-    description: "Sustainable packaging and ethical sourcing of all materials.",
-  },
-  {
-    icon: Heart,
-    title: "Handmade with Love",
-    description: "Each piece is carefully crafted by skilled artisans.",
-  },
-  {
-    icon: Sparkles,
-    title: "Premium Quality",
-    description: "Only the finest materials used in our collections.",
-  },
-]
-
 export function WhyChooseUs() {
+  const [settings, setSettings] = useState({ freeShippingLimit: 500 })
+
+  useEffect(() => {
+    fetch("/api/admin/settings")
+      .then(res => res.json())
+      .then(data => setSettings(data))
+      .catch(() => {})
+  }, [])
+
+  const features = [
+    {
+      icon: Truck,
+      title: "Fast Shipping",
+      description: `Free delivery on orders above ₹${settings.freeShippingLimit}. Delivered in 3-5 business days.`,
+    },
+    {
+      icon: Leaf,
+      title: "Eco-Friendly",
+      description: "Sustainable packaging and ethical sourcing of all materials.",
+    },
+    {
+      icon: Heart,
+      title: "Handmade with Love",
+      description: "Each piece is carefully crafted by skilled artisans.",
+    },
+    {
+      icon: Sparkles,
+      title: "Premium Quality",
+      description: "Only the finest materials used in our collections.",
+    },
+  ]
+
   return (
     <section className="py-20 md:py-32 px-4 sm:px-6 lg:px-8 relative z-10">
       <div className="max-w-7xl mx-auto">

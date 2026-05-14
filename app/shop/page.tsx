@@ -67,8 +67,13 @@ function ShopContent() {
       return categoryMatch && priceMatch
     })
     .sort((a, b) => {
+      // Always put featured products at the top unless sorting by price
       if (sortBy === "price-low") return a.price - b.price
       if (sortBy === "price-high") return b.price - a.price
+      
+      // Default behavior: Featured first, then specific sort
+      if (a.featured !== b.featured) return b.featured ? 1 : -1
+      
       if (sortBy === "trending") return (b.trending ? 1 : 0) - (a.trending ? 1 : 0)
       if (sortBy === "newest") return (b.newArrival ? 1 : 0) - (a.newArrival ? 1 : 0)
       return 0
