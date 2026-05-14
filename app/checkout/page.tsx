@@ -138,12 +138,28 @@ export default function CheckoutPage() {
 
           const verifyData = await verifyRes.json()
           if (verifyData.success) {
+            // Save Order to Database
+            await fetch("/api/orders", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ...formData,
+                cart,
+                subtotal,
+                shippingCost: shipping,
+                totalAmount: total,
+                paymentMethod: "razorpay",
+                paymentId: response.razorpay_payment_id
+              })
+            })
+
             clearCart()
             router.push(
               `/order-confirmation?orderId=${response.razorpay_order_id}&paymentId=${response.razorpay_payment_id}&amount=${total}&method=online`
             )
           } else {
             alert("Payment verification failed. Please contact support.")
+            setIsProcessing(false)
           }
         },
         prefill: {
@@ -170,10 +186,33 @@ export default function CheckoutPage() {
     }
   }
 
-  const handleCOD = () => {
+  const handleCOD = async () => {
     setIsProcessing(true)
-    clearCart()
-    router.push(`/order-confirmation?orderId=COD_${Date.now()}&amount=${total}&method=cod`)
+    try {
+      // Save Order to Database
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          cart,
+          subtotal,
+          shippingCost: shipping,
+          totalAmount: total,
+          paymentMethod: "cod",
+        })
+      })
+      
+      const data = await res.json()
+      if (!data.success) throw new Error(data.error)
+      
+      clearCart()
+      router.push(`/order-confirmation?orderId=${data.order.orderNumber}&amount=${total}&method=cod`)
+    } catch (error: any) {
+      console.error("Order creation failed:", error)
+      alert("Error: Failed to create order. Please try again.")
+      setIsProcessing(false)
+    }
   }
 
   const handlePaymentSubmit = (e: React.FormEvent) => {

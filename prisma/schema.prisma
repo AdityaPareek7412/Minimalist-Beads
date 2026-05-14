@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // User model
@@ -158,8 +159,8 @@ model CartItem {
 // Address model
 model Address {
   id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   type      String   @default("home") // home, office, other
   name      String?
   phone     String
@@ -182,8 +183,13 @@ model Address {
 model Order {
   id            String       @id @default(cuid())
   orderNumber   String       @unique @default(cuid())
-  userId        String
-  user          User         @relation(fields: [userId], references: [id])
+  userId        String?
+  user          User?        @relation(fields: [userId], references: [id])
+  
+  // Guest Info
+  customerName  String?
+  customerEmail String?
+  customerPhone String?
   
   // Shipping
   shippingAddressId String?
