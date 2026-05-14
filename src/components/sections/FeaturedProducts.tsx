@@ -52,7 +52,7 @@ export function FeaturedProducts({
           whileInView={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
           viewport={{ once: true }}
-          className="text-center"
+          className="text-center mb-24"
         >
           <Link
             href="/shop"
@@ -62,6 +62,26 @@ export function FeaturedProducts({
             <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
           </Link>
         </motion.div>
+      </div>
+
+      {/* Infinite Marquee of Products */}
+      <div className="relative w-full overflow-hidden py-10 opacity-80 hover:opacity-100 transition-opacity duration-500">
+        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--background))] via-transparent to-[hsl(var(--background))] z-10 pointer-events-none w-full" />
+        
+        <div className="flex w-fit animate-marquee">
+          {/* Double the array for seamless infinite looping */}
+          {[...products, ...products].slice(0, 30).map((product, idx) => (
+            product.images?.[0] && (
+              <div key={`${product.id}-${idx}`} className="w-32 h-32 md:w-48 md:h-48 flex-shrink-0 mx-4 relative rounded-2xl overflow-hidden glass-card">
+                <img
+                  src={product.images[0].url}
+                  alt={product.images[0].alt || product.name}
+                  className="object-cover w-full h-full hover:scale-110 transition-transform duration-500"
+                />
+              </div>
+            )
+          ))}
+        </div>
       </div>
     </section>
   )
