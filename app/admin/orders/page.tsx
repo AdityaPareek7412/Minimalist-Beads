@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client"
 import { formatPrice } from "@/lib/utils/helpers"
+import LogoutButton from "./LogoutButton"
 
 const prisma = new PrismaClient()
 
@@ -21,10 +22,13 @@ export default async function AdminOrdersPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 gap-4">
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard - Recent Orders</h1>
-          <div className="bg-pink-100 text-pink-800 px-4 py-2 rounded-lg font-medium">
-            Total Orders: {orders.length}
+          <div className="flex items-center gap-4">
+            <div className="bg-pink-100 text-pink-800 px-4 py-2 rounded-lg font-medium">
+              Total Orders: {orders.length}
+            </div>
+            <LogoutButton />
           </div>
         </div>
 
