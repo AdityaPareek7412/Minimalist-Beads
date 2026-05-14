@@ -13,6 +13,7 @@ export interface Product {
   trending: boolean;
   newArrival: boolean;
   categoryId: string;
+  category?: Category;
   images: Array<{
     id: string;
     productId: string;
