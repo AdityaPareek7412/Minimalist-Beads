@@ -1,16 +1,17 @@
 // app/api/razorpay/route.ts
 
 import { NextRequest, NextResponse } from "next/server"
-import Razorpay from "razorpay"
-import crypto from "crypto"
 
-const razorpay = new Razorpay({
-  key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-})
+export const dynamic = "force-dynamic"
 
 export async function POST(req: NextRequest) {
   try {
+    const Razorpay = (await import("razorpay")).default
+    const razorpay = new Razorpay({
+      key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+      key_secret: process.env.RAZORPAY_KEY_SECRET!,
+    })
+
     const { amount, currency = "INR", receipt, notes } = await req.json()
 
     const options = {
@@ -22,10 +23,7 @@ export async function POST(req: NextRequest) {
 
     const order = await razorpay.orders.create(options)
 
-    return NextResponse.json({
-      success: true,
-      order,
-    })
+    return NextResponse.json({ success: true, order })
   } catch (error: any) {
     console.error("Razorpay order creation error:", error)
     return NextResponse.json(

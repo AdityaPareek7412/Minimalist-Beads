@@ -3,6 +3,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
 
+export const dynamic = "force-dynamic"
+
 export async function POST(req: NextRequest) {
   try {
     const {
@@ -11,7 +13,6 @@ export async function POST(req: NextRequest) {
       razorpay_signature,
     } = await req.json()
 
-    // Verify signature
     const body = razorpay_order_id + "|" + razorpay_payment_id
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
@@ -21,8 +22,6 @@ export async function POST(req: NextRequest) {
     const isAuthentic = expectedSignature === razorpay_signature
 
     if (isAuthentic) {
-      // Payment is verified
-      // Here you can save order to database, send email, etc.
       return NextResponse.json({
         success: true,
         message: "Payment verified successfully",
