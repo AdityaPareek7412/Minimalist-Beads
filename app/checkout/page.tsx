@@ -106,7 +106,7 @@ export default function CheckoutPage() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white"
+                className="bg-white rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100"
               >
                 <h2 className="text-2xl font-serif font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <MapPin size={24} />
@@ -129,8 +129,8 @@ export default function CheckoutPage() {
                           setFormData({ ...formData, firstName: e.target.value })
                           if (errors.firstName) setErrors({...errors, firstName: ''})
                         }}
-                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
-                          errors.firstName ? 'border-red-400' : 'border-gray-300'
+                        className={`w-full px-4 py-3 border-2 rounded-xl shadow-[inset_0_2px_5px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-4 focus:ring-pink-500/20 text-gray-900 bg-gray-50 hover:bg-white focus:bg-white transition-all duration-300 placeholder-gray-400 ${
+                          errors.firstName ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-pink-400 hover:border-gray-300'
                         }`}
                       />
                       {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
@@ -148,8 +148,8 @@ export default function CheckoutPage() {
                           setFormData({ ...formData, lastName: e.target.value })
                           if (errors.lastName) setErrors({...errors, lastName: ''})
                         }}
-                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
-                          errors.lastName ? 'border-red-400' : 'border-gray-300'
+                        className={`w-full px-4 py-3 border-2 rounded-xl shadow-[inset_0_2px_5px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-4 focus:ring-pink-500/20 text-gray-900 bg-gray-50 hover:bg-white focus:bg-white transition-all duration-300 placeholder-gray-400 ${
+                          errors.lastName ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-pink-400 hover:border-gray-300'
                         }`}
                       />
                       {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
@@ -171,8 +171,8 @@ export default function CheckoutPage() {
                           setFormData({ ...formData, email: e.target.value })
                           if (errors.email) setErrors({...errors, email: ''})
                         }}
-                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
-                          errors.email ? 'border-red-400' : 'border-gray-300'
+                        className={`w-full px-4 py-3 border-2 rounded-xl shadow-[inset_0_2px_5px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-4 focus:ring-pink-500/20 text-gray-900 bg-gray-50 hover:bg-white focus:bg-white transition-all duration-300 placeholder-gray-400 ${
+                          errors.email ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-pink-400 hover:border-gray-300'
                         }`}
                       />
                       {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
@@ -185,7 +185,7 @@ export default function CheckoutPage() {
                         <select
                           value={formData.countryCode || "+91"}
                           onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-                          className="w-28 px-2 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white text-sm"
+                          className="w-[110px] px-2 py-3 border-2 border-gray-200 rounded-xl shadow-[inset_0_2px_5px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-4 focus:ring-pink-500/20 focus:border-pink-400 text-gray-900 bg-gray-50 hover:bg-white transition-all duration-300 text-sm cursor-pointer"
                         >
                           <option value="+91">🇮🇳 +91</option>
                           <option value="+1">🇺🇸 +1</option>
@@ -211,8 +211,8 @@ export default function CheckoutPage() {
                             setFormData({ ...formData, phone: e.target.value })
                             if (errors.phone) setErrors({...errors, phone: ''})
                           }}
-                          className={`flex-1 px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
-                            errors.phone ? 'border-red-400' : 'border-gray-300'
+                          className={`flex-1 px-4 py-3 border-2 rounded-xl shadow-[inset_0_2px_5px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-4 focus:ring-pink-500/20 text-gray-900 bg-gray-50 hover:bg-white focus:bg-white transition-all duration-300 placeholder-gray-400 ${
+                            errors.phone ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-pink-400 hover:border-gray-300'
                           }`}
                         />
                       </div>
@@ -234,8 +234,8 @@ export default function CheckoutPage() {
                         setFormData({ ...formData, street: e.target.value })
                         if (errors.street) setErrors({...errors, street: ''})
                       }}
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
-                        errors.street ? 'border-red-400' : 'border-gray-300'
+                      className={`w-full px-4 py-3 border-2 rounded-xl shadow-[inset_0_2px_5px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-4 focus:ring-pink-500/20 text-gray-900 bg-gray-50 hover:bg-white focus:bg-white transition-all duration-300 placeholder-gray-400 ${
+                        errors.street ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-pink-400 hover:border-gray-300'
                       }`}
                     />
                     {errors.street && <p className="text-red-500 text-xs mt-1">{errors.street}</p>}
@@ -256,8 +256,8 @@ export default function CheckoutPage() {
                           setFormData({ ...formData, city: e.target.value })
                           if (errors.city) setErrors({...errors, city: ''})
                         }}
-                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
-                          errors.city ? 'border-red-400' : 'border-gray-300'
+                        className={`w-full px-4 py-3 border-2 rounded-xl shadow-[inset_0_2px_5px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-4 focus:ring-pink-500/20 text-gray-900 bg-gray-50 hover:bg-white focus:bg-white transition-all duration-300 placeholder-gray-400 ${
+                          errors.city ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-pink-400 hover:border-gray-300'
                         }`}
                       />
                       {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
@@ -275,8 +275,8 @@ export default function CheckoutPage() {
                           setFormData({ ...formData, state: e.target.value })
                           if (errors.state) setErrors({...errors, state: ''})
                         }}
-                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
-                          errors.state ? 'border-red-400' : 'border-gray-300'
+                        className={`w-full px-4 py-3 border-2 rounded-xl shadow-[inset_0_2px_5px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-4 focus:ring-pink-500/20 text-gray-900 bg-gray-50 hover:bg-white focus:bg-white transition-all duration-300 placeholder-gray-400 ${
+                          errors.state ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-pink-400 hover:border-gray-300'
                         }`}
                       />
                       {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
@@ -294,8 +294,8 @@ export default function CheckoutPage() {
                           setFormData({ ...formData, postalCode: e.target.value })
                           if (errors.postalCode) setErrors({...errors, postalCode: ''})
                         }}
-                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
-                          errors.postalCode ? 'border-red-400' : 'border-gray-300'
+                        className={`w-full px-4 py-3 border-2 rounded-xl shadow-[inset_0_2px_5px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-4 focus:ring-pink-500/20 text-gray-900 bg-gray-50 hover:bg-white focus:bg-white transition-all duration-300 placeholder-gray-400 ${
+                          errors.postalCode ? 'border-red-400 bg-red-50' : 'border-gray-200 focus:border-pink-400 hover:border-gray-300'
                         }`}
                       />
                       {errors.postalCode && <p className="text-red-500 text-xs mt-1">{errors.postalCode}</p>}
