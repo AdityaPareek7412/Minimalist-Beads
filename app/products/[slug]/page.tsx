@@ -70,8 +70,8 @@ const mockProduct = {
     name: "Rings",
     slug: "rings",
     description: null,
-    image: null,
-    icon: null,
+    image: "",
+    icon: "",
     featured: true,
     order: 1,
     createdAt: new Date(),
@@ -341,7 +341,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
           <h2 className="text-3xl font-serif font-bold mb-8">Similar Products</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {relatedProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
+              <ProductCard key={product.id} product={product as any} index={index} />
             ))}
           </div>
         </section>
