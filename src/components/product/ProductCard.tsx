@@ -55,10 +55,13 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const mainImage = product.images?.[0]
   const hoverImage = product.images?.[1]
 
+  const [isAdded, setIsAdded] = useState(false)
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
-    window.open("https://minimalistbeadsraw.dm2buy.com", "_blank", "noopener,noreferrer")
-    setShowQuickAdd(false)
+    addToCart(product, 1)
+    setIsAdded(true)
+    setTimeout(() => setIsAdded(false), 2000)
   }
 
   return (
@@ -69,7 +72,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       className="group relative perspective-1000"
       style={{ perspective: 1000 }}
     >
-      <a href="https://minimalistbeadsraw.dm2buy.com" target="_blank" rel="noopener noreferrer">
+      <Link href={`/products/${product.slug}`}>
         <motion.div
           ref={ref}
           onMouseMove={handleMouseMove}
@@ -138,10 +141,14 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleAddToCart}
-                className="flex-1 bg-white text-black py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2 font-bold shadow-xl"
+                className={`flex-1 py-3 rounded-xl transition flex items-center justify-center gap-2 font-bold shadow-xl ${
+                  isAdded 
+                    ? "bg-green-500 text-white" 
+                    : "bg-white text-black hover:bg-gray-100"
+                }`}
               >
                 <ShoppingBag size={18} />
-                Add to Cart
+                {isAdded ? "Added!" : "Add to Cart"}
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -153,7 +160,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             </motion.div>
           )}
         </motion.div>
-      </a>
+      </Link>
 
       {/* Product Info */}
       <motion.div 
@@ -162,11 +169,11 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         animate={{ opacity: 1 }}
         transition={{ delay: index * 0.1 + 0.2 }}
       >
-        <a href="https://minimalistbeadsraw.dm2buy.com" target="_blank" rel="noopener noreferrer">
+        <Link href={`/products/${product.slug}`}>
           <h3 className="text-lg font-bold text-white truncate group-hover:text-pink-400 transition-colors">
             {product.name}
           </h3>
-        </a>
+        </Link>
         <p className="text-sm text-gray-400 mt-1 truncate font-medium">{product.category?.name}</p>
 
         {/* Price */}
