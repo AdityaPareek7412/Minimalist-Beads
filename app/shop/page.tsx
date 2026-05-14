@@ -16,12 +16,12 @@ function ShopContent() {
   
   const [sortBy, setSortBy] = useState("newest")
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 })
 
   // Set initial category from URL if present
   useEffect(() => {
     if (initialCategory) {
-      // Find the ID of the category from slug
-      const cat = categories.find(c => c.slug === initialCategory)
+      const cat = categories.find(c => c.slug.toLowerCase() === initialCategory.toLowerCase())
       if (cat) {
         setSelectedCategories([cat.id])
       }
@@ -36,11 +36,22 @@ function ShopContent() {
     )
   }
 
-  // Filter products based on selected categories
-  const filteredProducts = mockProducts.filter(product => {
-    if (selectedCategories.length === 0) return true
-    return selectedCategories.includes(product.categoryId)
-  })
+  // Filter and Sort products
+  const filteredProducts = mockProducts
+    .filter(product => {
+      // Category filter
+      const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(product.categoryId)
+      // Price filter
+      const priceMatch = product.price >= priceRange.min && product.price <= priceRange.max
+      return categoryMatch && priceMatch
+    })
+    .sort((a, b) => {
+      if (sortBy === "price-low") return a.price - b.price
+      if (sortBy === "price-high") return b.price - a.price
+      if (sortBy === "trending") return (b.trending ? 1 : 0) - (a.trending ? 1 : 0)
+      if (sortBy === "newest") return (b.newArrival ? 1 : 0) - (a.newArrival ? 1 : 0)
+      return 0
+    })
 
   return (
     <div className="min-h-screen relative z-10 text-white">
@@ -80,17 +91,23 @@ function ShopContent() {
                   type="range"
                   min="0"
                   max="1000"
+                  value={priceRange.max}
+                  onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) })}
                   className="w-full accent-fuchsia-500"
                 />
                 <div className="flex gap-2">
                   <input
-                    type="text"
+                    type="number"
                     placeholder="Min"
+                    value={priceRange.min}
+                    onChange={(e) => setPriceRange({ ...priceRange, min: parseInt(e.target.value) || 0 })}
                     className="w-20 px-2 py-1 bg-black/40 border border-white/20 rounded text-sm text-white placeholder-gray-500 focus:outline-none focus:border-fuchsia-500"
                   />
                   <input
-                    type="text"
+                    type="number"
                     placeholder="Max"
+                    value={priceRange.max}
+                    onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) || 1000 })}
                     className="w-20 px-2 py-1 bg-black/40 border border-white/20 rounded text-sm text-white placeholder-gray-500 focus:outline-none focus:border-fuchsia-500"
                   />
                 </div>
