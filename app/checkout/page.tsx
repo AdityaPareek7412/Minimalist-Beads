@@ -29,12 +29,32 @@ export default function CheckoutPage() {
 
   const subtotal = getCartTotal()
   const shipping = subtotal > 500 ? 0 : 50
-  const tax = subtotal * 0.18
-  const total = subtotal + shipping + tax
+  const total = subtotal + shipping
+
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+    if (!formData.firstName.trim()) newErrors.firstName = "First name is required"
+    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required"
+    if (!formData.email.trim()) newErrors.email = "Email is required"
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Enter a valid email"
+    if (!formData.phone.trim()) newErrors.phone = "Phone number is required"
+    else if (formData.phone.replace(/\D/g, '').length < 10) newErrors.phone = "Enter a valid 10-digit phone number"
+    if (!formData.street.trim()) newErrors.street = "Street address is required"
+    if (!formData.city.trim()) newErrors.city = "City is required"
+    if (!formData.state.trim()) newErrors.state = "State is required"
+    if (!formData.postalCode.trim()) newErrors.postalCode = "Postal code is required"
+    else if (formData.postalCode.replace(/\D/g, '').length < 6) newErrors.postalCode = "Enter a valid 6-digit pincode"
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setCurrentStep("payment")
+    if (validateForm()) {
+      setCurrentStep("payment")
+    }
   }
 
   const handlePaymentSubmit = (e: React.FormEvent) => {
@@ -160,17 +180,22 @@ export default function CheckoutPage() {
                   {/* Address */}
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Street Address
+                      Street Address <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       required
+                      placeholder="House no, Building, Street, Area"
                       value={formData.street}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setFormData({ ...formData, street: e.target.value })
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
+                        if (errors.street) setErrors({...errors, street: ''})
+                      }}
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400 ${
+                        errors.street ? 'border-red-400' : 'border-gray-300'
+                      }`}
                     />
+                    {errors.street && <p className="text-red-500 text-xs mt-1">{errors.street}</p>}
                   </div>
 
                   {/* City, State, Postal */}
@@ -360,22 +385,18 @@ export default function CheckoutPage() {
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-700">Subtotal</span>
-                  <span>{formatPrice(subtotal)}</span>
+                  <span className="font-medium text-gray-900">{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-700">Shipping</span>
-                  <span className={shipping === 0 ? "text-green-600 font-medium" : ""}>
+                  <span className={shipping === 0 ? "text-green-600 font-semibold" : "font-medium text-gray-900"}>
                     {shipping === 0 ? "FREE" : formatPrice(shipping)}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-700">Tax (18%)</span>
-                  <span>{formatPrice(tax)}</span>
-                </div>
 
                 <div className="border-t border-gray-200 pt-3 flex justify-between font-semibold text-base">
-                  <span>Total</span>
-                  <span className="text-pink-600">{formatPrice(total)}</span>
+                  <span className="text-gray-900">Total</span>
+                  <span className="text-pink-600 text-lg">{formatPrice(total)}</span>
                 </div>
               </div>
 

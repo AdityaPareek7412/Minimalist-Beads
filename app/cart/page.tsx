@@ -14,8 +14,7 @@ export default function CartPage() {
 
   const subtotal = getCartTotal()
   const shipping = subtotal > 500 ? 0 : 50
-  const tax = subtotal * 0.18
-  const total = subtotal + shipping + tax
+  const total = subtotal + shipping
 
   if (cart.length === 0) {
     return (
@@ -141,19 +140,15 @@ export default function CartPage() {
               <h2 className="text-lg font-semibold text-gray-900 mb-6">Order Summary</h2>
 
               <div className="space-y-4 mb-6">
-                <div className="flex justify-between text-gray-700">
-                  <span>Subtotal</span>
-                  <span>{formatPrice(subtotal)}</span>
+                <div className="flex justify-between">
+                  <span className="text-gray-700">Subtotal</span>
+                  <span className="font-medium text-gray-900">{formatPrice(subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-gray-700">
-                  <span>Shipping</span>
-                  <span className={shipping === 0 ? "text-green-600 font-medium" : ""}>
+                <div className="flex justify-between">
+                  <span className="text-gray-700">Shipping</span>
+                  <span className={shipping === 0 ? "text-green-600 font-semibold" : "font-medium text-gray-900"}>
                     {shipping === 0 ? "FREE" : formatPrice(shipping)}
                   </span>
-                </div>
-                <div className="flex justify-between text-gray-700">
-                  <span>GST (18%)</span>
-                  <span>{formatPrice(tax)}</span>
                 </div>
 
                 {/* Coupon */}
