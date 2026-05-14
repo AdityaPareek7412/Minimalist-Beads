@@ -59,65 +59,66 @@ export default function CartPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex gap-6 p-6 border border-gray-200 rounded-lg hover:border-pink-200 transition"
+                  className="p-6 border border-gray-200 rounded-xl hover:border-pink-200 transition"
                 >
-                  {/* Product Image */}
-                  <div className="relative w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                    {item.product?.images?.[0] && (
-                      <Image
-                        src={item.product.images[0].url}
-                        alt={item.product.name}
-                        fill
-                        className="object-cover"
-                      />
-                    )}
-                  </div>
+                  <div className="flex gap-6">
+                    {/* Product Image */}
+                    <div className="relative w-28 h-28 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
+                      {item.product?.images?.[0] && (
+                        <Image
+                          src={item.product.images[0].url}
+                          alt={item.product.name}
+                          fill
+                          className="object-cover"
+                        />
+                      )}
+                    </div>
 
-                  {/* Product Info */}
-                  <div className="flex-1">
-                    <Link
-                      href={`/products/${item.product?.slug}`}
-                      className="text-lg font-medium text-gray-900 hover:text-pink-400 transition"
-                    >
-                      {item.product?.name}
-                    </Link>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {item.product?.category?.name}
-                    </p>
-                    <p className="text-lg font-semibold text-gray-900 mt-2">
-                      {formatPrice(item.product?.price || 0)} each
-                    </p>
-                  </div>
+                    {/* Product Info */}
+                    <div className="flex-1">
+                      <Link
+                        href={`/products/${item.product?.slug}`}
+                        className="text-lg font-semibold text-gray-900 hover:text-pink-500 transition"
+                      >
+                        {item.product?.name}
+                      </Link>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {formatPrice(item.product?.price || 0)} per item
+                      </p>
 
-                  {/* Quantity & Remove */}
-                  <div className="flex flex-col items-end gap-4">
-                    {/* Quantity */}
-                    <div className="flex items-center border border-gray-300 rounded-lg">
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.productId, Math.max(0, item.quantity - 1))
-                        }
-                        className="p-2 hover:bg-gray-50"
-                      >
-                        <Minus size={16} />
-                      </button>
-                      <span className="px-4 py-1 font-medium">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                        className="p-2 hover:bg-gray-50"
-                      >
-                        <Plus size={16} />
-                      </button>
+                      {/* Quantity Controls - Big & Visible */}
+                      <div className="flex items-center gap-4 mt-4">
+                        <span className="text-sm font-medium text-gray-600">Qty:</span>
+                        <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden">
+                          <button
+                            onClick={() =>
+                              updateQuantity(item.productId, Math.max(0, item.quantity - 1))
+                            }
+                            className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-pink-50 hover:text-pink-600 transition font-bold text-lg"
+                          >
+                            <Minus size={18} />
+                          </button>
+                          <span className="w-14 h-10 flex items-center justify-center text-lg font-bold text-gray-900 bg-white border-x-2 border-gray-200">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                            className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-pink-50 hover:text-pink-600 transition font-bold text-lg"
+                          >
+                            <Plus size={18} />
+                          </button>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Total & Remove */}
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-gray-900">
+                    <div className="flex flex-col items-end justify-between">
+                      <p className="text-xl font-bold text-gray-900">
                         {formatPrice((item.product?.price || 0) * item.quantity)}
                       </p>
                       <button
                         onClick={() => removeFromCart(item.productId)}
-                        className="text-red-500 hover:text-red-700 transition mt-2 flex items-center gap-1"
+                        className="text-red-500 hover:text-red-700 transition flex items-center gap-1 text-sm font-medium"
                       >
                         <X size={16} />
                         Remove
