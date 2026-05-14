@@ -165,7 +165,7 @@ export default function CheckoutPage() {
       rzp.open()
     } catch (error: any) {
       console.error("Payment error:", error)
-      alert("Something went wrong. Please try again.")
+      alert("Error: " + (error.message || "Something went wrong. Please try again."))
       setIsProcessing(false)
     }
   }
