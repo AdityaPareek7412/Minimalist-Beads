@@ -2,16 +2,45 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { Check, MapPin, Truck, Lock } from "lucide-react"
+import { Check, MapPin, Truck, Lock, ChevronDown } from "lucide-react"
 import { useCart } from "@/context/cartContext"
 import { formatPrice } from "@/lib/utils/helpers"
+
+const countries = [
+  { code: '+91', country: 'in', name: 'India' },
+  { code: '+1', country: 'us', name: 'United States' },
+  { code: '+44', country: 'gb', name: 'United Kingdom' },
+  { code: '+61', country: 'au', name: 'Australia' },
+  { code: '+971', country: 'ae', name: 'UAE' },
+  { code: '+65', country: 'sg', name: 'Singapore' },
+  { code: '+81', country: 'jp', name: 'Japan' },
+  { code: '+49', country: 'de', name: 'Germany' },
+  { code: '+33', country: 'fr', name: 'France' },
+  { code: '+86', country: 'cn', name: 'China' },
+  { code: '+977', country: 'np', name: 'Nepal' },
+  { code: '+880', country: 'bd', name: 'Bangladesh' },
+  { code: '+94', country: 'lk', name: 'Sri Lanka' },
+  { code: '+92', country: 'pk', name: 'Pakistan' },
+]
 
 export default function CheckoutPage() {
   const { cart, getCartTotal } = useCart()
   const [currentStep, setCurrentStep] = useState<"address" | "payment">("address")
+  const [showDropdown, setShowDropdown] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -182,26 +211,45 @@ export default function CheckoutPage() {
                         Phone <span className="text-red-500">*</span>
                       </label>
                       <div className="flex gap-2">
-                        <select
-                          value={formData.countryCode || "+91"}
-                          onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-                          className="w-[110px] px-2 py-3 border-2 border-gray-200 rounded-xl shadow-[inset_0_2px_5px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-4 focus:ring-pink-500/20 focus:border-pink-400 text-gray-900 bg-gray-50 hover:bg-white transition-all duration-300 text-sm cursor-pointer"
-                        >
-                          <option value="+91">🇮🇳 +91</option>
-                          <option value="+1">🇺🇸 +1</option>
-                          <option value="+44">🇬🇧 +44</option>
-                          <option value="+61">🇦🇺 +61</option>
-                          <option value="+971">🇦🇪 +971</option>
-                          <option value="+65">🇸🇬 +65</option>
-                          <option value="+81">🇯🇵 +81</option>
-                          <option value="+49">🇩🇪 +49</option>
-                          <option value="+33">🇫🇷 +33</option>
-                          <option value="+86">🇨🇳 +86</option>
-                          <option value="+977">🇳🇵 +977</option>
-                          <option value="+880">🇧🇩 +880</option>
-                          <option value="+94">🇱🇰 +94</option>
-                          <option value="+92">🇵🇰 +92</option>
-                        </select>
+                        <div className="relative" ref={dropdownRef}>
+                          <div
+                            onClick={() => setShowDropdown(!showDropdown)}
+                            className="w-[110px] h-full px-3 py-3 border-2 border-gray-200 rounded-xl shadow-[inset_0_2px_5px_rgba(0,0,0,0.08)] focus:outline-none focus:ring-4 focus:ring-pink-500/20 text-gray-900 bg-gray-50 hover:bg-white transition-all duration-300 text-sm cursor-pointer flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-2">
+                              <img
+                                src={`https://flagcdn.com/w20/${countries.find(c => c.code === (formData.countryCode || '+91'))?.country || 'in'}.png`}
+                                alt="flag"
+                                className="w-5 h-auto rounded-[2px] shadow-sm"
+                              />
+                              <span className="font-medium">{formData.countryCode || '+91'}</span>
+                            </div>
+                            <ChevronDown size={14} className={`text-gray-500 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+                          </div>
+                          
+                          {showDropdown && (
+                            <div className="absolute z-50 mt-2 w-[220px] bg-white border border-gray-100 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.12)] max-h-60 overflow-y-auto py-2">
+                              {countries.map((c) => (
+                                <div
+                                  key={c.code}
+                                  onClick={() => {
+                                    setFormData({ ...formData, countryCode: c.code })
+                                    setShowDropdown(false)
+                                  }}
+                                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-pink-50 cursor-pointer transition-colors"
+                                >
+                                  <img
+                                    src={`https://flagcdn.com/w20/${c.country}.png`}
+                                    alt={c.name}
+                                    className="w-5 h-auto rounded-[2px] shadow-sm"
+                                  />
+                                  <span className="text-sm font-medium text-gray-900 w-10">{c.code}</span>
+                                  <span className="text-xs text-gray-500 truncate">{c.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                         <input
                           type="tel"
                           required
