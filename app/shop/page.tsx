@@ -8,24 +8,45 @@ import { Header } from "@/components/common/Header"
 import { ProductCard } from "@/components/product/ProductCard"
 import { motion } from "framer-motion"
 import { ChevronDown } from "lucide-react"
-import { mockProducts, categories } from "@/data/products"
 
 function ShopContent() {
   const searchParams = useSearchParams()
   const initialCategory = searchParams?.get("category")
   
+  const [products, setProducts] = useState<any[]>([])
+  const [categories, setCategories] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState("newest")
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 })
 
-  // Set initial category from URL if present
   useEffect(() => {
-    if (initialCategory) {
-      const cat = categories.find(c => c.slug.toLowerCase() === initialCategory.toLowerCase())
-      if (cat) {
-        setSelectedCategories([cat.id])
+    const fetchData = async () => {
+      try {
+        const [prodRes, catRes] = await Promise.all([
+          fetch("/api/admin/products"),
+          fetch("/api/categories")
+        ])
+        const prodData = await prodRes.json()
+        const catData = await catRes.json()
+        
+        setProducts(prodData)
+        setCategories(catData)
+
+        // Set initial category from URL if present
+        if (initialCategory) {
+          const cat = catData.find((c: any) => c.slug.toLowerCase() === initialCategory.toLowerCase())
+          if (cat) {
+            setSelectedCategories([cat.id])
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch data")
+      } finally {
+        setLoading(false)
       }
     }
+    fetchData()
   }, [initialCategory])
 
   const toggleCategory = (categoryId: string) => {
@@ -37,7 +58,7 @@ function ShopContent() {
   }
 
   // Filter and Sort products
-  const filteredProducts = mockProducts
+  const filteredProducts = products
     .filter(product => {
       // Category filter
       const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(product.categoryId)
@@ -162,11 +183,17 @@ function ShopContent() {
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((product, index) => (
-                <ProductCard key={product.id} product={product} index={index} />
-              ))}
-            </div>
+            {loading ? (
+              <div className="flex justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-500"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProducts.map((product, index) => (
+                  <ProductCard key={product.id} product={product} index={index} />
+                ))}
+              </div>
+            )}
 
             {/* Load More */}
             {filteredProducts.length > 0 ? (
