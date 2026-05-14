@@ -64,7 +64,12 @@ function ShopContent() {
       const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(product.categoryId)
       // Price filter
       const priceMatch = product.price >= priceRange.min && product.price <= priceRange.max
-      return categoryMatch && priceMatch
+      // Search filter
+      const searchMatch = !searchParams?.get("q") || 
+        product.name.toLowerCase().includes(searchParams.get("q")!.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchParams.get("q")!.toLowerCase())
+        
+      return categoryMatch && priceMatch && searchMatch
     })
     .sort((a, b) => {
       // Always put featured products at the top unless sorting by price

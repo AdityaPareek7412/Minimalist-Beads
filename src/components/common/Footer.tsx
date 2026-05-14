@@ -132,7 +132,7 @@ export function Footer() {
 
           {/* Copyright */}
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; 2024 MinimalistBeads. All rights reserved.</p>
+            <p>&copy; 2024 Minimalist Beads (minimalistbeads.in). All rights reserved.</p>
           </div>
         </div>
       </div>

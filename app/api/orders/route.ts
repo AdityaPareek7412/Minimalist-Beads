@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
         city: data.city,
         state: data.state,
         postalCode: data.postalCode,
-        country: "India", // Assuming mostly India for now
+        country: "India",
       }
     })
 
@@ -29,37 +29,71 @@ export async function POST(req: NextRequest) {
       total: item.product.price * item.quantity,
     }))
 
-    // Create the order
-    const order = await prisma.order.create({
-      data: {
-        shippingAddressId: address.id,
-        subtotal: data.subtotal,
-        shippingCost: data.shippingCost,
-        total: data.totalAmount,
-        customerName: `${data.firstName} ${data.lastName}`,
-        customerEmail: data.email,
-        customerPhone: `${data.countryCode}${data.phone}`,
-        status: "PENDING",
-        paymentStatus: data.paymentMethod === "cod" ? "PENDING" : "COMPLETED",
-        items: {
-          create: orderItems
-        },
-        payment: {
-          create: {
-            amount: data.totalAmount,
-            paymentMethod: data.paymentMethod === "cod" ? "COD" : "RAZORPAY",
-            paymentId: data.paymentId || null,
-            status: data.paymentMethod === "cod" ? "PENDING" : "COMPLETED",
+    // Use a transaction to ensure all operations succeed or fail together
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Create the order
+      const order = await tx.order.create({
+        data: {
+          shippingAddressId: address.id,
+          subtotal: data.subtotal,
+          shippingCost: data.shippingCost,
+          discount: data.discount || 0,
+          couponId: data.couponId || null,
+          total: data.totalAmount,
+          customerName: `${data.firstName} ${data.lastName}`,
+          customerEmail: data.email,
+          customerPhone: `${data.countryCode}${data.phone}`,
+          status: "PENDING",
+          paymentStatus: data.paymentMethod === "cod" ? "PENDING" : "COMPLETED",
+          items: {
+            create: orderItems
+          },
+          payment: {
+            create: {
+              amount: data.totalAmount,
+              paymentMethod: data.paymentMethod === "cod" ? "COD" : "RAZORPAY",
+              paymentId: data.paymentId || null,
+              status: data.paymentMethod === "cod" ? "PENDING" : "COMPLETED",
+            }
           }
+        },
+        include: {
+          items: true,
+          shippingAddress: true,
         }
-      },
-      include: {
-        items: true,
-        shippingAddress: true,
+      })
+
+      // 2. Decrement stock for each item
+      for (const item of orderItems) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: {
+            stock: {
+              decrement: item.quantity
+            },
+            sold: {
+              increment: item.quantity
+            }
+          }
+        })
       }
+
+      // 3. Update coupon usage if applicable
+      if (data.couponId) {
+        await tx.coupon.update({
+          where: { id: data.couponId },
+          data: {
+            usedCount: {
+              increment: 1
+            }
+          }
+        })
+      }
+
+      return order
     })
 
-    return NextResponse.json({ success: true, order })
+    return NextResponse.json({ success: true, order: result })
   } catch (error: any) {
     console.error("Failed to save order:", error)
     return NextResponse.json(

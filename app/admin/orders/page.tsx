@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma"
 import { formatPrice } from "@/lib/utils/helpers"
 import LogoutButton from "./LogoutButton"
 import DeleteOrderButton from "./DeleteOrderButton"
+import OrderStatusDropdown from "./OrderStatusDropdown"
 
 // Force dynamic to always fetch the latest orders
 export const dynamic = "force-dynamic"
@@ -71,6 +72,7 @@ export default async function AdminOrdersPage() {
                     }`}>
                       {order.payment?.paymentMethod === 'COD' ? '💵 COD' : '💳 Online Payment'}
                     </span>
+                    <OrderStatusDropdown orderId={order.id} currentStatus={order.status} />
                     <span className="text-sm text-gray-400">
                       {formatIST(order.createdAt)}
                     </span>
@@ -79,7 +81,7 @@ export default async function AdminOrdersPage() {
                   {/* Customer Info */}
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h3 className="text-sm font-semibold text-gray-900 mb-2">Customer Details</h3>
-                    <p className="text-sm text-gray-800"><span className="font-medium">Name:</span> {order.customerName}</p>
+                    <p className="text-sm text-gray-800"><span className="font-medium">Name:</span> {order.customerName || "Guest Customer"}</p>
                     <p className="text-sm text-gray-800"><span className="font-medium">Phone:</span> {order.customerPhone}</p>
                     <p className="text-sm text-gray-800"><span className="font-medium">Email:</span> {order.customerEmail}</p>
                     {order.shippingAddress && (
@@ -106,7 +108,7 @@ export default async function AdminOrdersPage() {
                             )}
                           </div>
                           <div>
-                            <p className="font-semibold text-gray-900">{item.product.name}</p>
+                            <p className="font-semibold text-gray-900">{item.product?.name || "Deleted Product"}</p>
                             <p className="text-gray-500 text-xs font-medium">Qty: {item.quantity} × {formatPrice(item.price)}</p>
                           </div>
                         </div>

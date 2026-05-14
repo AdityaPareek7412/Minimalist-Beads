@@ -219,6 +219,10 @@ model Order {
   // Notes
   notes         String?
   
+  // Tracking
+  trackingId    String?
+  trackingUrl   String?
+  
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
