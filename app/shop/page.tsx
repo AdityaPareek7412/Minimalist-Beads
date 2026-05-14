@@ -79,7 +79,7 @@ function ShopContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
-          <aside className="w-full lg:w-64 flex-shrink-0 glass-card p-6 rounded-3xl h-fit sticky top-28 border border-white/10">
+          <aside className="w-full lg:w-64 flex-shrink-0 glass-card p-6 rounded-3xl h-fit lg:sticky lg:top-28 border border-white/10 mb-8 lg:mb-0">
             {/* Categories Filter */}
             <div className="mb-8">
               <h3 className="text-sm font-bold text-fuchsia-400 mb-4 tracking-widest uppercase">

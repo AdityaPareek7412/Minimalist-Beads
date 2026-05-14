@@ -1,13 +1,13 @@
-// app/wishlist/page.tsx
-
 "use client"
 
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { Heart, ArrowRight, ShoppingBag } from "lucide-react"
+import { Heart, ArrowRight, ShoppingBag, Trash2 } from "lucide-react"
+import { useWishlist } from "@/context/wishlistContext"
+import { ProductCard } from "@/components/product/ProductCard"
 
 export default function WishlistPage() {
-  const wishlistItems = [] // Replace with actual wishlist data
+  const { wishlistItems, removeFromWishlist } = useWishlist()
 
   if (wishlistItems.length === 0) {
     return (
@@ -41,13 +41,29 @@ export default function WishlistPage() {
   return (
     <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-serif font-bold text-gray-900 mb-12 flex items-center gap-3">
-          <Heart size={32} className="text-pink-400" />
-          My Wishlist
-        </h1>
+        <div className="flex justify-between items-center mb-12">
+          <h1 className="text-4xl font-serif font-bold text-gray-900 flex items-center gap-3">
+            <Heart size={32} className="text-pink-400 fill-current" />
+            My Wishlist
+          </h1>
+          <span className="text-gray-500 font-medium">
+            {wishlistItems.length} items saved
+          </span>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Wishlist items will render here */}
+          {wishlistItems.map((product, index) => (
+            <div key={product.id} className="relative group">
+              <ProductCard product={product} index={index} />
+              <button
+                onClick={() => removeFromWishlist(product.id)}
+                className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm text-gray-500 hover:text-red-500 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all z-20"
+                title="Remove from wishlist"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+          ))}
         </div>
       </div>
     </div>
