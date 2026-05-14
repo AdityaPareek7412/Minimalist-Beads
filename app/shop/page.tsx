@@ -12,7 +12,7 @@ import { mockProducts, categories } from "@/data/products"
 
 function ShopContent() {
   const searchParams = useSearchParams()
-  const initialCategory = searchParams.get("category")
+  const initialCategory = searchParams?.get("category")
   
   const [sortBy, setSortBy] = useState("newest")
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
