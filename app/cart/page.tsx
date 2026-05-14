@@ -88,22 +88,22 @@ export default function CartPage() {
 
                       {/* Quantity Controls - Big & Visible */}
                       <div className="flex items-center gap-4 mt-4">
-                        <span className="text-sm font-medium text-gray-600">Qty:</span>
-                        <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden">
+                        <span className="text-sm font-semibold text-gray-700">Qty:</span>
+                        <div className="flex items-center border-2 border-gray-300 rounded-xl overflow-hidden shadow-sm">
                           <button
                             onClick={() =>
                               updateQuantity(item.productId, Math.max(0, item.quantity - 1))
                             }
-                            className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-pink-50 hover:text-pink-600 transition font-bold text-lg"
+                            className="w-11 h-11 flex items-center justify-center bg-gray-100 hover:bg-pink-100 hover:text-pink-600 transition font-bold text-lg border-r-2 border-gray-300"
                           >
                             <Minus size={18} />
                           </button>
-                          <span className="w-14 h-10 flex items-center justify-center text-lg font-bold text-gray-900 bg-white border-x-2 border-gray-200">
+                          <span className="w-16 h-11 flex items-center justify-center text-xl font-black text-gray-900 bg-white">
                             {item.quantity}
                           </span>
                           <button
                             onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                            className="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-pink-50 hover:text-pink-600 transition font-bold text-lg"
+                            className="w-11 h-11 flex items-center justify-center bg-gray-100 hover:bg-pink-100 hover:text-pink-600 transition font-bold text-lg border-l-2 border-gray-300"
                           >
                             <Plus size={18} />
                           </button>

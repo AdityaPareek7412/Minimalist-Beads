@@ -2,7 +2,9 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { Heart, Share2, ShoppingBag, Check } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { Heart, Share2, ShoppingBag, ShoppingCart, Zap, Check } from "lucide-react"
 import { motion } from "framer-motion"
 import { useCart } from "@/context/cartContext"
 import { ProductCard } from "@/components/product/ProductCard"
@@ -29,6 +31,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   const [selectedImage, setSelectedImage] = useState(0)
   const [isAdded, setIsAdded] = useState(false)
   const { addToCart } = useCart()
+  const router = useRouter()
 
   const handleAddToCart = () => {
     addToCart(product, quantity)
@@ -185,17 +188,17 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
             {/* Quantity & Actions */}
             <div className="flex gap-4 mb-6">
-              <div className="flex items-center border border-gray-300 rounded-lg">
+              <div className="flex items-center border-2 border-gray-300 rounded-xl overflow-hidden shadow-sm">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-50"
+                  className="w-12 h-12 flex items-center justify-center bg-gray-100 hover:bg-pink-100 hover:text-pink-600 transition font-bold text-lg border-r-2 border-gray-300"
                 >
                   −
                 </button>
-                <span className="px-6 py-2 font-medium">{quantity}</span>
+                <span className="w-16 h-12 flex items-center justify-center text-xl font-black text-gray-900 bg-white">{quantity}</span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-50"
+                  className="w-12 h-12 flex items-center justify-center bg-gray-100 hover:bg-pink-100 hover:text-pink-600 transition font-bold text-lg border-l-2 border-gray-300"
                 >
                   +
                 </button>
@@ -216,6 +219,30 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                 {isAdded ? "Added to Cart!" : "Add to Cart"}
               </motion.button>
             </div>
+
+            {/* Go to Cart & Buy Now - shown after adding */}
+            {isAdded && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex gap-3 mb-4"
+              >
+                <button
+                  onClick={() => router.push('/cart')}
+                  className="flex-1 py-3 border-2 border-gray-800 text-gray-900 rounded-lg font-semibold hover:bg-gray-100 transition flex items-center justify-center gap-2"
+                >
+                  <ShoppingCart size={20} />
+                  Go to Cart
+                </button>
+                <button
+                  onClick={() => router.push('/checkout')}
+                  className="flex-1 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg font-semibold hover:shadow-lg transition flex items-center justify-center gap-2"
+                >
+                  <Zap size={20} />
+                  Buy Now
+                </button>
+              </motion.div>
+            )}
 
             {/* Wishlist & Share */}
             <div className="flex gap-2">

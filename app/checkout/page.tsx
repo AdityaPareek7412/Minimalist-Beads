@@ -23,8 +23,8 @@ export default function CheckoutPage() {
     postalCode: "",
     country: "India",
   })
-  const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "upi" | "cod">(
-    "razorpay"
+  const [paymentMethod, setPaymentMethod] = useState<"cashfree" | "upi" | "cod">(
+    "cashfree"
   )
 
   const subtotal = getCartTotal()
@@ -106,7 +106,7 @@ export default function CheckoutPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, firstName: e.target.value })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
                       />
                     </div>
                     <div>
@@ -120,7 +120,7 @@ export default function CheckoutPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, lastName: e.target.value })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
                       />
                     </div>
                   </div>
@@ -138,7 +138,7 @@ export default function CheckoutPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
                       />
                     </div>
                     <div>
@@ -152,7 +152,7 @@ export default function CheckoutPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, phone: e.target.value })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
                       />
                     </div>
                   </div>
@@ -186,7 +186,7 @@ export default function CheckoutPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, city: e.target.value })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
                       />
                     </div>
                     <div>
@@ -200,7 +200,7 @@ export default function CheckoutPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, state: e.target.value })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
                       />
                     </div>
                     <div>
@@ -214,7 +214,7 @@ export default function CheckoutPage() {
                         onChange={(e) =>
                           setFormData({ ...formData, postalCode: e.target.value })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 text-gray-900 bg-white placeholder-gray-400"
                       />
                     </div>
                   </div>
@@ -251,19 +251,20 @@ export default function CheckoutPage() {
 
                 <form onSubmit={handlePaymentSubmit} className="space-y-4">
                   {/* Razorpay */}
-                  <label className="p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-pink-400 transition"
-                    onChange={() => setPaymentMethod("razorpay")}
+                  <label className="p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-pink-400 transition block"
+                    onClick={() => setPaymentMethod("cashfree")}
                   >
                     <div className="flex items-start">
                       <input
                         type="radio"
                         name="payment"
-                        value="razorpay"
-                        checked={paymentMethod === "razorpay"}
+                        value="cashfree"
+                        checked={paymentMethod === "cashfree"}
+                        onChange={() => setPaymentMethod("cashfree")}
                         className="mt-1"
                       />
                       <div className="ml-4">
-                        <p className="font-semibold text-gray-900">Razorpay</p>
+                        <p className="font-semibold text-gray-900">Cashfree</p>
                         <p className="text-sm text-gray-600">
                           Credit/Debit Card, Net Banking, Wallet
                         </p>
@@ -272,8 +273,8 @@ export default function CheckoutPage() {
                   </label>
 
                   {/* UPI */}
-                  <label className="p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-pink-400 transition"
-                    onChange={() => setPaymentMethod("upi")}
+                  <label className="p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-pink-400 transition block"
+                    onClick={() => setPaymentMethod("upi")}
                   >
                     <div className="flex items-start">
                       <input
@@ -281,6 +282,7 @@ export default function CheckoutPage() {
                         name="payment"
                         value="upi"
                         checked={paymentMethod === "upi"}
+                        onChange={() => setPaymentMethod("upi")}
                         className="mt-1"
                       />
                       <div className="ml-4">
@@ -293,8 +295,8 @@ export default function CheckoutPage() {
                   </label>
 
                   {/* COD */}
-                  <label className="p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-pink-400 transition"
-                    onChange={() => setPaymentMethod("cod")}
+                  <label className="p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-pink-400 transition block"
+                    onClick={() => setPaymentMethod("cod")}
                   >
                     <div className="flex items-start">
                       <input
@@ -302,6 +304,7 @@ export default function CheckoutPage() {
                         name="payment"
                         value="cod"
                         checked={paymentMethod === "cod"}
+                        onChange={() => setPaymentMethod("cod")}
                         className="mt-1"
                       />
                       <div className="ml-4">
@@ -380,7 +383,7 @@ export default function CheckoutPage() {
               <div className="mt-6 p-3 bg-blue-50 rounded-lg flex items-center gap-2">
                 <Lock size={16} className="text-blue-600" />
                 <p className="text-xs text-blue-700 font-medium">
-                  Secure checkout powered by Razorpay
+                  Secure checkout powered by Cashfree
                 </p>
               </div>
             </div>

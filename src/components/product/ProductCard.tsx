@@ -5,10 +5,11 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Product } from "@/types"
-import { Heart, ShoppingBag } from "lucide-react"
+import { Heart, ShoppingBag, ShoppingCart, Zap } from "lucide-react"
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import { useCart } from "@/context/cartContext"
 import { useState, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { calculateDiscount, formatPrice } from "@/lib/utils/helpers"
 
 interface ProductCardProps {
@@ -18,6 +19,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const { addToCart } = useCart()
+  const router = useRouter()
   const [isHovered, setIsHovered] = useState(false)
   const [showQuickAdd, setShowQuickAdd] = useState(false)
   
@@ -135,28 +137,49 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               style={{ transform: "translateZ(90px)" }}
-              className="absolute bottom-4 left-4 right-4 flex gap-3 z-20"
+              className="absolute bottom-4 left-4 right-4 flex flex-col gap-2 z-20"
             >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleAddToCart}
-                className={`flex-1 py-3 rounded-xl transition flex items-center justify-center gap-2 font-bold shadow-xl ${
-                  isAdded 
-                    ? "bg-green-500 text-white" 
-                    : "bg-white text-black hover:bg-gray-100"
-                }`}
-              >
-                <ShoppingBag size={18} />
-                {isAdded ? "Added!" : "Add to Cart"}
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-12 h-12 bg-white/20 backdrop-blur-xl border border-white/30 text-white rounded-xl hover:bg-white/30 transition flex items-center justify-center shadow-xl"
-              >
-                <Heart size={20} />
-              </motion.button>
+              {!isAdded ? (
+                <div className="flex gap-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleAddToCart}
+                    className="flex-1 bg-white text-black py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2 font-bold shadow-xl"
+                  >
+                    <ShoppingBag size={18} />
+                    Add to Cart
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-12 h-12 bg-white/20 backdrop-blur-xl border border-white/30 text-white rounded-xl hover:bg-white/30 transition flex items-center justify-center shadow-xl"
+                  >
+                    <Heart size={20} />
+                  </motion.button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={(e) => { e.preventDefault(); router.push('/cart'); }}
+                    className="flex-1 bg-white text-black py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2 font-bold shadow-xl"
+                  >
+                    <ShoppingCart size={18} />
+                    Go to Cart
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={(e) => { e.preventDefault(); router.push('/checkout'); }}
+                    className="flex-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2 font-bold shadow-xl"
+                  >
+                    <Zap size={18} />
+                    Buy Now
+                  </motion.button>
+                </div>
+              )}
             </motion.div>
           )}
         </motion.div>
