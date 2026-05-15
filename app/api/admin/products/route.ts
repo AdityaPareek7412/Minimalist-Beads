@@ -43,16 +43,25 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json()
-    const { name, price, description, categoryId, imageBase64, featured, stock } = data
+    const { name, price, description, categoryId, imagesBase64, featured, stock } = data
 
-    if (!name || !price || !categoryId || !imageBase64) {
+    if (!name || !price || !categoryId || !imagesBase64 || !Array.isArray(imagesBase64)) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    // 1. Upload to Cloudinary
-    const uploadResponse = await cloudinary.uploader.upload(imageBase64, {
-      folder: "minimalist_beads_products",
-    })
+    // 1. Upload all to Cloudinary
+    const uploadedImages = await Promise.all(
+      imagesBase64.map(async (base64, index) => {
+        const uploadResponse = await cloudinary.uploader.upload(base64, {
+          folder: "minimalist_beads_products",
+        })
+        return {
+          url: uploadResponse.secure_url,
+          alt: name,
+          order: index,
+        }
+      })
+    )
 
     // 2. Create slug
     const slug = name.toLowerCase().replace(/ /g, "-") + "-" + Date.now()
@@ -68,13 +77,7 @@ export async function POST(req: NextRequest) {
         stock: parseInt(stock) || 0,
         featured: featured || false,
         images: {
-          create: [
-            {
-              url: uploadResponse.secure_url,
-              alt: name,
-              order: 0,
-            }
-          ]
+          create: uploadedImages
         }
       },
       include: {

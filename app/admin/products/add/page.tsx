@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Upload, Image as ImageIcon } from "lucide-react"
+import { ArrowLeft, Upload, Image as ImageIcon, X } from "lucide-react"
 import Link from "next/link"
 
 export default function AddProductPage() {
@@ -12,7 +12,7 @@ export default function AddProductPage() {
   const [description, setDescription] = useState("")
   const [categoryId, setCategoryId] = useState("")
   const [categories, setCategories] = useState<any[]>([])
-  const [image, setImage] = useState<string | null>(null)
+  const [images, setImages] = useState<string[]>([])
   const [isFeatured, setIsFeatured] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -24,19 +24,26 @@ export default function AddProductPage() {
   }, [])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImage(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+    const files = e.target.files
+    if (files) {
+      Array.from(files).forEach(file => {
+        if (images.length >= 4) return
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setImages(prev => [...prev, reader.result as string])
+        }
+        reader.readAsDataURL(file)
+      })
     }
+  }
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!image) return alert("Please select an image")
+    if (images.length === 0) return alert("Please select at least one image")
     
     setLoading(true)
     try {
@@ -49,7 +56,7 @@ export default function AddProductPage() {
           stock,
           description, 
           categoryId, 
-          imageBase64: image, 
+          imagesBase64: images, 
           featured: isFeatured 
         }),
       })
@@ -70,7 +77,7 @@ export default function AddProductPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <Link href="/admin/products" className="inline-flex items-center text-sm text-gray-500 hover:text-pink-600 mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to products
@@ -79,46 +86,53 @@ export default function AddProductPage() {
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
           <div className="p-8 border-b border-gray-100 bg-gray-50/50">
             <h1 className="text-2xl font-bold text-gray-900">Add New Aesthetic Piece</h1>
-            <p className="text-gray-500">Fill in the details to list a new product on your store.</p>
+            <p className="text-gray-500">Add up to 4 photos to showcase your piece in detail.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-8 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form onSubmit={handleSubmit} className="p-8 space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
               {/* Image Upload Area */}
-              <div className="space-y-4">
-                <label className="block text-sm font-bold text-gray-700">Product Image</label>
-                <div className="relative group">
-                  <div className={`aspect-square rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center p-4 ${
-                    image ? "border-pink-500 bg-pink-50/10" : "border-gray-200 hover:border-pink-300 bg-gray-50"
-                  }`}>
-                    {image ? (
-                      <img src={image} alt="Preview" className="w-full h-full object-cover rounded-xl shadow-md" />
-                    ) : (
-                      <>
-                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-                          <Upload className="w-8 h-8 text-pink-500" />
+              <div className="lg:col-span-5 space-y-6">
+                <label className="block text-sm font-bold text-gray-700 flex items-center justify-between">
+                  Product Gallery
+                  <span className="text-[10px] font-bold text-pink-500 uppercase tracking-widest">{images.length}/4 Photos</span>
+                </label>
+                
+                <div className="grid grid-cols-2 gap-4">
+                   {images.map((img, idx) => (
+                     <div key={idx} className="relative aspect-square group">
+                        <img src={img} alt="" className="w-full h-full object-cover rounded-xl border border-pink-100" />
+                        {idx === 0 && (
+                          <span className="absolute top-2 left-2 bg-pink-500 text-white text-[8px] font-bold px-2 py-0.5 rounded-full shadow-lg">MAIN</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeImage(idx)}
+                          className="absolute -top-2 -right-2 bg-white text-gray-500 hover:text-red-500 rounded-full p-1 shadow-lg border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X size={12} />
+                        </button>
+                     </div>
+                   ))}
+                   
+                   {images.length < 4 && (
+                     <div className="relative aspect-square">
+                        <div className="w-full h-full rounded-xl border-2 border-dashed border-gray-200 hover:border-pink-300 bg-gray-50 flex flex-col items-center justify-center transition-all">
+                           <Upload className="w-6 h-6 text-gray-400 mb-2" />
+                           <span className="text-[10px] font-bold text-gray-400 uppercase">Add Photo</span>
                         </div>
-                        <p className="text-sm font-medium text-gray-900">Click to upload photo</p>
-                        <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 10MB</p>
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                  </div>
-                  {image && (
-                    <button
-                      type="button"
-                      onClick={() => setImage(null)}
-                      className="absolute -top-2 -right-2 bg-white text-gray-500 hover:text-red-500 rounded-full p-1 shadow-lg border border-gray-100"
-                    >
-                      <Plus className="w-4 h-4 rotate-45" />
-                    </button>
-                  )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleImageChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                     </div>
+                   )}
                 </div>
+                
+                <p className="text-[10px] text-gray-400 italic">✨ Use high-quality photos for a premium look.</p>
               </div>
 
               {/* Basic Info */}
