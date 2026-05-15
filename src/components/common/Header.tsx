@@ -56,8 +56,40 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-xl border-b border-pink-100/60 shadow-sm">
       {settings?.announcement && (
-        <div className="bg-gradient-to-r from-pink-400 to-rose-400 text-white text-center py-2 text-[10px] font-semibold tracking-[0.15em] uppercase">
-          {settings.announcement}
+        <div className="relative overflow-hidden bg-gray-900 h-9 flex items-center border-b border-white/5">
+          {/* Animated Gradient Background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-rose-500 via-pink-500 to-rose-500 animate-gradient-x opacity-90" />
+          
+          {/* Glass Overlay for 3D Depth */}
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 mix-blend-overlay" />
+          
+          <div className="relative w-full overflow-hidden whitespace-nowrap py-1">
+            <motion.div
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{ 
+                duration: 25, 
+                repeat: Infinity, 
+                ease: "linear" 
+              }}
+              className="inline-flex items-center gap-20"
+            >
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="flex items-center gap-6">
+                  <span className="text-[10px] font-bold text-white uppercase tracking-[0.3em] flex items-center gap-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse shadow-[0_0_8px_white]" />
+                    {settings.announcement}
+                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse shadow-[0_0_8px_white]" />
+                  </span>
+                  <span className="text-white/30 font-serif italic text-sm">✨</span>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* Shimmer Effect */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className="absolute top-0 -left-[100%] w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-[-25deg] animate-shimmer" />
+          </div>
         </div>
       )}
       

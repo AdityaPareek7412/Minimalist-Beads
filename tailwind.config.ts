@@ -71,6 +71,8 @@ const config: Config = {
         'float': 'float 3s ease-in-out infinite',
         'pulse-soft': 'pulseSoft 2s ease-in-out infinite',
         'marquee': 'marquee 25s linear infinite',
+        'gradient-x': 'gradient-x 15s ease infinite',
+        'shimmer': 'shimmer 3s infinite linear',
       },
       keyframes: {
         fadeIn: {
@@ -92,6 +94,14 @@ const config: Config = {
         marquee: {
           '0%': { transform: 'translateX(0%)' },
           '100%': { transform: 'translateX(-100%)' },
+        },
+        'gradient-x': {
+          '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+          '50%': { 'background-size': '200% 200%', 'background-position': 'right center' },
+        },
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(200%)' },
         },
       },
       backdropFilter: {
