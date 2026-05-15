@@ -22,7 +22,7 @@ export default function CartPage() {
   }, [])
 
   const subtotal = getCartTotal()
-  const shipping = subtotal > settings.freeShippingLimit ? 0 : settings.shippingFee
+  const shipping = settings.shippingFee
   const total = subtotal + shipping
 
   return (
@@ -119,15 +119,10 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Shipping</span>
-                    <span className={shipping === 0 ? "text-sage-600 font-bold uppercase text-[10px]" : "text-gray-900 font-bold"}>
-                      {shipping === 0 ? "FREE" : formatPrice(shipping)}
+                    <span className="text-gray-900 font-bold">
+                      {formatPrice(shipping)}
                     </span>
                   </div>
-                  {shipping > 0 && (
-                    <p className="text-[10px] text-pink-400 font-medium italic">
-                      Add {formatPrice(settings.freeShippingLimit - subtotal)} more for FREE shipping!
-                    </p>
-                  )}
                   <div className="pt-4 border-t border-pink-50 flex justify-between items-center">
                     <span className="text-lg font-serif font-bold text-gray-900">Total</span>
                     <span className="text-2xl font-bold text-pink-600">{formatPrice(total)}</span>

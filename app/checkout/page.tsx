@@ -72,7 +72,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "cod">("razorpay")
 
   const subtotal = getCartTotal()
-  const shipping = subtotal > settings.freeShippingLimit ? 0 : settings.shippingFee
+  const shipping = settings.shippingFee
   const discount = appliedCoupon ? appliedCoupon.discount : 0
   const total = subtotal + shipping - discount
 
@@ -438,7 +438,7 @@ export default function CheckoutPage() {
 
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between text-xs text-gray-500 uppercase tracking-widest"><span>Subtotal</span><span className="text-gray-900 font-bold">{formatPrice(subtotal)}</span></div>
-                <div className="flex justify-between text-xs text-gray-500 uppercase tracking-widest"><span>Shipping</span><span className={shipping === 0 ? "text-sage-600 font-bold" : "text-gray-900 font-bold"}>{shipping === 0 ? "FREE" : formatPrice(shipping)}</span></div>
+                <div className="flex justify-between text-xs text-gray-500 uppercase tracking-widest"><span>Shipping</span><span className="text-gray-900 font-bold">{formatPrice(shipping)}</span></div>
                 {discount > 0 && <div className="flex justify-between text-pink-600 font-bold text-xs uppercase tracking-widest"><span>Discount</span><span>-{formatPrice(discount)}</span></div>}
                 <div className="border-t border-pink-50 pt-6 flex justify-between items-center">
                   <span className="font-serif font-bold text-gray-900">Total</span>
