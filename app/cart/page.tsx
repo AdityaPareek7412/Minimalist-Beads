@@ -6,8 +6,8 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useCart } from "@/context/cartContext"
-import { X, Plus, Minus, ArrowRight, Truck } from "lucide-react"
-import { motion } from "framer-motion"
+import { X, Plus, Minus, ArrowRight, Truck, Trash2 } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import { formatPrice } from "@/lib/utils/helpers"
 
 export default function CartPage() {
@@ -25,93 +25,129 @@ export default function CartPage() {
   const shipping = subtotal > settings.freeShippingLimit ? 0 : settings.shippingFee
   const total = subtotal + shipping
 
-  if (cart.length === 0) {
-    return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-          <div className="w-32 h-32 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center text-6xl">🛍️</div>
-          <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">Cart is Empty</h1>
-          <p className="text-gray-600 mb-8">Looks like you haven't added any items yet.</p>
-          <Link href="/shop" className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-pink-400 to-purple-400 text-white font-semibold rounded-lg hover:shadow-lg transition">
-            Continue Shopping
-            <ArrowRight size={20} />
-          </Link>
-        </motion.div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-serif font-bold text-gray-900 mb-12">Shopping Cart</h1>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <div className="space-y-6">
-              {cart.map((item, index) => (
-                <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}
-                  className="p-6 border border-gray-200 rounded-xl hover:border-pink-200 transition">
-                  <div className="flex gap-6">
-                    <div className="relative w-28 h-28 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
-                      {item.product?.images?.[0] && <Image src={item.product.images[0].url} alt={item.product.name} fill className="object-cover" />}
-                    </div>
-                    <div className="flex-1">
-                      <Link href={`/products/${item.product?.slug}`} className="text-lg font-semibold text-gray-900 hover:text-pink-500 transition">{item.product?.name}</Link>
-                      <p className="text-sm text-gray-500 mt-1">{formatPrice(item.product?.price || 0)} per item</p>
-                      <div className="flex items-center gap-4 mt-4">
-                        <div className="flex items-center border-2 border-gray-300 rounded-xl overflow-hidden shadow-sm">
-                          <button onClick={() => updateQuantity(item.productId, Math.max(0, item.quantity - 1))} className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-pink-100 transition font-bold text-lg"><Minus size={16} /></button>
-                          <span className="w-12 h-10 flex items-center justify-center font-bold text-gray-900 bg-white">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.productId, item.quantity + 1)} className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-pink-100 transition font-bold text-lg"><Plus size={16} /></button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end justify-between">
-                      <p className="text-xl font-bold text-gray-900">{formatPrice((item.product?.price || 0) * item.quantity)}</p>
-                      <button onClick={() => removeFromCart(item.productId)} className="text-red-400 hover:text-red-600 transition"><X size={20} /></button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          <div className="lg:col-span-1">
-            <div className="bg-gray-50 rounded-3xl p-8 sticky top-24 border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
-              <div className="space-y-4 mb-6">
-                <div className="flex justify-between text-gray-600"><span>Subtotal</span><span className="font-bold text-gray-900">{formatPrice(subtotal)}</span></div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Shipping</span>
-                  <span className={shipping === 0 ? "text-green-600 font-bold" : "font-bold text-gray-900"}>
-                    {shipping === 0 ? "FREE" : formatPrice(shipping)}
-                  </span>
-                </div>
-              </div>
-              <div className="border-t-2 border-gray-200 pt-6 mb-8">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold text-gray-900">Total</span>
-                  <span className="text-3xl font-black text-pink-600">{formatPrice(total)}</span>
-                </div>
-              </div>
-              <Link href="/checkout" className="w-full py-4 bg-pink-600 text-white font-bold rounded-xl shadow-lg hover:bg-pink-700 transition-all text-center block mb-4">Proceed to Checkout</Link>
-              
-              <div className="bg-pink-50 rounded-xl p-4 border border-pink-100">
-                <div className="flex items-center gap-2 text-pink-700 mb-1">
-                  <Truck size={16} />
-                  <span className="text-xs font-bold uppercase tracking-wider">Shipping Info</span>
-                </div>
-                <p className="text-sm text-pink-600 font-medium">
-                  {subtotal > settings.freeShippingLimit 
-                    ? "🎉 You unlocked FREE shipping!" 
-                    : `Add ${formatPrice(settings.freeShippingLimit - subtotal)} more for FREE shipping!`}
-                </p>
-                <p className="text-[10px] text-pink-400 mt-1">Free shipping on orders above {formatPrice(settings.freeShippingLimit)}</p>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#fdf0f5] pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl font-serif font-bold text-gray-900 mb-2">Your Shopping Bag</h1>
+          <p className="text-gray-400 text-sm font-medium uppercase tracking-widest">
+            {cart.length === 0 ? "Empty bag" : `${cart.length} items ready for you`}
+          </p>
         </div>
+
+        {cart.length === 0 ? (
+          <div className="text-center py-24 bg-white rounded-[2rem] border border-pink-100 shadow-sm">
+            <div className="text-6xl mb-6 opacity-20">🛍️</div>
+            <h2 className="text-2xl font-serif font-bold text-gray-900 mb-4">Your bag is lonely</h2>
+            <p className="text-gray-400 mb-10 max-w-xs mx-auto">Add some handcrafted magic to your collection and make it smile.</p>
+            <Link
+              href="/shop"
+              className="inline-flex items-center gap-2 px-10 py-4 bg-gray-900 text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-pink-600 transition-all shadow-lg"
+            >
+              Start Shopping <ArrowRight size={16} />
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Cart Items */}
+            <div className="lg:col-span-2 space-y-4">
+              <AnimatePresence>
+                {cart.map((item) => (
+                  <motion.div
+                    key={item.productId}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-white rounded-2xl border border-pink-50 shadow-sm hover:shadow-md transition-all group"
+                  >
+                    <div className="relative w-32 h-32 rounded-xl overflow-hidden bg-pink-50/30 flex-shrink-0 border border-pink-100">
+                      <Image
+                        src={item.product?.images?.[0]?.url || ""}
+                        alt={item.product?.name || ""}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                    
+                    <div className="flex-1 text-center sm:text-left">
+                      <h3 className="text-lg font-sans font-bold text-gray-900 group-hover:text-pink-600 transition-colors">
+                        {item.product?.name}
+                      </h3>
+                      <p className="text-pink-600 font-bold mt-1">{formatPrice(item.product?.price || 0)}</p>
+                    </div>
+
+                    <div className="flex items-center bg-pink-50/50 border border-pink-100 rounded-full p-1 shadow-inner">
+                      <button
+                        onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))}
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-pink-100 text-gray-600 transition-all shadow-sm"
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="w-10 text-center font-bold text-gray-900">{item.quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-pink-100 text-gray-600 transition-all shadow-sm"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+
+                    <div className="text-center sm:text-right min-w-[100px]">
+                      <p className="text-gray-900 font-bold mb-2">{formatPrice((item.product?.price || 0) * item.quantity)}</p>
+                      <button
+                        onClick={() => removeFromCart(item.productId)}
+                        className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+
+            {/* Summary */}
+            <div className="lg:col-span-1">
+              <div className="bg-white p-8 rounded-[2rem] border border-pink-100 shadow-sm sticky top-28">
+                <h2 className="text-xl font-serif font-bold text-gray-900 mb-8 pb-4 border-b border-pink-50 uppercase tracking-widest text-center">Bag Summary</h2>
+                
+                <div className="space-y-4 mb-8">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Subtotal</span>
+                    <span className="text-gray-900 font-bold">{formatPrice(subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Shipping</span>
+                    <span className={shipping === 0 ? "text-sage-600 font-bold uppercase text-[10px]" : "text-gray-900 font-bold"}>
+                      {shipping === 0 ? "FREE" : formatPrice(shipping)}
+                    </span>
+                  </div>
+                  {shipping > 0 && (
+                    <p className="text-[10px] text-pink-400 font-medium italic">
+                      Add {formatPrice(settings.freeShippingLimit - subtotal)} more for FREE shipping!
+                    </p>
+                  )}
+                  <div className="pt-4 border-t border-pink-50 flex justify-between items-center">
+                    <span className="text-lg font-serif font-bold text-gray-900">Total</span>
+                    <span className="text-2xl font-bold text-pink-600">{formatPrice(total)}</span>
+                  </div>
+                </div>
+
+                <Link
+                  href="/checkout"
+                  className="w-full bg-gray-900 text-white py-4 rounded-full font-bold text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-pink-600 transition-all shadow-lg hover:shadow-pink-200 text-center"
+                >
+                  Checkout Now <ArrowRight size={18} />
+                </Link>
+                
+                <p className="mt-6 text-[10px] text-center text-gray-400 font-medium uppercase tracking-widest">
+                  ✨ Secure Checkout & Fast Delivery
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

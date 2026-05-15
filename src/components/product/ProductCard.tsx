@@ -6,10 +6,10 @@ import Link from "next/link"
 import Image from "next/image"
 import { Product } from "@/types"
 import { Heart, ShoppingBag, ShoppingCart, Plus, Minus } from "lucide-react"
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
+import { motion } from "framer-motion"
 import { useCart } from "@/context/cartContext"
 import { useWishlist } from "@/context/wishlistContext"
-import { useState, useRef } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { calculateDiscount, formatPrice } from "@/lib/utils/helpers"
 
@@ -24,36 +24,6 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const router = useRouter()
   const [isHovered, setIsHovered] = useState(false)
   
-  // 3D Tilt Effect
-  const ref = useRef<HTMLDivElement>(null)
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-  
-  const mouseXSpring = useSpring(x, { stiffness: 300, damping: 30 })
-  const mouseYSpring = useSpring(y, { stiffness: 300, damping: 30 })
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["17.5deg", "-17.5deg"])
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-17.5deg", "17.5deg"])
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return
-    const rect = ref.current.getBoundingClientRect()
-    const width = rect.width
-    const height = rect.height
-    const mouseX = e.clientX - rect.left
-    const mouseY = e.clientY - rect.top
-    const xPct = mouseX / width - 0.5
-    const yPct = mouseY / height - 0.5
-    x.set(xPct)
-    y.set(yPct)
-  }
-
-  const handleMouseLeave = () => {
-    setIsHovered(false)
-    x.set(0)
-    y.set(0)
-  }
-
   const discount = calculateDiscount(product.originalPrice || product.price, product.price)
   const mainImage = product.images?.[0]
   const hoverImage = product.images?.[1]
@@ -90,181 +60,141 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
     router.push('/cart')
   }
 
+  const toggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id)
+    } else {
+      addToWishlist(product)
+    }
+  }
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1, type: "spring" }}
-      className="group relative perspective-1000"
-      style={{ perspective: 1000 }}
+      transition={{ delay: index * 0.05, duration: 0.5 }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="group relative flex flex-col h-full bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-pink-100/50 transition-all duration-300"
     >
-      <Link href={`/products/${product.slug}`}>
-        <motion.div
-          ref={ref}
-          onMouseMove={handleMouseMove}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={handleMouseLeave}
-          style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-          className="relative rounded-2xl overflow-hidden aspect-square cursor-pointer glass-card bg-white/5"
-        >
-          {/* Main Image */}
-          {mainImage && (
-            <motion.div style={{ transform: "translateZ(50px)", transformStyle: "preserve-3d" }} className="w-full h-full relative z-0">
-              <Image
-                src={mainImage.url}
-                alt={mainImage.alt || product.name}
-                fill
-                className="object-cover w-full h-full drop-shadow-2xl"
-              />
-            </motion.div>
+      <Link href={`/products/${product.slug}`} className="block relative aspect-square overflow-hidden bg-pink-50/30">
+        {/* Main Image */}
+        {mainImage && (
+          <Image
+            src={mainImage.url}
+            alt={mainImage.alt || product.name}
+            fill
+            className={`object-cover transition-transform duration-700 ${isHovered && hoverImage ? 'opacity-0' : 'opacity-100 scale-100 group-hover:scale-105'}`}
+          />
+        )}
+
+        {/* Hover Image */}
+        {hoverImage && (
+          <Image
+            src={hoverImage.url}
+            alt={hoverImage.alt || product.name}
+            fill
+            className={`object-cover transition-all duration-700 ${isHovered ? 'opacity-100 scale-105' : 'opacity-0 scale-100'}`}
+          />
+        )}
+
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+          {product.newArrival && (
+            <span className="bg-white/90 backdrop-blur-sm text-pink-500 px-2.5 py-1 text-[10px] font-bold rounded-full shadow-sm border border-pink-100 uppercase tracking-wider">
+              NEW
+            </span>
           )}
-
-          {/* Hover Image */}
-          {isHovered && hoverImage && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              style={{ transform: "translateZ(60px)" }}
-              className="absolute inset-0 z-10"
-            >
-              <Image
-                src={hoverImage.url}
-                alt={hoverImage.alt || product.name}
-                fill
-                className="object-cover w-full h-full drop-shadow-2xl"
-              />
-            </motion.div>
-          )}
-
-          {/* Badges */}
-          <motion.div style={{ transform: "translateZ(80px)" }} className="absolute top-4 left-4 flex gap-2 z-20">
-            {product.newArrival && (
-              <span className="bg-pink-500/80 backdrop-blur text-white px-3 py-1 text-xs font-bold rounded-full shadow-lg">
-                NEW
-              </span>
-            )}
-            {product.trending && (
-              <span className="bg-indigo-500/80 backdrop-blur text-white px-3 py-1 text-xs font-bold rounded-full shadow-lg">
-                FIRE 🔥
-              </span>
-            )}
-            {discount > 0 && (
-              <span className="bg-fuchsia-500/80 backdrop-blur text-white px-3 py-1 text-xs font-bold rounded-full shadow-lg">
-                -{discount}%
-              </span>
-            )}
-          </motion.div>
-
-          {/* Quick Actions on Hover - only show if NOT in cart */}
-          {isHovered && product.stock > 0 && cartQty === 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              style={{ transform: "translateZ(90px)" }}
-              className="absolute bottom-4 left-4 right-4 flex gap-2 z-20"
-            >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleAddToCart}
-                className="flex-1 bg-white text-black py-3 rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2 font-bold shadow-xl"
-              >
-                <ShoppingBag size={18} />
-                Add to Cart
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (isInWishlist(product.id)) {
-                    removeFromWishlist(product.id)
-                  } else {
-                    addToWishlist(product)
-                  }
-                }}
-                className={`w-12 h-12 backdrop-blur-xl border rounded-xl transition flex items-center justify-center shadow-xl ${
-                  isInWishlist(product.id)
-                    ? 'bg-red-500/20 border-red-500/50 text-red-500 hover:bg-red-500/30'
-                    : 'bg-white/20 border-white/30 text-white hover:bg-white/30'
-                }`}
-              >
-                <Heart size={20} className={isInWishlist(product.id) ? "fill-current" : ""} />
-              </motion.button>
-            </motion.div>
-          )}
-
-          {/* Persistent Quantity Controls - when item IS in cart */}
-          {cartQty > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              style={{ transform: "translateZ(90px)" }}
-              className="absolute bottom-4 left-4 right-4 flex flex-col gap-2 z-20"
-            >
-              {/* Quantity Controls */}
-              <div className="flex items-center justify-center gap-2">
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleDecrement}
-                  className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center font-bold shadow-xl hover:bg-red-50 transition"
-                >
-                  <Minus size={16} />
-                </motion.button>
-                <span className="w-12 h-10 bg-white text-black rounded-xl flex items-center justify-center text-lg font-black shadow-xl">
-                  {cartQty}
-                </span>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleIncrement}
-                  className="w-10 h-10 bg-white text-black rounded-full flex items-center justify-center font-bold shadow-xl hover:bg-green-50 transition"
-                >
-                  <Plus size={16} />
-                </motion.button>
-              </div>
-              {/* Go to Cart */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleGoToCart}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-2.5 rounded-xl hover:shadow-lg transition flex items-center justify-center gap-2 font-bold shadow-xl"
-              >
-                <ShoppingCart size={16} />
-                Go to Cart
-              </motion.button>
-            </motion.div>
-          )}
-        </motion.div>
-      </Link>
-
-      {/* Product Info */}
-      <motion.div 
-        className="mt-6 px-2"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: index * 0.1 + 0.2 }}
-      >
-        <Link href={`/products/${product.slug}`}>
-          <h3 className="text-lg font-bold text-white truncate group-hover:text-pink-400 transition-colors">
-            {product.name}
-          </h3>
-        </Link>
-        <p className="text-sm text-gray-400 mt-1 truncate font-medium">{product.category?.name}</p>
-
-        {/* Price */}
-        <div className="mt-3 flex items-center gap-3">
-          <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-indigo-400">
-            {formatPrice(product.price)}
-          </span>
-          {product.originalPrice && product.originalPrice > product.price && (
-            <span className="text-sm text-gray-500 line-through font-medium">
-              {formatPrice(product.originalPrice)}
+          {discount > 0 && (
+            <span className="bg-pink-500 text-white px-2.5 py-1 text-[10px] font-bold rounded-full shadow-sm uppercase tracking-wider">
+              -{discount}%
             </span>
           )}
         </div>
-      </motion.div>
+
+        {/* Wishlist Button Overlay */}
+        <button
+          onClick={toggleWishlist}
+          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-sm transition-all duration-300 z-10 shadow-sm border ${
+            isInWishlist(product.id)
+              ? 'bg-pink-500 border-pink-400 text-white'
+              : 'bg-white/80 border-pink-100 text-gray-400 hover:text-pink-500'
+          }`}
+        >
+          <Heart size={18} className={isInWishlist(product.id) ? "fill-current" : ""} />
+        </button>
+
+        {/* Quick Add Overlay */}
+        <div className={`absolute bottom-3 left-3 right-3 transition-all duration-300 transform z-10 ${isHovered && product.stock > 0 && cartQty === 0 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+          <button
+            onClick={handleAddToCart}
+            className="w-full bg-gray-900/90 backdrop-blur-sm text-white py-2.5 rounded-full font-bold text-xs flex items-center justify-center gap-2 hover:bg-pink-500 transition-colors shadow-lg"
+          >
+            <ShoppingBag size={14} />
+            ADD TO CART
+          </button>
+        </div>
+
+        {/* Cart Quantity Overlay */}
+        {cartQty > 0 && (
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center z-10">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center bg-white rounded-full shadow-lg border border-pink-100 p-1">
+                <button
+                  onClick={handleDecrement}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-pink-50 text-gray-600 transition-colors"
+                >
+                  <Minus size={14} />
+                </button>
+                <span className="w-8 text-center font-bold text-gray-900">{cartQty}</span>
+                <button
+                  onClick={handleIncrement}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-pink-50 text-gray-600 transition-colors"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+              <button
+                onClick={handleGoToCart}
+                className="bg-gray-900 text-white text-[10px] font-bold px-4 py-1.5 rounded-full hover:bg-pink-500 transition-colors shadow-md"
+              >
+                GO TO CART
+              </button>
+            </div>
+          </div>
+        )}
+      </Link>
+
+      {/* Product Info */}
+      <div className="p-4 flex flex-col flex-grow bg-white">
+        <Link href={`/products/${product.slug}`} className="flex-grow">
+          <h3 className="text-gray-900 font-sans font-semibold text-lg leading-tight group-hover:text-pink-500 transition-colors truncate">
+            {product.name}
+          </h3>
+          <p className="text-gray-400 text-xs mt-1 font-medium">{product.category?.name || "Handmade"}</p>
+        </Link>
+
+        {/* Price */}
+        <div className="mt-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-pink-600 font-bold text-lg">
+              {formatPrice(product.price)}
+            </span>
+            {product.originalPrice && product.originalPrice > product.price && (
+              <span className="text-gray-400 text-xs line-through">
+                {formatPrice(product.originalPrice)}
+              </span>
+            )}
+          </div>
+          {product.stock <= 5 && product.stock > 0 && (
+            <span className="text-[10px] font-bold text-orange-500 uppercase tracking-tighter">
+              Only {product.stock} left!
+            </span>
+          )}
+        </div>
+      </div>
     </motion.div>
   )
 }

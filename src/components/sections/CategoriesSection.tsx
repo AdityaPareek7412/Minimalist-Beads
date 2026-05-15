@@ -14,7 +14,7 @@ interface CategoriesSectionProps {
 
 export function CategoriesSection({ categories }: CategoriesSectionProps) {
   return (
-    <section className="py-20 md:py-32 px-4 sm:px-6 lg:px-8 relative z-10">
+    <section className="py-20 md:py-28 px-4 sm:px-6 lg:px-8 relative z-10">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
@@ -22,15 +22,15 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-14"
         >
-          <span className="inline-block text-sm font-bold text-fuchsia-400 tracking-widest mb-4 uppercase">
-            SHOP BY VIBE
+          <span className="inline-block text-sm font-medium text-pink-500 tracking-widest mb-3 uppercase">
+            Shop by Vibe
           </span>
-          <h2 className="text-4xl md:text-5xl font-black text-white mb-4 drop-shadow-md">
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-4">
             Find Your Style
           </h2>
-          <p className="text-gray-300 text-lg max-w-2xl mx-auto font-light">
+          <p className="text-gray-500 text-lg max-w-2xl mx-auto font-light">
             Browse our curated collections organized by aesthetic
           </p>
         </motion.div>
@@ -46,17 +46,17 @@ export function CategoriesSection({ categories }: CategoriesSectionProps) {
               viewport={{ once: true }}
             >
               <Link href={`/shop?category=${category.slug}`}>
-                <div className="relative group rounded-3xl overflow-hidden cursor-pointer h-48 md:h-56 glass-card border border-white/10 hover:border-fuchsia-400/50 transition-all duration-300 flex flex-col items-center justify-center shadow-lg hover:shadow-[0_0_20px_rgba(236,72,153,0.3)]">
+                <div className="relative group rounded-2xl overflow-hidden cursor-pointer h-48 md:h-56 bg-white border border-pink-100 hover:border-pink-300 transition-all duration-300 flex flex-col items-center justify-center shadow-sm hover:shadow-md">
                   {/* Content */}
-                  <span className="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300 drop-shadow-md">
+                  <span className="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">
                     {category.icon}
                   </span>
-                  <h3 className="text-white text-lg font-bold text-center px-4 tracking-wide group-hover:text-fuchsia-300 transition-colors">
+                  <h3 className="text-gray-800 text-lg font-serif font-semibold text-center px-4 group-hover:text-pink-600 transition-colors">
                     {category.name}
                   </h3>
 
                   {/* Hover Arrow */}
-                  <div className="absolute opacity-0 group-hover:opacity-100 bottom-4 right-4 w-8 h-8 bg-fuchsia-500 rounded-full flex items-center justify-center shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                  <div className="absolute opacity-0 group-hover:opacity-100 bottom-4 right-4 w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center shadow-md transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                     <ArrowRight className="w-4 h-4 text-white" />
                   </div>
                 </div>

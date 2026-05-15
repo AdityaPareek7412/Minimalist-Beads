@@ -9,6 +9,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatPrice(price: number, currency: string = "₹"): string {
+  if (price === undefined || price === null) return `${currency}0.00`
   return `${currency}${price.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,

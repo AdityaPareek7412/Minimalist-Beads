@@ -6,26 +6,26 @@
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --background: 340 50% 98%;
+    --foreground: 340 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 340 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 340 10% 10%;
+    --primary: 340 80% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 145 50% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 340 20% 94%;
+    --muted-foreground: 340 5% 45%;
+    --accent: 340 30% 93%;
+    --accent-foreground: 340 10% 10%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --radius: 0.5rem;
+    --border: 340 15% 88%;
+    --input: 340 15% 88%;
+    --ring: 340 80% 55%;
+    --radius: 0.75rem;
   }
 }
 
@@ -38,48 +38,54 @@ html {
 }
 
 body {
-  @apply bg-black text-white font-sans overflow-x-hidden;
-  /* Gen-Z animated dark mesh background */
-  background: 
-    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-    radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
-    radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
-  background-color: #0f0c29;
-  background-attachment: fixed;
-  background-size: cover;
+  @apply bg-[#fdf0f5] text-gray-900 font-sans overflow-x-hidden;
 }
 
-/* Gradients */
-.gradient-genz {
-  @apply bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500;
+/* Soft Card Style */
+.soft-card {
+  @apply bg-white rounded-2xl shadow-[0_2px_20px_rgba(0,0,0,0.06)] border border-pink-100/50 transition-all duration-300;
 }
 
-.gradient-text {
-  @apply bg-gradient-to-r from-pink-400 via-fuchsia-500 to-indigo-500 bg-clip-text text-transparent;
+.soft-card:hover {
+  @apply shadow-[0_8px_30px_rgba(0,0,0,0.1)] border-pink-200/80;
 }
 
-/* Glass Morphism - Gen Z Style */
-.glassmorphism {
-  @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)];
-}
-
+/* Glass Card - Warm version */
 .glass-card {
-  @apply bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] transition-all duration-300;
+  @apply bg-white/80 backdrop-blur-md border border-pink-100/60 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all duration-300;
 }
 
 .glass-card:hover {
-  @apply bg-white/15 shadow-[0_12px_40px_0_rgba(31,38,135,0.5)] border-white/30;
+  @apply bg-white shadow-[0_8px_30px_rgba(0,0,0,0.08)] border-pink-200/80;
+}
+
+/* Glassmorphism - Light warm version */
+.glassmorphism {
+  @apply bg-white/70 backdrop-blur-xl border border-pink-100/50 shadow-[0_4px_20px_rgba(0,0,0,0.06)];
+}
+
+/* Gradients - Warm palette */
+.gradient-warm {
+  @apply bg-gradient-to-r from-pink-400 via-rose-400 to-pink-500;
+}
+
+.gradient-text {
+  @apply bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 bg-clip-text text-transparent;
+}
+
+.text-gradient {
+  @apply bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent;
 }
 
 /* Animations */
 @keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(2deg); }
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.8; filter: brightness(1); }
-  50% { opacity: 1; filter: brightness(1.2) drop-shadow(0 0 20px rgba(236,72,153,0.5)); }
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
 }
 
 .animate-float {
@@ -87,32 +93,27 @@ body {
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
+  animation: pulse-glow 4s ease-in-out infinite;
 }
 
-/* Smooth Scrollbar */
+/* Smooth Scrollbar - Warm */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-black/50;
+  @apply bg-pink-50;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gradient-to-b from-indigo-500 to-pink-500 rounded-full border-2 border-black;
+  @apply bg-pink-300 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply from-indigo-400 to-pink-400;
+  @apply bg-pink-400;
 }
 
 /* Selection */
 ::selection {
-  @apply bg-pink-500 text-white;
-}
-
-/* Text */
-.text-gradient {
-  @apply bg-gradient-to-r from-pink-400 to-indigo-500 bg-clip-text text-transparent;
+  @apply bg-pink-200 text-pink-900;
 }

@@ -13,9 +13,35 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ['Inter', ...defaultTheme.fontFamily.sans],
-        serif: ['Playfair Display', 'Georgia', ...defaultTheme.fontFamily.serif],
+        serif: ['Cormorant Garamond', 'Georgia', ...defaultTheme.fontFamily.serif],
+        cursive: ['Dancing Script', 'cursive'],
       },
       colors: {
+        cream: '#fdf0f5',
+        blush: {
+          50: '#fff5f8',
+          100: '#ffe0ec',
+          200: '#ffc2d9',
+          300: '#ff94b8',
+          400: '#ff4d94',
+          500: '#e83078',
+          600: '#c4205f',
+          700: '#9c1a4e',
+        },
+        sage: {
+          50: '#f0f7f0',
+          100: '#d4e8d4',
+          200: '#a8d1a8',
+          300: '#6db56d',
+          400: '#3d8b3d',
+          500: '#1a4d2e',
+          600: '#153d24',
+          700: '#0f2e1a',
+        },
+        burgundy: {
+          DEFAULT: '#2d111a',
+          light: '#4a1e2e',
+        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: 'hsl(var(--card))',
