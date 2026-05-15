@@ -101,10 +101,41 @@ export default function CheckoutPage() {
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.firstName.trim() || !formData.phone.trim() || !formData.street.trim()) {
-      alert("Please fill all required fields")
-      return
+    
+    // Check all required fields
+    const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'street', 'city', 'state', 'postalCode'];
+    for (const field of requiredFields) {
+      if (!formData[field as keyof typeof formData]?.trim()) {
+        alert(`Please fill in your ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+        return;
+      }
     }
+
+    // Name validation (only letters and spaces)
+    const nameRegex = /^[A-Za-z\s]+$/;
+    if (!nameRegex.test(formData.firstName)) {
+      alert("First Name should only contain letters");
+      return;
+    }
+    if (!nameRegex.test(formData.lastName)) {
+      alert("Last Name should only contain letters");
+      return;
+    }
+
+    // Phone validation (exactly 10 digits)
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      alert("Please enter a valid 10-digit mobile number");
+      return;
+    }
+
+    // Email validation (simple regex to supplement HTML5)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      alert("Please enter a valid email address");
+      return;
+    }
+
     setCurrentStep("payment")
   }
 
@@ -217,8 +248,8 @@ export default function CheckoutPage() {
                 </h2>
                 <form onSubmit={handleAddressSubmit} className="space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <input type="text" placeholder="First Name *" required value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} className={inputClass} />
-                    <input type="text" placeholder="Last Name" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} className={inputClass} />
+                    <input type="text" placeholder="First Name *" required pattern="[A-Za-z\s]+" title="Only letters and spaces allowed" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} className={inputClass} />
+                    <input type="text" placeholder="Last Name *" required pattern="[A-Za-z\s]+" title="Only letters and spaces allowed" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} className={inputClass} />
                   </div>
                   <input type="email" placeholder="Email Address *" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className={inputClass} />
                   
@@ -243,15 +274,38 @@ export default function CheckoutPage() {
                         </div>
                       )}
                     </div>
-                    <input type="tel" placeholder="10-digit Phone Number *" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className={inputClass} />
+                    <input 
+                      type="tel" 
+                      placeholder="10-digit Phone Number *" 
+                      required 
+                      maxLength={10}
+                      pattern="\d{10}"
+                      title="Please enter a 10-digit mobile number"
+                      value={formData.phone} 
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        if (val.length <= 10) setFormData({...formData, phone: val});
+                      }} 
+                      className={inputClass} 
+                    />
                   </div>
 
                   <input type="text" placeholder="Street Address, House No, Area *" required value={formData.street} onChange={e => setFormData({...formData, street: e.target.value})} className={inputClass} />
                   
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                    <input type="text" placeholder="City" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className={inputClass} />
-                    <input type="text" placeholder="State" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} className={inputClass} />
-                    <input type="text" placeholder="Pincode" value={formData.postalCode} onChange={e => setFormData({...formData, postalCode: e.target.value})} className={inputClass} />
+                    <input type="text" placeholder="City *" required value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className={inputClass} />
+                    <input type="text" placeholder="State *" required value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} className={inputClass} />
+                    <input 
+                      type="text" 
+                      placeholder="Pincode *" 
+                      required 
+                      value={formData.postalCode} 
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        setFormData({...formData, postalCode: val});
+                      }} 
+                      className={inputClass} 
+                    />
                   </div>
                   
                   <button type="submit" className="w-full py-4 bg-pink-600 text-white font-bold rounded-2xl shadow-lg shadow-pink-200 hover:bg-pink-700 transition-all mt-4">Continue to Payment</button>
