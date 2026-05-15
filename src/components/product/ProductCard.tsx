@@ -77,7 +77,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       transition={{ delay: index * 0.05, duration: 0.5 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative flex flex-col h-full bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-pink-100/50 transition-all duration-300"
+      className={`group relative flex flex-col h-full bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-pink-100/50 transition-all duration-300 ${product.stock === 0 ? 'grayscale-[0.5]' : ''}`}
     >
       <Link href={`/products/${product.slug}`} className="block relative aspect-square overflow-hidden bg-pink-50/30">
         {/* Main Image */}
@@ -86,12 +86,12 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             src={mainImage.url}
             alt={mainImage.alt || product.name}
             fill
-            className={`object-cover transition-transform duration-700 ${isHovered && hoverImage ? 'opacity-0' : 'opacity-100 scale-100 group-hover:scale-105'}`}
+            className={`object-cover transition-transform duration-700 ${product.stock === 0 ? 'opacity-40' : ''} ${isHovered && hoverImage && product.stock > 0 ? 'opacity-0' : 'opacity-100 scale-100 group-hover:scale-105'}`}
           />
         )}
 
         {/* Hover Image */}
-        {hoverImage && (
+        {hoverImage && product.stock > 0 && (
           <Image
             src={hoverImage.url}
             alt={hoverImage.alt || product.name}
@@ -102,15 +102,23 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-          {product.newArrival && (
-            <span className="bg-white/90 backdrop-blur-sm text-pink-500 px-2.5 py-1 text-[10px] font-bold rounded-full shadow-sm border border-pink-100 uppercase tracking-wider">
-              NEW
+          {product.stock === 0 ? (
+            <span className="bg-gray-900/90 backdrop-blur-sm text-white px-3 py-1 text-[10px] font-bold rounded-full shadow-lg uppercase tracking-widest border border-white/20">
+              SOLD OUT
             </span>
-          )}
-          {discount > 0 && (
-            <span className="bg-pink-500 text-white px-2.5 py-1 text-[10px] font-bold rounded-full shadow-sm uppercase tracking-wider">
-              -{discount}%
-            </span>
+          ) : (
+            <>
+              {product.newArrival && (
+                <span className="bg-white/90 backdrop-blur-sm text-pink-500 px-2.5 py-1 text-[10px] font-bold rounded-full shadow-sm border border-pink-100 uppercase tracking-wider">
+                  NEW
+                </span>
+              )}
+              {discount > 0 && (
+                <span className="bg-pink-500 text-white px-2.5 py-1 text-[10px] font-bold rounded-full shadow-sm uppercase tracking-wider">
+                  -{discount}%
+                </span>
+              )}
+            </>
           )}
         </div>
 
@@ -127,18 +135,20 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         </button>
 
         {/* Quick Add Overlay */}
-        <div className={`absolute bottom-3 left-3 right-3 transition-all duration-300 transform z-10 ${isHovered && product.stock > 0 && cartQty === 0 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-          <button
-            onClick={handleAddToCart}
-            className="w-full bg-gray-900/90 backdrop-blur-sm text-white py-2.5 rounded-full font-bold text-xs flex items-center justify-center gap-2 hover:bg-pink-500 transition-colors shadow-lg"
-          >
-            <ShoppingBag size={14} />
-            ADD TO CART
-          </button>
-        </div>
+        {product.stock > 0 && (
+          <div className={`absolute bottom-3 left-3 right-3 transition-all duration-300 transform z-10 ${isHovered && cartQty === 0 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+            <button
+              onClick={handleAddToCart}
+              className="w-full bg-gray-900/90 backdrop-blur-sm text-white py-2.5 rounded-full font-bold text-xs flex items-center justify-center gap-2 hover:bg-pink-500 transition-colors shadow-lg"
+            >
+              <ShoppingBag size={14} />
+              ADD TO CART
+            </button>
+          </div>
+        )}
 
         {/* Cart Quantity Overlay */}
-        {cartQty > 0 && (
+        {cartQty > 0 && product.stock > 0 && (
           <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center z-10">
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center bg-white rounded-full shadow-lg border border-pink-100 p-1">
@@ -165,12 +175,21 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             </div>
           </div>
         )}
+
+        {/* Out of Stock Overlay Text */}
+        {product.stock === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/5">
+             <span className="bg-white/90 backdrop-blur-md text-gray-900 px-6 py-2 rounded-full font-bold text-[10px] uppercase tracking-[0.2em] shadow-xl border border-pink-100 scale-90 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300">
+                Unavailable
+             </span>
+          </div>
+        )}
       </Link>
 
       {/* Product Info */}
       <div className="p-4 flex flex-col flex-grow bg-white">
         <Link href={`/products/${product.slug}`} className="flex-grow">
-          <h3 className="text-gray-900 font-sans font-semibold text-lg leading-tight group-hover:text-pink-500 transition-colors truncate">
+          <h3 className={`font-sans font-semibold text-lg leading-tight group-hover:text-pink-500 transition-colors truncate ${product.stock === 0 ? 'text-gray-400' : 'text-gray-900'}`}>
             {product.name}
           </h3>
           <p className="text-gray-400 text-xs mt-1 font-medium">{product.category?.name || "Handmade"}</p>
@@ -179,7 +198,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         {/* Price */}
         <div className="mt-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-pink-600 font-bold text-lg">
+            <span className={`font-bold text-lg ${product.stock === 0 ? 'text-gray-300' : 'text-pink-600'}`}>
               {formatPrice(product.price)}
             </span>
             {product.originalPrice && product.originalPrice > product.price && (
@@ -188,7 +207,11 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               </span>
             )}
           </div>
-          {product.stock <= 5 && product.stock > 0 && (
+          {product.stock === 0 ? (
+            <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded">
+              SOLD
+            </span>
+          ) : product.stock <= 5 && (
             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-tighter">
               Only {product.stock} left!
             </span>

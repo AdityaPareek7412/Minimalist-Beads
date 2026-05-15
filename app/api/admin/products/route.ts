@@ -11,8 +11,22 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get("id")
+
+    if (id) {
+      const product = await prisma.product.findUnique({
+        where: { id },
+        include: {
+          images: true,
+          category: true,
+        },
+      })
+      return NextResponse.json(product)
+    }
+
     const products = await prisma.product.findMany({
       include: {
         images: true,
@@ -29,7 +43,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json()
-    const { name, price, description, categoryId, imageBase64, featured } = data
+    const { name, price, description, categoryId, imageBase64, featured, stock } = data
 
     if (!name || !price || !categoryId || !imageBase64) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -51,6 +65,7 @@ export async function POST(req: NextRequest) {
         price: parseFloat(price),
         description,
         categoryId,
+        stock: parseInt(stock) || 0,
         featured: featured || false,
         images: {
           create: [
@@ -86,6 +101,24 @@ export async function DELETE(req: NextRequest) {
     })
 
     return NextResponse.json({ success: true })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const data = await req.json()
+    const { id, stock } = data
+
+    if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 })
+
+    const product = await prisma.product.update({
+      where: { id },
+      data: { stock: parseInt(stock) || 0 },
+    })
+
+    return NextResponse.json(product)
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

@@ -70,6 +70,7 @@ export default function AdminProductsPage() {
                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Product</th>
                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Category</th>
                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Price</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Inventory</th>
                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -98,7 +99,32 @@ export default function AdminProductsPage() {
                         <div className="font-bold text-pink-600">{formatPrice(product.price)}</div>
                       </td>
                       <td className="px-6 py-4">
+                        <div className="flex flex-col gap-1">
+                          <div className="font-bold text-gray-900">{product.stock} in stock</div>
+                          {product.stock === 0 ? (
+                            <span className="text-[9px] font-bold text-red-500 uppercase tracking-wider bg-red-50 px-2 py-0.5 rounded w-fit">
+                              Out of Stock
+                            </span>
+                          ) : product.stock <= 5 ? (
+                            <span className="text-[9px] font-bold text-orange-500 uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded w-fit">
+                              Low Stock
+                            </span>
+                          ) : (
+                            <span className="text-[9px] font-bold text-green-500 uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded w-fit">
+                              Healthy
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
+                          <Link
+                            href={`/admin/products/edit/${product.id}`}
+                            className="p-2 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-all"
+                            title="Edit Inventory"
+                          >
+                            <Edit className="w-5 h-5" />
+                          </Link>
                           <button
                             onClick={() => handleDelete(product.id)}
                             className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
@@ -107,7 +133,7 @@ export default function AdminProductsPage() {
                             <Trash2 className="w-5 h-5" />
                           </button>
                           <a
-                            href={`/product/${product.slug}`}
+                            href={`/products/${product.slug}`}
                             target="_blank"
                             className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
                             title="View on site"

@@ -8,6 +8,7 @@ import Link from "next/link"
 export default function AddProductPage() {
   const [name, setName] = useState("")
   const [price, setPrice] = useState("")
+  const [stock, setStock] = useState("0")
   const [description, setDescription] = useState("")
   const [categoryId, setCategoryId] = useState("")
   const [categories, setCategories] = useState<any[]>([])
@@ -42,7 +43,15 @@ export default function AddProductPage() {
       const res = await fetch("/api/admin/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, price, description, categoryId, imageBase64: image, featured: isFeatured }),
+        body: JSON.stringify({ 
+          name, 
+          price, 
+          stock,
+          description, 
+          categoryId, 
+          imageBase64: image, 
+          featured: isFeatured 
+        }),
       })
 
       const data = await res.json()
@@ -125,16 +134,29 @@ export default function AddProductPage() {
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Price (₹)</label>
-                  <input
-                    type="number"
-                    required
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="499"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Price (₹)</label>
+                    <input
+                      type="number"
+                      required
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      placeholder="499"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Stock Level</label>
+                    <input
+                      type="number"
+                      required
+                      value={stock}
+                      onChange={(e) => setStock(e.target.value)}
+                      placeholder="10"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">Category</label>
