@@ -1,6 +1,6 @@
 import { HeroSection } from "@/components/sections/HeroSection"
 import { FeaturedProducts } from "@/components/sections/FeaturedProducts"
-import { CategoriesSection } from "@/components/sections/CategoriesSection"
+import { AestheticStory } from "@/components/sections/AestheticStory"
 import { WhyChooseUs } from "@/components/sections/WhyChooseUs"
 import { NewsletterSection } from "@/components/sections/NewsletterSection"
 import prisma from "@/lib/prisma"
@@ -14,17 +14,6 @@ export default async function Home() {
     take: 8
   })
 
-  const categories = await prisma.category.findMany({
-    orderBy: { order: 'asc' }
-  })
-
-  // Map categories to match the expected UI structure
-  const formattedCategories = categories.map((cat) => ({
-    ...cat,
-    image: "https://images.unsplash.com/photo-1599643478702-ccff6cb355ef?w=300&h=300&fit=crop", // Fallback images
-    icon: cat.icon || "✨",
-  }))
-
   return (
     <>
       <HeroSection />
@@ -33,7 +22,7 @@ export default async function Home() {
         title="Featured Collection"
         description="Handpicked pieces for your aesthetic"
       />
-      <CategoriesSection categories={JSON.parse(JSON.stringify(formattedCategories))} />
+      <AestheticStory />
       <WhyChooseUs />
       <NewsletterSection />
     </>
