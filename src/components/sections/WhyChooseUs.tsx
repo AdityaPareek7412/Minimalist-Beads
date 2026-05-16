@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Truck, Leaf, Heart, Sparkles } from "lucide-react"
+import { Heart, Sparkles, CreditCard, ShieldCheck } from "lucide-react"
 
 export function WhyChooseUs() {
   const [settings, setSettings] = useState({ freeShippingLimit: 500 })
@@ -18,24 +18,24 @@ export function WhyChooseUs() {
 
   const features = [
     {
-      icon: Truck,
-      title: "Fast Shipping",
-      description: `Free delivery on orders above ₹${settings.freeShippingLimit}. Delivered in 3-5 business days.`,
+      icon: Sparkles,
+      title: "Aesthetic Packaging",
+      description: "Every order is packed like a gift, perfect for unboxing and sharing with your community.",
     },
     {
-      icon: Leaf,
-      title: "Eco-Friendly",
-      description: "Sustainable packaging and ethical sourcing of all materials.",
+      icon: CreditCard,
+      title: "Secure Payments",
+      description: "Safe and encrypted transactions with multiple options including UPI, Cards, and Net Banking.",
     },
     {
       icon: Heart,
       title: "Handmade with Love",
-      description: "Each piece is carefully crafted by skilled artisans.",
+      description: "Each piece is carefully crafted by hand, ensuring a personal touch in every bead.",
     },
     {
-      icon: Sparkles,
+      icon: ShieldCheck,
       title: "Premium Quality",
-      description: "Only the finest materials used in our collections.",
+      description: "Only the finest materials and aesthetic designs used in our curated collections.",
     },
   ]
 

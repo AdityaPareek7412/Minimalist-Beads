@@ -46,11 +46,13 @@ export function Header() {
   }
 
   const navItems = [
-    { name: "Resin Art", href: "/shop?category=resin-art" },
-    { name: "Aesthetic Rings", href: "/shop?category=aesthetic-rings" },
-    { name: "Handmade", href: "/shop?category=handmade-charms" },
-    { name: "Limited Drops", href: "/shop?category=limited-drops" },
-    { name: "All Products", href: "/shop" },
+    { name: "Shop all", href: "/shop" },
+    { name: "Charms", href: "/shop?category=charms" },
+    { name: "Chains", href: "/shop?category=chains" },
+    { name: "Beads", href: "/shop?category=beads" },
+    { name: "Rings", href: "/shop?category=rings" },
+    { name: "Keychain Clasp", href: "/shop?category=keychain-clasp" },
+    { name: "Clearance Sale", href: "/shop?category=clearance-sale" },
   ]
 
   return (

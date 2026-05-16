@@ -14,13 +14,15 @@ export default async function Home() {
     take: 8
   })
 
-  const categories = await prisma.category.findMany()
+  const categories = await prisma.category.findMany({
+    orderBy: { order: 'asc' }
+  })
 
   // Map categories to match the expected UI structure
-  const formattedCategories = categories.map((cat, index) => ({
+  const formattedCategories = categories.map((cat) => ({
     ...cat,
     image: "https://images.unsplash.com/photo-1599643478702-ccff6cb355ef?w=300&h=300&fit=crop", // Fallback images
-    icon: ["🖤", "🌸", "✨", "💎", "⭐"][index % 5],
+    icon: cat.icon || "✨",
   }))
 
   return (
