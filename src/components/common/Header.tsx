@@ -181,6 +181,8 @@ export function Header() {
           )}
         </AnimatePresence>
 
+      </div>
+
       {/* NEW LUXURY MOBILE SIDEBAR */}
       <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </header>
