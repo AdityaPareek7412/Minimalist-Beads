@@ -134,7 +134,7 @@ export function HeroSection() {
             className="px-10 py-4 bg-white/40 backdrop-blur-md text-gray-600 font-bold rounded-full hover:bg-white/80 transition-all duration-300 flex items-center justify-center gap-3 w-full sm:w-auto border border-pink-100 text-xs uppercase tracking-[0.2em]"
           >
             <Instagram className="w-4 h-4" />
-            Follow Vibe
+            Follow Vibe on IG
           </a>
         </motion.div>
 
