@@ -60,6 +60,34 @@ const FloatingCharm = ({ children, delay = 0, duration = 8, xRange = [0, 15], yR
   </motion.div>
 )
 
+// NEW: Premium Jewelry Charm Decoration
+const JewelryCharmDecoration = ({ emoji, className, delay = 0 }: { emoji: string, className: string, delay?: number }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.5 }}
+    animate={{ 
+      opacity: [0.2, 0.5, 0.2],
+      y: [0, -40, 0],
+      x: [0, 20, 0],
+      rotate: [0, 360],
+      scale: [1, 1.1, 1]
+    }}
+    transition={{ 
+      duration: 15 + Math.random() * 10,
+      repeat: Infinity,
+      delay,
+      ease: "linear"
+    }}
+    className={`absolute pointer-events-none hidden lg:block select-none ${className}`}
+  >
+    <div className="relative group">
+      <span className="text-3xl md:text-4xl drop-shadow-[0_10px_10px_rgba(255,182,193,0.3)] filter contrast-[1.1] saturate-[1.2]">
+        {emoji}
+      </span>
+      <div className="absolute inset-0 bg-pink-300/10 blur-xl rounded-full scale-150 -z-10" />
+    </div>
+  </motion.div>
+)
+
 export function HeroSection() {
   const { scrollY } = useScroll()
   const yBg = useTransform(scrollY, [0, 1000], [0, 200])
@@ -73,6 +101,16 @@ export function HeroSection() {
         <motion.div style={{ y: yBg }} className="absolute -bottom-1/4 -left-1/4 w-[700px] h-[700px] bg-rose-100/50 rounded-full blur-[120px]" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-50/40 rounded-full blur-[160px]" />
       </div>
+
+      {/* Floating Jewelry 'Universe' Decorations */}
+      <JewelryCharmDecoration emoji="💎" className="top-[10%] left-[5%]" delay={0} />
+      <JewelryCharmDecoration emoji="💍" className="top-[40%] right-[3%]" delay={2} />
+      <JewelryCharmDecoration emoji="⚪" className="bottom-[15%] left-[8%]" delay={4} />
+      <JewelryCharmDecoration emoji="⭐" className="top-[25%] left-[15%] scale-75 opacity-30" delay={1} />
+      <JewelryCharmDecoration emoji="🌸" className="bottom-[30%] right-[12%]" delay={3} />
+      <JewelryCharmDecoration emoji="🎀" className="top-[15%] right-[20%]" delay={5} />
+      <JewelryCharmDecoration emoji="✨" className="bottom-[10%] right-[5%] scale-110" delay={6} />
+      <JewelryCharmDecoration emoji="💖" className="top-[50%] left-[2%] opacity-40" delay={7} />
 
       {/* Curated Aesthetic Floating Elements */}
       <FloatingCharm className="top-[12%] left-[8%] text-pink-300" delay={0} duration={10}>
