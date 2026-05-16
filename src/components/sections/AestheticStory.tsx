@@ -59,6 +59,11 @@ export function AestheticStory() {
 
           {/* Visual Elements - Owner's Photo */}
           <div className="order-1 lg:order-2 relative">
+            {/* Background Watermark */}
+            <div className="absolute -top-10 -left-20 text-[10rem] font-serif font-black text-pink-50/50 select-none pointer-events-none uppercase tracking-widest hidden xl:block">
+              Minimalist
+            </div>
+
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -99,6 +104,18 @@ export function AestheticStory() {
                   </div>
                 </div>
               </motion.div>
+
+              {/* Floating Aesthetic Beads */}
+              <motion.div
+                animate={{ x: [0, 10, 0], y: [0, -15, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-1/4 -left-8 w-12 h-12 bg-pink-100 rounded-full blur-[1px] opacity-60 z-20 hidden lg:block"
+              />
+              <motion.div
+                animate={{ x: [0, -15, 0], y: [0, 20, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute bottom-1/4 -right-6 w-8 h-8 bg-rose-100 rounded-full blur-[1px] opacity-40 z-20 hidden lg:block"
+              />
 
               {/* Aesthetic Floating Card */}
               <motion.div
