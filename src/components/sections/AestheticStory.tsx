@@ -21,26 +21,30 @@ export function AestheticStory() {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-pink-50 rounded-full text-pink-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-8">
               <Sparkles size={12} />
-              The Founder's Story
+              From our founder
             </div>
             
             <h2 className="text-5xl md:text-7xl font-serif font-bold text-[#2d111a] mb-8 leading-[1.1]">
-              Crafting <br /> 
-              <span className="italic font-light text-pink-400">Pure Intentions.</span>
+              Built with <br /> 
+              <span className="italic font-light text-pink-400">Never Giving Up.</span>
             </h2>
             
-            <p className="text-gray-500 text-lg mb-10 leading-relaxed max-w-lg font-light">
-              "Minimalist Beads started with a simple thought: that beauty shouldn't be loud. 
-              It should be felt. As the founder, I personally hand-pick every bead and design 
-              every piece to ensure it carries a vibe of peace and elegance."
-            </p>
+            <div className="space-y-6 mb-10">
+              <p className="text-gray-500 text-lg leading-relaxed max-w-lg font-light">
+                Welcome to Minimalist beads, a business which built after failing so many times and never giving up. 
+                It was once a girlie’s dream who never wanted to do a 9-5 and create something out of the box.
+              </p>
+              <p className="text-gray-900 font-medium text-lg leading-relaxed max-w-lg font-serif italic">
+                "Shop freely, everything is handpicked and chose by founder."
+              </p>
+            </div>
 
             <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
               <Link 
                 href="/shop" 
                 className="inline-flex items-center justify-center px-10 py-4 bg-[#2d111a] text-white rounded-full font-semibold hover:bg-pink-600 transition-all group shadow-xl shadow-pink-900/10"
               >
-                Shop the Founder's Picks
+                Explore Sangeeta's Picks
                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
               
@@ -62,36 +66,36 @@ export function AestheticStory() {
               viewport={{ once: true }}
               className="relative"
             >
-              {/* Main Image - Owner */}
-              <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl shadow-pink-200 aspect-[4/5] border-8 border-white">
+              {/* Main Image - Aesthetic Background Photo */}
+              <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl shadow-pink-200 aspect-[4/5] border-8 border-white bg-pink-50">
                 <img 
                   src="/images/owner.jpg" 
-                  alt="Founder of Minimalist Beads" 
+                  alt="Aesthetic Jewelry" 
                   className="w-full h-full object-cover scale-105 hover:scale-100 transition-transform duration-1000"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2d111a]/40 via-transparent to-transparent" />
                 
                 {/* Overlay Badge */}
                 <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 shadow-lg">
-                  <p className="text-[#2d111a] font-serif font-bold text-lg">Aditya Pareek</p>
-                  <p className="text-pink-500 text-[10px] font-bold uppercase tracking-widest">Founder & Designer</p>
+                  <p className="text-[#2d111a] font-serif font-bold text-lg">Sangeeta🌸</p>
+                  <p className="text-pink-500 text-[10px] font-bold uppercase tracking-widest">Founder & Visionary</p>
                 </div>
               </div>
 
-              {/* Decorative Detail Circle */}
+              {/* Decorative Detail Circle - Sangeeta's Photo */}
               <motion.div
                 animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-12 -right-12 w-48 h-48 bg-white rounded-full p-3 shadow-2xl z-20 hidden xl:block border border-pink-50"
+                className="absolute -top-12 -right-12 w-56 h-56 bg-white rounded-full p-4 shadow-2xl z-20 hidden xl:block border border-pink-50"
               >
                 <div className="w-full h-full rounded-full overflow-hidden relative group">
                   <img 
-                    src="https://images.unsplash.com/photo-1599643478702-ccff6cb355ef?w=400&h=400&fit=crop" 
-                    alt="Detail" 
+                    src="/images/sangeeta.jpg" 
+                    alt="Sangeeta - Founder" 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 flex items-center justify-center bg-[#2d111a]/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-white font-serif italic">Detail</span>
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#2d111a]/10 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-white font-serif italic text-lg shadow-sm">Founder</span>
                   </div>
                 </div>
               </motion.div>
@@ -109,7 +113,7 @@ export function AestheticStory() {
                   <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Our Vibe</span>
                 </div>
                 <p className="text-[#2d111a] font-serif italic text-lg leading-snug">
-                  "Every bead tells a story of serenity."
+                  "Every bead is handpicked with soul."
                 </p>
               </motion.div>
 
