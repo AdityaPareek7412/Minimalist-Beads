@@ -89,9 +89,9 @@ export function AestheticStory() {
 
               {/* Decorative Detail Circle - Sangeeta's Photo */}
               <motion.div
-                animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
+                animate={{ y: [0, -10, 0], rotate: [0, 5, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-12 -right-12 w-56 h-56 bg-white rounded-full p-4 shadow-2xl z-20 hidden xl:block border border-pink-50"
+                className="absolute -top-6 -right-6 md:-top-12 md:-right-12 w-32 h-32 md:w-48 xl:w-56 xl:h-56 bg-white rounded-full p-2 md:p-4 shadow-2xl z-20 border border-pink-50"
               >
                 <div className="w-full h-full rounded-full overflow-hidden relative group">
                   <img 
@@ -100,7 +100,7 @@ export function AestheticStory() {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-[#2d111a]/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-white font-serif italic text-lg shadow-sm">Founder</span>
+                    <span className="text-white font-serif italic text-xs md:text-lg shadow-sm">Founder</span>
                   </div>
                 </div>
               </motion.div>
