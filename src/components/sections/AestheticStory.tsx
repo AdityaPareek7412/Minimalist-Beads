@@ -66,11 +66,11 @@ export function AestheticStory() {
               viewport={{ once: true }}
               className="relative"
             >
-              {/* Main Image - Aesthetic Background Photo */}
+              {/* Main Image - Aesthetic Craftsmanship Photo */}
               <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl shadow-pink-200 aspect-[4/5] border-8 border-white bg-pink-50">
                 <img 
-                  src="/images/owner.jpg" 
-                  alt="Aesthetic Jewelry" 
+                  src="https://images.unsplash.com/photo-1611085583191-a3b1a296774e?w=800&h=1000&fit=crop" 
+                  alt="Minimalist Beads Craftsmanship" 
                   className="w-full h-full object-cover scale-105 hover:scale-100 transition-transform duration-1000"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2d111a]/40 via-transparent to-transparent" />
