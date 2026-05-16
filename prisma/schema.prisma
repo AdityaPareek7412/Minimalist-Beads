@@ -297,7 +297,16 @@ model Coupon {
   @@index([active])
 }
 
-// Enums
+// General Site Reviews / Testimonials
+model GeneralReview {
+  id        String   @id @default(cuid())
+  name      String
+  rating    Int      @default(5)
+  comment   String
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
 // Site Settings model
 model SiteSettings {
   id                String   @id @default("default")

@@ -1,44 +1,75 @@
-// src/components/sections/ReviewsSection.tsx
 "use client"
-import { motion } from "framer-motion"
-import { Star, Quote, CheckCircle } from "lucide-react"
+import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Star, Quote, CheckCircle, X, Send } from "lucide-react"
 
-const REVIEWS = [
+const STATIC_REVIEWS = [
   {
-    id: 1,
+    id: "static-1",
     name: "Isha V.",
-    text: "The quality is absolutely insane! I've been wearing my custom charm bracelet every day and it still looks brand new. Best Gen-Z jewelry brand out there! ✨",
+    comment: "The quality is absolutely insane! I've been wearing my custom charm bracelet every day and it still looks brand new. Best Gen-Z jewelry brand out there! ✨",
     rating: 5,
-    location: "Mumbai",
-    date: "2 days ago"
+    createdAt: new Date().toISOString()
   },
   {
-    id: 2,
+    id: "static-2",
     name: "Ananya R.",
-    text: "Literally obsessed with the soft gothic vibe. The packaging was so aesthetic, it felt like a luxury gift to myself. 🎀",
+    comment: "Literally obsessed with the soft gothic vibe. The packaging was so aesthetic, it felt like a luxury gift to myself. 🎀",
     rating: 5,
-    location: "Delhi",
-    date: "1 week ago"
-  },
-  {
-    id: 3,
-    name: "Sneha K.",
-    text: "The attention to detail in these beads is unmatched. You can really feel the love Sangeeta puts into every piece. Highly recommend! 🌸",
-    rating: 5,
-    location: "Bangalore",
-    date: "3 days ago"
-  },
-  {
-    id: 4,
-    name: "Mehak S.",
-    text: "Fast shipping and such a cute collection. Finally found a brand that matches my Pinterest aesthetic perfectly! ☁️",
-    rating: 5,
-    location: "Jaipur",
-    date: "5 days ago"
+    createdAt: new Date().toISOString()
   }
 ]
 
 export function ReviewsSection() {
+  const [reviews, setReviews] = useState<any[]>([])
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  
+  // Form State
+  const [formData, setFormData] = useState({
+    name: "",
+    rating: 5,
+    comment: ""
+  })
+
+  useEffect(() => {
+    fetch("/api/general-reviews")
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setReviews([...STATIC_REVIEWS, ...data])
+        } else {
+          setReviews(STATIC_REVIEWS)
+        }
+      })
+      .catch(() => setReviews(STATIC_REVIEWS))
+  }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      const res = await fetch("/api/general-reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      })
+      if (res.ok) {
+        setSubmitted(true)
+        setTimeout(() => {
+          setIsModalOpen(false)
+          setSubmitted(false)
+          setFormData({ name: "", rating: 5, comment: "" })
+        }, 3000)
+      }
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8 bg-[#2d111a]/[0.02] relative overflow-hidden">
       {/* Decorative Background Elements */}
@@ -70,8 +101,8 @@ export function ReviewsSection() {
         </div>
 
         {/* Reviews Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {REVIEWS.map((review, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {reviews.map((review, index) => (
             <motion.div
               key={review.id}
               initial={{ opacity: 0, y: 30 }}
@@ -91,7 +122,7 @@ export function ReviewsSection() {
               </div>
 
               <p className="text-gray-600 font-light leading-relaxed mb-8 flex-1 italic">
-                "{review.text}"
+                "{review.comment}"
               </p>
 
               <div className="pt-6 border-t border-pink-50 flex items-center justify-between">
@@ -101,10 +132,9 @@ export function ReviewsSection() {
                     <CheckCircle size={14} className="text-green-500" />
                   </h4>
                   <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-1">
-                    Verified Buyer • {review.location}
+                    Verified Buyer
                   </p>
                 </div>
-                <span className="text-[10px] text-pink-300 font-medium">{review.date}</span>
               </div>
             </motion.div>
           ))}
@@ -123,12 +153,115 @@ export function ReviewsSection() {
             <h3 className="text-2xl md:text-3xl font-serif text-white mb-6">
               Have something beautiful to say?
             </h3>
-            <button className="bg-white text-[#2d111a] px-10 py-4 rounded-full font-bold hover:bg-pink-50 transition-colors shadow-lg">
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="bg-white text-[#2d111a] px-10 py-4 rounded-full font-bold hover:bg-pink-50 transition-colors shadow-lg"
+            >
               Write a Review
             </button>
           </div>
         </motion.div>
       </div>
+
+      {/* Review Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="absolute inset-0 bg-[#2d111a]/80 backdrop-blur-md"
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden"
+            >
+              <div className="p-8 md:p-10">
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="absolute top-6 right-6 p-2 hover:bg-pink-50 rounded-full transition"
+                >
+                  <X size={20} className="text-gray-400" />
+                </button>
+
+                {submitted ? (
+                  <div className="py-12 text-center">
+                    <div className="w-20 h-20 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <CheckCircle size={40} className="text-pink-500" />
+                    </div>
+                    <h3 className="text-2xl font-serif font-bold text-[#2d111a] mb-2">Thank you!</h3>
+                    <p className="text-gray-500">Your review has been submitted for approval 🌸</p>
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="text-3xl font-serif font-bold text-[#2d111a] mb-2 text-center">Share the Love</h3>
+                    <p className="text-gray-500 text-center mb-8 font-light">Tell us about your experience</p>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 ml-4">Your Name</label>
+                        <input 
+                          required
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) => setFormData({...formData, name: e.target.value})}
+                          placeholder="How should we call you?"
+                          className="w-full bg-pink-50/50 border border-pink-100 rounded-2xl px-6 py-4 outline-none focus:border-pink-400 transition"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 ml-4">Rating</label>
+                        <div className="flex gap-2 ml-4">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setFormData({...formData, rating: star})}
+                              className="focus:outline-none transition-transform active:scale-90"
+                            >
+                              <Star 
+                                size={24} 
+                                className={star <= formData.rating ? "fill-pink-400 text-pink-400" : "text-pink-100"} 
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 ml-4">Your Story</label>
+                        <textarea 
+                          required
+                          rows={4}
+                          value={formData.comment}
+                          onChange={(e) => setFormData({...formData, comment: e.target.value})}
+                          placeholder="Tell us about your beautiful purchase..."
+                          className="w-full bg-pink-50/50 border border-pink-100 rounded-2xl px-6 py-4 outline-none focus:border-pink-400 transition resize-none"
+                        />
+                      </div>
+
+                      <button 
+                        disabled={loading}
+                        type="submit"
+                        className="w-full bg-[#2d111a] text-white py-5 rounded-2xl font-bold hover:bg-pink-600 transition-all flex items-center justify-center gap-2 shadow-xl shadow-pink-900/10 disabled:opacity-50"
+                      >
+                        {loading ? "Sending..." : "Submit Review"}
+                        <Send size={18} />
+                      </button>
+                    </form>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }
