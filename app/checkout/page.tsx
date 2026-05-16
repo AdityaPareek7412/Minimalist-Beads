@@ -350,7 +350,8 @@ export default function CheckoutPage() {
                   <div className="p-2 bg-pink-50 rounded-full text-pink-500"><Lock size={20} /></div>
                   Payment Selection
                 </h2>
-                <div className="space-y-4"                  <label className={`p-6 border rounded-2xl cursor-pointer flex items-center gap-4 transition-all border-pink-500 bg-pink-50/50`}>
+                <div className="space-y-4">
+                  <label className={`p-6 border rounded-2xl cursor-pointer flex items-center gap-4 transition-all border-pink-500 bg-pink-50/50`}>
                     <input type="radio" checked={true} readOnly className="w-5 h-5 text-pink-600 focus:ring-pink-500" />
                     <div className="flex-1">
                       <p className="font-bold text-gray-900 flex items-center gap-2">Pay Online (Razorpay) <span className="text-[10px] bg-blue-50 text-blue-500 px-2 py-0.5 rounded uppercase tracking-widest">Secure</span></p>
@@ -358,7 +359,6 @@ export default function CheckoutPage() {
                     </div>
                     <CreditCard size={24} className="text-pink-300" />
                   </label>
-bel>
 
                   <div className="flex flex-col sm:flex-row gap-4 pt-8">
                     <button onClick={() => setCurrentStep("address")} className="flex-1 py-4 border border-pink-100 font-bold rounded-full text-gray-400 hover:bg-pink-50 transition-all uppercase tracking-widest text-xs">Back</button>
