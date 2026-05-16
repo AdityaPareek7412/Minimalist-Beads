@@ -69,21 +69,22 @@ export function AestheticStory() {
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1 }}
               viewport={{ once: true }}
-              className="relative"
+              className="relative w-full h-full"
             >
               {/* Main Image - Aesthetic Craftsmanship Photo */}
-              <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl shadow-pink-200 aspect-[4/5] border-8 border-white bg-pink-50">
+              <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl shadow-pink-200 aspect-[4/5] w-full border-8 border-white bg-pink-50 min-h-[400px]">
                 <img 
                   src="https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=800&q=80" 
                   alt="Minimalist Beads Craftsmanship" 
-                  className="w-full h-full object-cover scale-105 hover:scale-100 transition-transform duration-1000"
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="eager"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2d111a]/40 via-transparent to-transparent" />
                 
                 {/* Overlay Badge */}
-                <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/20 shadow-lg">
-                  <p className="text-[#2d111a] font-serif font-bold text-lg">Sangeeta🌸</p>
-                  <p className="text-pink-500 text-[10px] font-bold uppercase tracking-widest">Founder & Visionary</p>
+                <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8 bg-white/90 backdrop-blur-md px-4 py-3 md:px-6 md:py-4 rounded-2xl border border-white/20 shadow-lg z-20">
+                  <p className="text-[#2d111a] font-serif font-bold text-base md:text-lg">Sangeeta🌸</p>
+                  <p className="text-pink-500 text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Founder & Visionary</p>
                 </div>
               </div>
 
@@ -91,13 +92,13 @@ export function AestheticStory() {
               <motion.div
                 animate={{ y: [0, -10, 0], rotate: [0, 5, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-12 -right-2 md:-top-16 md:-right-12 w-32 h-32 md:w-48 md:h-48 xl:w-56 xl:h-56 aspect-square bg-white rounded-full p-2 md:p-4 shadow-2xl z-30 border border-pink-50"
+                className="absolute -top-12 -right-2 md:-top-16 md:-right-12 w-32 h-32 md:w-48 md:h-48 xl:w-56 xl:h-56 aspect-square bg-white rounded-full p-2 md:p-4 shadow-2xl z-[30] border border-pink-50 flex items-center justify-center"
               >
-                <div className="w-full h-full rounded-full overflow-hidden relative">
+                <div className="w-full h-full rounded-full overflow-hidden relative shadow-inner">
                   <img 
                     src="/images/sangeeta.jpg" 
                     alt="Sangeeta - Founder" 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover block"
                     loading="eager"
                   />
                 </div>

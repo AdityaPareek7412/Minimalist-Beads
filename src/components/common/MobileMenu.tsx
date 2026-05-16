@@ -87,7 +87,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               </div>
 
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto px-6 py-8 space-y-10 custom-scrollbar">
+              <div className="flex-1 overflow-y-auto px-6 pt-24 pb-12 space-y-10 custom-scrollbar">
                 {/* Explore Section */}
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-pink-400/60 mb-6">Explore</p>
