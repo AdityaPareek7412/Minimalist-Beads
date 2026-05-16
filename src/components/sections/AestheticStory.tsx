@@ -52,7 +52,7 @@ export function AestheticStory() {
                 <div className="w-10 h-10 bg-pink-50 rounded-full flex items-center justify-center text-pink-500">
                   <Heart size={20} fill="currentColor" />
                 </div>
-                <span className="text-sm font-serif italic text-gray-400">Handmade with care</span>
+                <span className="text-sm font-serif italic text-gray-400">Thoughtfully Curated Accessories</span>
               </div>
             </div>
           </motion.div>

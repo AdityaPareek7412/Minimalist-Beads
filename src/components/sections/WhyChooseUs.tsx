@@ -29,8 +29,8 @@ export function WhyChooseUs() {
     },
     {
       icon: Heart,
-      title: "Handmade with Love",
-      description: "Each piece is carefully crafted by hand, ensuring a personal touch in every bead.",
+      title: "Curated for Your Universe",
+      description: "Pieces chosen to match your aesthetic, mood, and little obsessions.",
     },
     {
       icon: ShieldCheck,
