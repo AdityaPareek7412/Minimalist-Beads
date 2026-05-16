@@ -434,7 +434,7 @@ export default function CheckoutPage() {
 
               <div className="p-5 bg-pink-50/50 rounded-[1.5rem] border border-pink-100/50">
                 <p className="text-[9px] text-pink-500 font-bold text-center uppercase tracking-widest leading-relaxed">
-                  ✨ Handcrafted magic takes 7-12 days to reach its new home.
+                  ✨ Charms magic takes 7-12 days to reach its new home.
                 </p>
               </div>
             </div>

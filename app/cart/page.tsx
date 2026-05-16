@@ -12,7 +12,7 @@ import { formatPrice } from "@/lib/utils/helpers"
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getCartTotal } = useCart()
-  const [settings, setSettings] = useState({ shippingFee: 50, freeShippingLimit: 500 })
+  const [settings, setSettings] = useState({ shippingFee: 80, freeShippingLimit: 500 })
 
   useEffect(() => {
     fetch("/api/admin/settings")
@@ -39,7 +39,7 @@ export default function CartPage() {
           <div className="text-center py-24 bg-white rounded-[2rem] border border-pink-100 shadow-sm">
             <div className="text-6xl mb-6 opacity-20">🛍️</div>
             <h2 className="text-2xl font-serif font-bold text-gray-900 mb-4">Your bag is lonely</h2>
-            <p className="text-gray-400 mb-10 max-w-xs mx-auto">Add some handcrafted magic to your collection and make it smile.</p>
+            <p className="text-gray-400 mb-10 max-w-xs mx-auto">Add some Charms magic to your collection and make it smile.</p>
             <Link
               href="/shop"
               className="inline-flex items-center gap-2 px-10 py-4 bg-gray-900 text-white rounded-full font-bold text-xs uppercase tracking-widest hover:bg-pink-600 transition-all shadow-lg"
