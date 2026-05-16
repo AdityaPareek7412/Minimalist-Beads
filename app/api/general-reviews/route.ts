@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma"
 
 export async function GET() {
   try {
-    const reviews = await prisma.generalReview.findMany({
+    const reviews = await (prisma as any).generalReview.findMany({
       where: { approved: true },
       orderBy: { createdAt: 'desc' },
       take: 12
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    const review = await prisma.generalReview.create({
+    const review = await (prisma as any).generalReview.create({
       data: {
         name,
         rating: Number(rating),
