@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         name,
         rating: Number(rating),
         comment,
-        approved: false // Set to false by default, admin needs to approve
+        approved: true // Set to true to show immediately
       }
     })
 
