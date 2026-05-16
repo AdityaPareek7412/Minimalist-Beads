@@ -49,7 +49,7 @@ export function Footer() {
             <h4 className="text-sm font-semibold mb-4 tracking-wide text-pink-300 uppercase">Support</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/faq" className="text-pink-200/70 hover:text-white transition">
+                <Link href="/contact" className="text-pink-200/70 hover:text-white transition">
                   Contact Us
                 </Link>
               </li>
