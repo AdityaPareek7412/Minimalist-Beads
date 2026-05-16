@@ -2,6 +2,7 @@ import { HeroSection } from "@/components/sections/HeroSection"
 import { FeaturedProducts } from "@/components/sections/FeaturedProducts"
 import { AestheticStory } from "@/components/sections/AestheticStory"
 import { WhyChooseUs } from "@/components/sections/WhyChooseUs"
+import { ReviewsSection } from "@/components/sections/ReviewsSection"
 import { NewsletterSection } from "@/components/sections/NewsletterSection"
 import prisma from "@/lib/prisma"
 
@@ -24,6 +25,7 @@ export default async function Home() {
       />
       <AestheticStory />
       <WhyChooseUs />
+      <ReviewsSection />
       <NewsletterSection />
     </>
   )
