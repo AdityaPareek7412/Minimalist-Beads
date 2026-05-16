@@ -8,7 +8,7 @@ import { ArrowRight, Sparkles, Heart } from "lucide-react"
 
 export function AestheticStory() {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white overflow-hidden relative">
+    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white relative">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
           {/* Text Content */}
@@ -60,7 +60,7 @@ export function AestheticStory() {
           {/* Visual Elements - Owner's Photo */}
           <div className="order-1 lg:order-2 relative">
             {/* Background Watermark */}
-            <div className="absolute -top-10 -left-20 text-[10rem] font-serif font-black text-pink-50/50 select-none pointer-events-none uppercase tracking-widest hidden xl:block">
+            <div className="absolute -top-10 -left-20 text-[10rem] font-serif font-black text-pink-50/10 select-none pointer-events-none uppercase tracking-widest hidden xl:block">
               Minimalist
             </div>
 
@@ -74,7 +74,7 @@ export function AestheticStory() {
               {/* Main Image - Aesthetic Craftsmanship Photo */}
               <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl shadow-pink-200 aspect-[4/5] border-8 border-white bg-pink-50">
                 <img 
-                  src="https://images.unsplash.com/photo-1611085583191-a3b1a296774e?w=800&h=1000&fit=crop" 
+                  src="https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=800&q=80" 
                   alt="Minimalist Beads Craftsmanship" 
                   className="w-full h-full object-cover scale-105 hover:scale-100 transition-transform duration-1000"
                 />
@@ -91,17 +91,14 @@ export function AestheticStory() {
               <motion.div
                 animate={{ y: [0, -10, 0], rotate: [0, 5, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-6 -right-6 md:-top-12 md:-right-12 w-32 h-32 md:w-48 xl:w-56 xl:h-56 bg-white rounded-full p-2 md:p-4 shadow-2xl z-20 border border-pink-50"
+                className="absolute -top-8 -right-4 md:-top-12 md:-right-12 w-32 h-32 md:w-48 xl:w-56 xl:h-56 bg-white rounded-full p-2 md:p-4 shadow-2xl z-20 border border-pink-50"
               >
-                <div className="w-full h-full rounded-full overflow-hidden relative group">
+                <div className="w-full h-full rounded-full overflow-hidden relative">
                   <img 
                     src="/images/sangeeta.jpg" 
                     alt="Sangeeta - Founder" 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 flex items-center justify-center bg-[#2d111a]/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-white font-serif italic text-xs md:text-lg shadow-sm">Founder</span>
-                  </div>
                 </div>
               </motion.div>
 
