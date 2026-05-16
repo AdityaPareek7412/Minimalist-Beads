@@ -120,7 +120,7 @@ export function AestheticStory() {
               <motion.div
                 animate={{ y: [0, 15, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="absolute -bottom-6 -left-12 bg-white p-6 rounded-[2rem] shadow-xl z-20 hidden md:block border border-pink-50 min-w-[200px]"
+                className="absolute -bottom-10 -left-28 bg-white p-6 rounded-[2rem] shadow-xl z-20 hidden md:block border border-pink-50 min-w-[200px]"
               >
                 <div className="flex items-center gap-4 mb-3">
                   <div className="w-8 h-8 bg-sage-50 rounded-lg flex items-center justify-center text-sage-500">
