@@ -91,13 +91,14 @@ export function AestheticStory() {
               <motion.div
                 animate={{ y: [0, -10, 0], rotate: [0, 5, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-8 -right-4 md:-top-12 md:-right-12 w-32 h-32 md:w-48 xl:w-56 xl:h-56 bg-white rounded-full p-2 md:p-4 shadow-2xl z-20 border border-pink-50"
+                className="absolute -top-12 -right-2 md:-top-16 md:-right-12 w-32 h-32 md:w-48 md:h-48 xl:w-56 xl:h-56 aspect-square bg-white rounded-full p-2 md:p-4 shadow-2xl z-30 border border-pink-50"
               >
                 <div className="w-full h-full rounded-full overflow-hidden relative">
                   <img 
                     src="/images/sangeeta.jpg" 
                     alt="Sangeeta - Founder" 
                     className="w-full h-full object-cover"
+                    loading="eager"
                   />
                 </div>
               </motion.div>
