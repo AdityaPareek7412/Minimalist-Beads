@@ -86,9 +86,9 @@ export function Header() {
         <div className="flex items-center justify-between h-20 gap-4">
           
           <div className="flex items-center gap-4">
-            {/* Mobile Menu Button - NOW ON LEFT */}
+            {/* Hamburger Menu Button - ALWAYS VISIBLE */}
             <button
-              className="lg:hidden p-2.5 hover:bg-pink-50 rounded-full transition text-gray-700"
+              className="p-2.5 hover:bg-pink-50 rounded-full transition text-gray-700"
               onClick={() => setIsMenuOpen(true)}
             >
               <Menu size={24} />
@@ -113,8 +113,8 @@ export function Header() {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-1">
+          {/* Desktop Navigation - Hidden to prefer the luxury sidebar */}
+          <nav className="hidden items-center gap-1">
             {navItems.map((item) => (
               <Link
                 key={item.name}
