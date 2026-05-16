@@ -33,7 +33,7 @@ export default function CheckoutPage() {
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Settings & Coupon State
-  const [settings, setSettings] = useState({ shippingFee: 50, freeShippingLimit: 500 })
+  const [settings, setSettings] = useState({ shippingFee: 80, freeShippingLimit: 500 })
   const [couponCode, setCouponCode] = useState("")
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
   const [couponLoading, setCouponLoading] = useState(false)
@@ -48,7 +48,12 @@ export default function CheckoutPage() {
 
     fetch("/api/admin/settings")
       .then(res => res.json())
-      .then(data => setSettings(data))
+      .then(data => {
+        if (data) setSettings({
+          shippingFee: data.shippingFee || 80,
+          freeShippingLimit: data.freeShippingLimit || 500
+        })
+      })
       .catch(() => {})
 
     return () => { if (document.body.contains(script)) document.body.removeChild(script) }
@@ -69,12 +74,13 @@ export default function CheckoutPage() {
     countryCode: "+91", street: "", city: "", state: "",
     postalCode: "", country: "India",
   })
-  const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "cod">("razorpay")
+  const [paymentMethod, setPaymentMethod] = useState<"razorpay">("razorpay")
 
   const subtotal = getCartTotal()
   const shipping = settings.shippingFee
   const discount = appliedCoupon ? appliedCoupon.discount : 0
   const total = subtotal + shipping - discount
+  const isBelowMinimum = total < 199
 
   const validateCoupon = async () => {
     if (!couponCode) return
@@ -103,6 +109,11 @@ export default function CheckoutPage() {
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
+    if (isBelowMinimum) {
+      alert("Minimum order value is ₹199 (including shipping). Please add more items to your bag!");
+      return;
+    }
+
     // Check all required fields
     const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'street', 'city', 'state', 'postalCode'];
     for (const field of requiredFields) {
@@ -204,34 +215,6 @@ export default function CheckoutPage() {
     }
   }
 
-  const handleCOD = async () => {
-    setIsProcessing(true)
-    try {
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          cart,
-          subtotal,
-          shippingCost: shipping,
-          discount,
-          couponId: appliedCoupon?.couponId,
-          totalAmount: total,
-          paymentMethod: "cod",
-        })
-      })
-      
-      const data = await res.json()
-      if (data.success) {
-        clearCart()
-        router.push(`/order-confirmation?orderId=${data.order.orderNumber}&amount=${total}&method=cod`)
-      }
-    } catch (error) {
-      alert("Order failed")
-      setIsProcessing(false)
-    }
-  }
 
   const inputClass = `w-full px-6 py-3.5 bg-pink-50/30 border border-pink-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all text-sm placeholder-gray-400 font-sans`
 
@@ -251,6 +234,15 @@ export default function CheckoutPage() {
               Payment
             </div>
           </div>
+          
+          {isBelowMinimum && (
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 bg-rose-50 border border-rose-200 p-4 rounded-2xl inline-block">
+              <p className="text-rose-600 text-xs font-bold uppercase tracking-widest flex items-center gap-2 px-6">
+                <XCircle size={16} /> Minimum order value is ₹199 (including shipping)
+              </p>
+              <p className="text-rose-400 text-[10px] mt-1 font-medium italic">Please add ₹{(199 - total).toFixed(2)} more to continue</p>
+            </motion.div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -358,30 +350,24 @@ export default function CheckoutPage() {
                   <div className="p-2 bg-pink-50 rounded-full text-pink-500"><Lock size={20} /></div>
                   Payment Selection
                 </h2>
-                <div className="space-y-4">
-                  <label className={`p-6 border rounded-2xl cursor-pointer flex items-center gap-4 transition-all ${paymentMethod === 'razorpay' ? 'border-pink-500 bg-pink-50/50' : 'border-pink-50 hover:border-pink-200'}`}>
-                    <input type="radio" checked={paymentMethod === 'razorpay'} onChange={() => setPaymentMethod('razorpay')} className="w-5 h-5 text-pink-600 focus:ring-pink-500" />
+                <div className="space-y-4"                  <label className={`p-6 border rounded-2xl cursor-pointer flex items-center gap-4 transition-all border-pink-500 bg-pink-50/50`}>
+                    <input type="radio" checked={true} readOnly className="w-5 h-5 text-pink-600 focus:ring-pink-500" />
                     <div className="flex-1">
                       <p className="font-bold text-gray-900 flex items-center gap-2">Pay Online (Razorpay) <span className="text-[10px] bg-blue-50 text-blue-500 px-2 py-0.5 rounded uppercase tracking-widest">Secure</span></p>
                       <p className="text-xs text-gray-500 mt-0.5">UPI, Cards, NetBanking, Wallets</p>
                     </div>
                     <CreditCard size={24} className="text-pink-300" />
                   </label>
-
-                  <label className={`p-6 border rounded-2xl cursor-pointer flex items-center gap-4 transition-all ${paymentMethod === 'cod' ? 'border-pink-500 bg-pink-50/50' : 'border-pink-50 hover:border-pink-200'}`}>
-                    <input type="radio" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="w-5 h-5 text-pink-600 focus:ring-pink-500" />
-                    <div className="flex-1">
-                      <p className="font-bold text-gray-900">Cash on Delivery</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Pay when you receive your magic</p>
-                    </div>
-                    <div className="text-xl">💵</div>
-                  </label>
+bel>
 
                   <div className="flex flex-col sm:flex-row gap-4 pt-8">
                     <button onClick={() => setCurrentStep("address")} className="flex-1 py-4 border border-pink-100 font-bold rounded-full text-gray-400 hover:bg-pink-50 transition-all uppercase tracking-widest text-xs">Back</button>
-                    <button onClick={paymentMethod === 'razorpay' ? initiateRazorpay : handleCOD} disabled={isProcessing} 
-                      className="flex-[2] py-4 bg-gray-900 text-white font-bold rounded-full shadow-lg hover:bg-pink-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2 uppercase tracking-[0.2em] text-xs">
-                      {isProcessing ? <Loader2 className="animate-spin" /> : (paymentMethod === 'razorpay' ? "Place Order" : "Confirm Order")}
+                    <button 
+                      onClick={initiateRazorpay} 
+                      disabled={isProcessing || isBelowMinimum} 
+                      className="flex-[2] py-4 bg-gray-900 text-white font-bold rounded-full shadow-lg hover:bg-pink-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2 uppercase tracking-[0.2em] text-xs"
+                    >
+                      {isProcessing ? <Loader2 className="animate-spin" /> : "Place Order"}
                     </button>
                   </div>
                 </div>

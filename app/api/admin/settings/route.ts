@@ -11,7 +11,7 @@ export async function GET() {
       settings = await prisma.siteSettings.create({
         data: {
           id: "default",
-          shippingFee: 50,
+          shippingFee: 80,
           freeShippingLimit: 500,
         }
       })
