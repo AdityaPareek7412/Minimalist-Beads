@@ -174,10 +174,13 @@ export function HeroSection() {
           </MagneticButton>
           
           <MagneticButton 
-            href="/about" 
+            href="https://www.instagram.com/minimalistbeads.co?igsh=d3psMDlqeXQxbjdn" 
             className="bg-white/40 backdrop-blur-xl text-gray-600 border border-white/60 hover:bg-white/80 min-w-[220px]"
           >
-            Explore Aesthetic
+            <span className="flex items-center gap-3">
+              <Instagram className="w-4 h-4" />
+              Follow Vibe on IG
+            </span>
           </MagneticButton>
         </motion.div>
 
