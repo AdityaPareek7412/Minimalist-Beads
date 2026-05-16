@@ -7,7 +7,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { MapPin, Lock, ChevronDown, CreditCard, Loader2, Tag, ShoppingBag, ArrowRight, Truck, CheckCircle2 } from "lucide-react"
+import { MapPin, Lock, ChevronDown, CreditCard, Loader2, Tag, ShoppingBag, ArrowRight, Truck, CheckCircle2, XCircle } from "lucide-react"
 import { useCart } from "@/context/cartContext"
 import { formatPrice } from "@/lib/utils/helpers"
 
