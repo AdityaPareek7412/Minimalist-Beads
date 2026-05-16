@@ -20,7 +20,7 @@ export default function RefundPolicy() {
           <div className="p-8 md:p-12 space-y-10">
             {/* Introduction */}
             <section>
-              <p className="text-lg text-gray-700 leading-relaxed italic">
+              <p className="text-lg text-gray-700 leading-relaxed font-medium">
                 At minimalist beads, we like keeping things simple and transparent.
                 Since we work on retails and manage things single handily, we don’t accept returns or exchanges.
               </p>
