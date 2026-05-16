@@ -74,7 +74,7 @@ export function AestheticStory() {
               {/* Main Image - Aesthetic Craftsmanship Photo */}
               <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-2xl shadow-pink-200 aspect-[4/5] w-full border-8 border-white bg-pink-50 min-h-[400px]">
                 <img 
-                  src="https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&w=800&q=80" 
+                  src="/images/craftsmanship.jpg" 
                   alt="Minimalist Beads Craftsmanship" 
                   className="absolute inset-0 w-full h-full object-cover"
                   loading="eager"
