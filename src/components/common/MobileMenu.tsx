@@ -66,7 +66,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             animate="open"
             exit="closed"
             variants={sidebarVariants}
-            className="fixed top-0 left-0 h-screen w-[85%] max-w-sm bg-[#2b0013] text-white z-[9999] shadow-2xl flex flex-col overflow-hidden"
+            className="fixed inset-y-0 left-0 w-[85%] max-w-sm bg-[#2b0013] text-white z-[9999] shadow-2xl flex flex-col"
           >
             {/* Header within Sidebar */}
             <div className="p-6 flex items-center justify-between border-b border-white/5">
