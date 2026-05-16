@@ -9,9 +9,10 @@ import { useWishlist } from "@/context/wishlistContext"
 import { Heart, ShoppingBag, Search, Menu, X, ArrowRight } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
+import { MobileMenu } from "./MobileMenu"
 
 export function Header() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [settings, setSettings] = useState<any>(null)
@@ -59,61 +60,58 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-xl border-b border-pink-100/60 shadow-sm">
       {settings?.announcement && (
         <div className="relative overflow-hidden bg-gray-900 h-9 flex items-center border-b border-white/5">
-          {/* Animated Gradient Background */}
+          {/* Animated Announcement Bar content remains same */}
           <div className="absolute inset-0 bg-gradient-to-r from-rose-500 via-pink-500 to-rose-500 animate-gradient-x opacity-90" />
-          
-          {/* Glass Overlay for 3D Depth */}
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 mix-blend-overlay" />
-          
           <div className="relative w-full overflow-hidden whitespace-nowrap py-1">
             <motion.div
               animate={{ x: ["0%", "-50%"] }}
-              transition={{ 
-                duration: 25, 
-                repeat: Infinity, 
-                ease: "linear" 
-              }}
+              transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
               className="inline-flex items-center gap-20"
             >
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="flex items-center gap-6">
-                  <span className="text-[10px] font-bold text-white uppercase tracking-[0.3em] flex items-center gap-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse shadow-[0_0_8px_white]" />
+                  <span className="text-[10px] font-bold text-white uppercase tracking-[0.3em] flex items-center gap-3">
+                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                     {settings.announcement}
-                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse shadow-[0_0_8px_white]" />
+                    <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                   </span>
-                  <span className="text-white/30 font-serif italic text-sm">✨</span>
                 </div>
               ))}
             </motion.div>
-          </div>
-
-          {/* Shimmer Effect */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-0 -left-[100%] w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-[-25deg] animate-shimmer" />
           </div>
         </div>
       )}
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-11 h-11 overflow-hidden rounded-full border-2 border-pink-200 group-hover:border-pink-400 transition-all duration-500 shadow-md">
-              <img 
-                src="/images/logo.png" 
-                alt="Logo" 
-                className="object-cover w-full h-full"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-pink-200', 'to-rose-300');
-                }}
-              />
-            </div>
-            <span className="text-xl font-serif font-bold tracking-tight text-gray-900 sm:inline hidden group-hover:text-pink-600 transition-colors">
-              MinimalistBeads
-            </span>
-          </Link>
+        <div className="flex items-center justify-between h-20 gap-4">
+          
+          <div className="flex items-center gap-4">
+            {/* Mobile Menu Button - NOW ON LEFT */}
+            <button
+              className="lg:hidden p-2.5 hover:bg-pink-50 rounded-full transition text-gray-700"
+              onClick={() => setIsMenuOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
+
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="relative w-11 h-11 overflow-hidden rounded-full border-2 border-pink-200 group-hover:border-pink-400 transition-all duration-500 shadow-md">
+                <img 
+                  src="/images/logo.png" 
+                  alt="Logo" 
+                  className="object-cover w-full h-full"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement!.classList.add('bg-gradient-to-br', 'from-pink-200', 'to-rose-300');
+                  }}
+                />
+              </div>
+              <span className="text-xl font-serif font-bold tracking-tight text-gray-900 sm:inline hidden group-hover:text-pink-600 transition-colors">
+                MinimalistBeads
+              </span>
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-1">
@@ -154,14 +152,6 @@ export function Header() {
                 </span>
               )}
             </Link>
-
-            {/* Mobile Menu Button */}
-            <button
-              className="lg:hidden p-2.5 hover:bg-pink-50 rounded-full transition text-gray-700"
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              {isOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
           </div>
         </div>
 
@@ -181,7 +171,7 @@ export function Header() {
                   placeholder="Search for beautiful pieces..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 bg-pink-50/50 border border-pink-200 rounded-full px-6 py-3.5 text-gray-900 text-sm font-medium outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-200 transition-all placeholder-gray-400"
+                  className="flex-1 bg-pink-50/50 border border-pink-200 rounded-full px-6 py-3.5 text-gray-900 text-sm font-medium outline-none focus:border-pink-400 placeholder-gray-400"
                 />
                 <button type="submit" className="bg-gray-900 text-white px-8 rounded-full font-semibold text-sm hover:bg-pink-600 transition-all flex items-center gap-2">
                   Search <ArrowRight size={14} />
@@ -191,28 +181,8 @@ export function Header() {
           )}
         </AnimatePresence>
 
-        {/* Mobile Navigation */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.nav
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="lg:hidden pb-6 border-t border-pink-100/60"
-            >
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="block py-3 px-3 text-sm font-medium text-gray-600 hover:text-pink-600 hover:bg-pink-50 rounded-xl transition-all"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </motion.nav>
-          )}
-        </AnimatePresence>
+        {/* NEW LUXURY MOBILE SIDEBAR */}
+        <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
       </div>
     </header>
   )
