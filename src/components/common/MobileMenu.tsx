@@ -20,11 +20,12 @@ const EXPLORE_LINKS = [
 ]
 
 const SUPPORT_LINKS = [
-  { name: "Contact Us", href: "/contact" },
+  { name: "Contact Us", href: "/contact-us" },
   { name: "Shipping Info", href: "/shipping-policy" },
-  { name: "Returns & Refunds", href: "/refund-policy" },
+  { name: "Cancellation & Refunds", href: "/cancellation-and-refunds" },
+  { name: "Privacy Policy", href: "/privacy-policy" },
+  { name: "Terms & Conditions", href: "/terms-and-conditions" },
   { name: "FAQ", href: "/faq" },
-  { name: "Terms & Services", href: "/terms" },
 ]
 
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {

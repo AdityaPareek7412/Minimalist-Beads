@@ -49,28 +49,33 @@ export function Footer() {
             <h4 className="text-sm font-semibold mb-4 tracking-wide text-pink-300 uppercase">Support</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/contact" className="text-pink-200/70 hover:text-white transition">
+                <Link href="/contact-us" className="text-pink-200/70 hover:text-white transition">
                   Contact Us
                 </Link>
               </li>
               <li>
                 <Link href="/shipping-policy" className="text-pink-200/70 hover:text-white transition">
-                  Shipping Info
+                  Shipping Policy
                 </Link>
               </li>
               <li>
-                <Link href="/refund-policy" className="text-pink-200/70 hover:text-white transition">
-                  Returns & Refunds
+                <Link href="/cancellation-and-refunds" className="text-pink-200/70 hover:text-white transition">
+                  Cancellation & Refunds
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy-policy" className="text-pink-200/70 hover:text-white transition">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms-and-conditions" className="text-pink-200/70 hover:text-white transition">
+                  Terms & Conditions
                 </Link>
               </li>
               <li>
                 <Link href="/faq" className="text-pink-200/70 hover:text-white transition">
                   FAQ
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="text-pink-200/70 hover:text-white transition">
-                  Terms & Services
                 </Link>
               </li>
             </ul>
