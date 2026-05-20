@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import ProductDetailsClient from "./ProductDetailsClient"
 import prisma from "@/lib/prisma"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 30
 
 export default async function ProductPage({ params }: { params: { slug: string } }) {
   const product = await prisma.product.findUnique({

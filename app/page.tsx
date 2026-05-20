@@ -6,7 +6,7 @@ import { ReviewsSection } from "@/components/sections/ReviewsSection"
 import { NewsletterSection } from "@/components/sections/NewsletterSection"
 import prisma from "@/lib/prisma"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 30
 
 export default async function Home() {
   const featuredProducts = await prisma.product.findMany({
