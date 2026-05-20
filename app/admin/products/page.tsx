@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Plus, Trash2, Edit, ExternalLink, GripVertical, Check, Loader2, Settings, ChevronUp, ChevronDown } from "lucide-react"
+import { Plus, Trash2, Edit, ExternalLink, Check, Loader2, Settings, ChevronUp, ChevronDown, GripVertical } from "lucide-react"
 import { formatPrice } from "@/lib/utils/helpers"
-import { Reorder } from "framer-motion"
 
 // Static Row for Normal Mode - 100% native HTML, zero drag listeners, super smooth scrolling.
 function StaticProductRow({ product, handleDelete }: { product: any, handleDelete: (id: string) => void }) {
@@ -85,8 +84,8 @@ function StaticProductRow({ product, handleDelete }: { product: any, handleDelet
   )
 }
 
-// Compact Draggable Row for Reorder Mode - optimized with touch buttons for easy mobile sorting.
-function DraggableProductRow({ 
+// Compact Row for Reorder Mode - optimized with touch buttons for easy mobile sorting.
+function SortProductRow({ 
   product, 
   index, 
   totalItems, 
@@ -102,13 +101,7 @@ function DraggableProductRow({
   onMoveToPosition: (newPos: number) => void
 }) {
   return (
-    <Reorder.Item
-      value={product}
-      className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex items-center gap-4 cursor-row-resize hover:border-pink-200 active:border-pink-500 active:scale-[1.01] transition-all select-none"
-    >
-      <div className="text-gray-400 flex-shrink-0">
-        <GripVertical size={20} />
-      </div>
+    <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex items-center gap-4 hover:border-pink-200 transition-all">
       <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 pointer-events-none">
         {product.images?.[0]?.url && (
           <img src={product.images[0].url} alt="" className="w-full h-full object-cover" />
@@ -122,13 +115,10 @@ function DraggableProductRow({
         {formatPrice(product.price)}
       </div>
       
-      {/* Arrow Controls for Mobile and Precision Reordering */}
+      {/* Precision Controls */}
       <div className="flex items-center gap-1 flex-shrink-0 ml-2">
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onMoveUp();
-          }}
+          onClick={onMoveUp}
           disabled={index === 0}
           className="p-1.5 hover:bg-gray-100 rounded text-gray-500 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
           title="Move Up"
@@ -137,8 +127,7 @@ function DraggableProductRow({
         </button>
 
         <button
-          onClick={(e) => {
-            e.stopPropagation();
+          onClick={() => {
             const targetPosStr = prompt(`Enter new position for "${product.name}" (1 to ${totalItems}):`, (index + 1).toString());
             if (targetPosStr) {
               const targetPos = parseInt(targetPosStr, 10);
@@ -156,10 +145,7 @@ function DraggableProductRow({
         </button>
 
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onMoveDown();
-          }}
+          onClick={onMoveDown}
           disabled={index === totalItems - 1}
           className="p-1.5 hover:bg-gray-100 rounded text-gray-500 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
           title="Move Down"
@@ -167,7 +153,7 @@ function DraggableProductRow({
           <ChevronDown size={16} />
         </button>
       </div>
-    </Reorder.Item>
+    </div>
   )
 }
 
@@ -178,6 +164,9 @@ export default function AdminProductsPage() {
   const [isReorderMode, setIsReorderMode] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [visibleCount, setVisibleCount] = useState(20)
+  
+  const [sortSearchQuery, setSortSearchQuery] = useState("")
+  const [sortVisibleCount, setSortVisibleCount] = useState(50)
 
   useEffect(() => {
     fetchProducts()
@@ -187,40 +176,52 @@ export default function AdminProductsPage() {
     setVisibleCount(20)
   }, [searchQuery])
 
-  const filteredProducts = products.filter(product =>
+  useEffect(() => {
+    setSortVisibleCount(50)
+  }, [sortSearchQuery])
+
+  const filteredProducts = products.filter((product: any) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (product.category?.name && product.category.name.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
   const displayedProducts = filteredProducts.slice(0, visibleCount)
-  // Limit reorder to top 50 items to prevent browser lag with 1500+ items
-  const reorderProducts = products.slice(0, 50)
+
+  const sortedFilteredProducts = products
+    .map((product: any, index: number) => ({ product, index }))
+    .filter(({ product }: any) =>
+      product.name.toLowerCase().includes(sortSearchQuery.toLowerCase()) ||
+      product.slug.toLowerCase().includes(sortSearchQuery.toLowerCase()) ||
+      (product.category?.name && product.category.name.toLowerCase().includes(sortSearchQuery.toLowerCase()))
+    )
+
+  const displayedSortProducts = sortedFilteredProducts.slice(0, sortVisibleCount)
 
   const moveUp = (index: number) => {
     if (index === 0) return
-    const newTopOrder = [...reorderProducts]
-    const temp = newTopOrder[index]
-    newTopOrder[index] = newTopOrder[index - 1]
-    newTopOrder[index - 1] = temp
-    handleReorder(newTopOrder)
+    const newOrder = [...products]
+    const temp = newOrder[index]
+    newOrder[index] = newOrder[index - 1]
+    newOrder[index - 1] = temp
+    handleReorder(newOrder)
   }
 
   const moveDown = (index: number) => {
-    if (index >= reorderProducts.length - 1) return
-    const newTopOrder = [...reorderProducts]
-    const temp = newTopOrder[index]
-    newTopOrder[index] = newTopOrder[index + 1]
-    newTopOrder[index + 1] = temp
-    handleReorder(newTopOrder)
+    if (index >= products.length - 1) return
+    const newOrder = [...products]
+    const temp = newOrder[index]
+    newOrder[index] = newOrder[index + 1]
+    newOrder[index + 1] = temp
+    handleReorder(newOrder)
   }
 
   const moveToPosition = (fromIndex: number, toIndex: number) => {
-    if (toIndex < 0 || toIndex >= reorderProducts.length || fromIndex === toIndex) return
-    const newTopOrder = [...reorderProducts]
-    const [movedItem] = newTopOrder.splice(fromIndex, 1)
-    newTopOrder.splice(toIndex, 0, movedItem)
-    handleReorder(newTopOrder)
+    if (toIndex < 0 || toIndex >= products.length || fromIndex === toIndex) return
+    const newOrder = [...products]
+    const [movedItem] = newOrder.splice(fromIndex, 1)
+    newOrder.splice(toIndex, 0, movedItem)
+    handleReorder(newOrder)
   }
 
   const fetchProducts = async () => {
@@ -235,12 +236,11 @@ export default function AdminProductsPage() {
     }
   }
 
-  const handleReorder = async (newTopOrder: any[]) => {
-    const updatedProducts = [...newTopOrder, ...products.slice(50)]
-    setProducts(updatedProducts)
+  const handleReorder = async (newOrder: any[]) => {
+    setProducts(newOrder)
     setSaving(true)
     try {
-      const productIds = updatedProducts.map(p => p.id)
+      const productIds = newOrder.map((p: any) => p.id)
       const res = await fetch("/api/admin/products", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -259,7 +259,7 @@ export default function AdminProductsPage() {
 
     try {
       await fetch(`/api/admin/products?id=${id}`, { method: "DELETE" })
-      setProducts(products.filter(p => p.id !== id))
+      setProducts(products.filter((p: any) => p.id !== id))
     } catch (err) {
       alert("Failed to delete product")
     }
@@ -349,36 +349,62 @@ export default function AdminProductsPage() {
             <p className="text-gray-400 text-lg">No products found. Start by adding your first aesthetic piece! ✨</p>
           </div>
         ) : isReorderMode ? (
-          /* Draggable List for Reorder Mode */
-          <div className="max-w-2xl mx-auto space-y-3 bg-gray-100/50 p-4 rounded-3xl border border-gray-200">
-            <div className="text-xs text-gray-500 font-bold uppercase tracking-wider text-center mb-2">
-              Drag top 50 items below to sort
+          /* Static List with precision controls for Reorder Mode */
+          <div className="max-w-2xl mx-auto space-y-4">
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-2">
+              <input
+                type="text"
+                placeholder="Search products to sort by name, slug..."
+                value={sortSearchQuery}
+                onChange={(e) => setSortSearchQuery(e.target.value)}
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all text-sm font-medium"
+              />
             </div>
-            <Reorder.Group values={reorderProducts} onReorder={handleReorder} className="space-y-2">
-              {reorderProducts.map((product, idx) => (
-                <DraggableProductRow 
-                  key={product.id} 
-                  product={product} 
-                  index={idx}
-                  totalItems={reorderProducts.length}
-                  onMoveUp={() => moveUp(idx)}
-                  onMoveDown={() => moveDown(idx)}
-                  onMoveToPosition={(targetPos) => moveToPosition(idx, targetPos)}
-                />
-              ))}
-            </Reorder.Group>
-            {products.length > 50 && (
-              <div className="text-xs text-center text-gray-400 mt-2 italic">
-                Only the top 50 products are loaded for reordering to ensure smooth performance.
+            
+            <div className="space-y-2 bg-gray-100/50 p-4 rounded-3xl border border-gray-200">
+              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider text-center mb-2">
+                Use arrows or click position numbers to reorder
               </div>
-            )}
+              
+              {displayedSortProducts.length > 0 ? (
+                <div className="space-y-2">
+                  {displayedSortProducts.map(({ product, index }: any) => (
+                    <SortProductRow 
+                      key={product.id} 
+                      product={product} 
+                      index={index}
+                      totalItems={products.length}
+                      onMoveUp={() => moveUp(index)}
+                      onMoveDown={() => moveDown(index)}
+                      onMoveToPosition={(targetPos) => moveToPosition(index, targetPos)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
+                  <p className="text-gray-400 text-sm">No products match your search query.</p>
+                </div>
+              )}
+
+              {/* Load More Button for Reorder Mode */}
+              {sortVisibleCount < sortedFilteredProducts.length && (
+                <div className="text-center pt-4">
+                  <button
+                    onClick={() => setSortVisibleCount((prev: number) => prev + 50)}
+                    className="px-6 py-2 bg-white border border-gray-200 text-gray-700 font-bold text-xs rounded-xl hover:bg-pink-50 hover:border-pink-200 transition-all shadow-sm uppercase tracking-wider"
+                  >
+                    Show More ({sortedFilteredProducts.length - sortVisibleCount} remaining)
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           /* Static List for Normal Mode - Super smooth, 100% native momentum scrolling with search + load more */
           <div className="space-y-6">
             {displayedProducts.length > 0 ? (
               <div className="space-y-4">
-                {displayedProducts.map((product) => (
+                {displayedProducts.map((product: any) => (
                   <StaticProductRow
                     key={product.id}
                     product={product}
@@ -396,7 +422,7 @@ export default function AdminProductsPage() {
             {!loading && visibleCount < filteredProducts.length && (
               <div className="text-center pt-4">
                 <button
-                  onClick={() => setVisibleCount(prev => prev + 20)}
+                  onClick={() => setVisibleCount((prev: number) => prev + 20)}
                   className="px-8 py-3.5 bg-white border border-gray-200 text-gray-700 font-bold text-xs rounded-xl hover:bg-pink-50 hover:border-pink-200 transition-all shadow-sm uppercase tracking-wider"
                 >
                   Load More Products ({filteredProducts.length - visibleCount} remaining)
