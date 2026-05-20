@@ -17,6 +17,9 @@ export async function POST(req: NextRequest) {
     const data = await req.json()
     const { code, discountType, discountValue, minOrderValue, validUntil } = data
 
+    const expiryDate = new Date(validUntil)
+    expiryDate.setHours(23, 59, 59, 999)
+
     const coupon = await prisma.coupon.create({
       data: {
         code: code.toUpperCase(),
@@ -24,7 +27,7 @@ export async function POST(req: NextRequest) {
         discountValue: parseFloat(discountValue),
         minOrderValue: parseFloat(minOrderValue || 0),
         validFrom: new Date(),
-        validUntil: new Date(validUntil),
+        validUntil: expiryDate,
         active: true
       }
     })
