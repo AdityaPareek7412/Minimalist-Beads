@@ -16,7 +16,7 @@ function ShopContent() {
   const [products, setProducts] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [sortBy, setSortBy] = useState("newest")
+  const [sortBy, setSortBy] = useState("default")
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState({ min: 0, max: 2000 })
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -77,6 +77,7 @@ function ShopContent() {
       if (sortBy === "price-high") return b.price - a.price
       if (sortBy === "trending") return (b.trending ? 1 : 0) - (a.trending ? 1 : 0)
       if (sortBy === "newest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      if (sortBy === "default") return (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
       return 0
     })
 
@@ -224,6 +225,7 @@ function ShopContent() {
                   onChange={(e) => setSortBy(e.target.value)}
                   className="w-full appearance-none pl-10 pr-10 py-2.5 bg-pink-50/30 border border-pink-100 rounded-xl text-xs font-bold text-gray-700 focus:outline-none focus:border-pink-300 cursor-pointer transition-all uppercase tracking-wider"
                 >
+                  <option value="default">Recommended</option>
                   <option value="newest">Newest First</option>
                   <option value="trending">Most Trending</option>
                   <option value="price-low">Price: Low to High</option>

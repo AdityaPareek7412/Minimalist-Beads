@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Plus, Trash2, Edit, ExternalLink } from "lucide-react"
+import { Plus, Trash2, Edit, ExternalLink, GripVertical, Check, Loader2 } from "lucide-react"
 import { formatPrice } from "@/lib/utils/helpers"
+import { Reorder, motion } from "framer-motion"
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     fetchProducts()
@@ -22,6 +24,24 @@ export default function AdminProductsPage() {
       console.error("Failed to fetch products")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleReorder = async (newOrder: any[]) => {
+    setProducts(newOrder)
+    setSaving(true)
+    try {
+      const productIds = newOrder.map(p => p.id)
+      const res = await fetch("/api/admin/products", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productIds }),
+      })
+      if (!res.ok) throw new Error("Failed to save sorting order")
+    } catch (err) {
+      console.error("Failed to save reorder:", err)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -41,8 +61,23 @@ export default function AdminProductsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Manage Products</h1>
-            <p className="text-gray-500 mt-1">Add, edit or remove products from your storefront.</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-bold text-gray-900">Manage Products</h1>
+              {!loading && products.length > 0 && (
+                saving ? (
+                  <span className="flex items-center gap-1.5 text-xs text-pink-600 font-bold bg-pink-50 px-3 py-1 rounded-full animate-pulse">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving order...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 text-xs text-green-600 font-bold bg-green-50 px-3 py-1 rounded-full">
+                    <Check className="w-3.5 h-3.5" /> Order saved
+                  </span>
+                )
+              )}
+            </div>
+            <p className="text-gray-500 mt-1.5 text-sm">
+              Drag and drop any piece using the handle on the left to reorder how they appear on the storefront.
+            </p>
           </div>
           <Link
             href="/admin/products/add"
@@ -62,91 +97,93 @@ export default function AdminProductsPage() {
             <p className="text-gray-400 text-lg">No products found. Start by adding your first aesthetic piece! ✨</p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-gray-50 border-b border-gray-100">
-                  <tr>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Product</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Category</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Price</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Inventory</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {products.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
-                            {product.images?.[0]?.url && (
-                              <img src={product.images[0].url} alt="" className="w-full h-full object-cover" />
-                            )}
-                          </div>
-                          <div>
-                            <div className="font-bold text-gray-900">{product.name}</div>
-                            <div className="text-xs text-gray-400 font-mono">/{product.slug}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
-                          {product.category?.name || "Uncategorized"}
+          <div className="space-y-4">
+            <Reorder.Group values={products} onReorder={handleReorder} className="space-y-4">
+              {products.map((product) => (
+                <Reorder.Item
+                  key={product.id}
+                  value={product}
+                  className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 flex items-center gap-4 hover:border-pink-200 transition-all select-none cursor-grab active:cursor-grabbing"
+                >
+                  {/* Drag Handle */}
+                  <div className="text-gray-400 cursor-grab active:cursor-grabbing hover:text-pink-500 transition-colors flex-shrink-0 p-1">
+                    <GripVertical size={20} />
+                  </div>
+
+                  {/* Thumbnail */}
+                  <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100">
+                    {product.images?.[0]?.url && (
+                      <img src={product.images[0].url} alt="" className="w-full h-full object-cover" />
+                    )}
+                  </div>
+
+                  {/* Details */}
+                  <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                    {/* Name & Slug */}
+                    <div className="md:col-span-5 min-w-0">
+                      <div className="font-bold text-gray-900 truncate">{product.name}</div>
+                      <div className="text-xs text-gray-400 font-mono truncate">/{product.slug}</div>
+                    </div>
+
+                    {/* Category */}
+                    <div className="md:col-span-3">
+                      <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-semibold">
+                        {product.category?.name || "Uncategorized"}
+                      </span>
+                    </div>
+
+                    {/* Price */}
+                    <div className="md:col-span-2">
+                      <div className="font-bold text-pink-600 text-sm sm:text-base">{formatPrice(product.price)}</div>
+                    </div>
+
+                    {/* Inventory */}
+                    <div className="md:col-span-2 flex flex-col gap-1">
+                      <div className="text-xs font-bold text-gray-900">{product.stock} in stock</div>
+                      {product.stock === 0 ? (
+                        <span className="text-[9px] font-bold text-red-500 uppercase tracking-wider bg-red-50 px-2 py-0.5 rounded w-fit">
+                          Out of Stock
                         </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="font-bold text-pink-600">{formatPrice(product.price)}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1">
-                          <div className="font-bold text-gray-900">{product.stock} in stock</div>
-                          {product.stock === 0 ? (
-                            <span className="text-[9px] font-bold text-red-500 uppercase tracking-wider bg-red-50 px-2 py-0.5 rounded w-fit">
-                              Out of Stock
-                            </span>
-                          ) : product.stock <= 5 ? (
-                            <span className="text-[9px] font-bold text-orange-500 uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded w-fit">
-                              Low Stock
-                            </span>
-                          ) : (
-                            <span className="text-[9px] font-bold text-green-500 uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded w-fit">
-                              Healthy
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <Link
-                            href={`/admin/products/edit/${product.id}`}
-                            className="p-2 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-all"
-                            title="Edit Inventory"
-                          >
-                            <Edit className="w-5 h-5" />
-                          </Link>
-                          <button
-                            onClick={() => handleDelete(product.id)}
-                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                          <a
-                            href={`/products/${product.slug}`}
-                            target="_blank"
-                            className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
-                            title="View on site"
-                          >
-                            <ExternalLink className="w-5 h-5" />
-                          </a>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      ) : product.stock <= 5 ? (
+                        <span className="text-[9px] font-bold text-orange-500 uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded w-fit">
+                          Low Stock
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-bold text-green-500 uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded w-fit">
+                          Healthy
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Link
+                      href={`/admin/products/edit/${product.id}`}
+                      className="p-2.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-xl transition-all"
+                      title="Edit Inventory"
+                    >
+                      <Edit className="w-4.5 h-4.5" />
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(product.id)}
+                      className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4.5 h-4.5" />
+                    </button>
+                    <a
+                      href={`/products/${product.slug}`}
+                      target="_blank"
+                      className="p-2.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
+                      title="View on site"
+                    >
+                      <ExternalLink className="w-4.5 h-4.5" />
+                    </a>
+                  </div>
+                </Reorder.Item>
+              ))}
+            </Reorder.Group>
           </div>
         )}
       </div>

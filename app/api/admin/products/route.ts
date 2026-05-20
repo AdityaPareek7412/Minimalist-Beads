@@ -32,9 +32,37 @@ export async function GET(req: NextRequest) {
         images: true,
         category: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [
+        { displayOrder: "asc" },
+        { createdAt: "desc" }
+      ],
     })
     return NextResponse.json(products)
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
+export async function PUT(req: NextRequest) {
+  try {
+    const data = await req.json()
+    const { productIds } = data
+
+    if (!Array.isArray(productIds)) {
+      return NextResponse.json({ error: "Missing productIds array" }, { status: 400 })
+    }
+
+    // Bulk update the displayOrder of products in a transaction
+    await prisma.$transaction(
+      productIds.map((id, index) =>
+        prisma.product.update({
+          where: { id },
+          data: { displayOrder: index },
+        })
+      )
+    )
+
+    return NextResponse.json({ success: true })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
