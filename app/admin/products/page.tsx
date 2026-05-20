@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Plus, Trash2, Edit, ExternalLink, GripVertical, Check, Loader2, Settings } from "lucide-react"
+import { Plus, Trash2, Edit, ExternalLink, GripVertical, Check, Loader2, Settings, ChevronUp, ChevronDown } from "lucide-react"
 import { formatPrice } from "@/lib/utils/helpers"
 import { Reorder } from "framer-motion"
 
@@ -85,8 +85,22 @@ function StaticProductRow({ product, handleDelete }: { product: any, handleDelet
   )
 }
 
-// Compact Draggable Row for Reorder Mode - optimized to fit many items on screen for easy sorting.
-function DraggableProductRow({ product }: { product: any }) {
+// Compact Draggable Row for Reorder Mode - optimized with touch buttons for easy mobile sorting.
+function DraggableProductRow({ 
+  product, 
+  index, 
+  totalItems, 
+  onMoveUp, 
+  onMoveDown, 
+  onMoveToPosition 
+}: { 
+  product: any, 
+  index: number, 
+  totalItems: number,
+  onMoveUp: () => void,
+  onMoveDown: () => void,
+  onMoveToPosition: (newPos: number) => void
+}) {
   return (
     <Reorder.Item
       value={product}
@@ -106,6 +120,52 @@ function DraggableProductRow({ product }: { product: any }) {
       </div>
       <div className="text-xs font-semibold text-pink-600 bg-pink-50 px-2.5 py-1 rounded-full flex-shrink-0">
         {formatPrice(product.price)}
+      </div>
+      
+      {/* Arrow Controls for Mobile and Precision Reordering */}
+      <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onMoveUp();
+          }}
+          disabled={index === 0}
+          className="p-1.5 hover:bg-gray-100 rounded text-gray-500 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+          title="Move Up"
+        >
+          <ChevronUp size={16} />
+        </button>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            const targetPosStr = prompt(`Enter new position for "${product.name}" (1 to ${totalItems}):`, (index + 1).toString());
+            if (targetPosStr) {
+              const targetPos = parseInt(targetPosStr, 10);
+              if (!isNaN(targetPos) && targetPos >= 1 && targetPos <= totalItems) {
+                onMoveToPosition(targetPos - 1);
+              } else {
+                alert(`Please enter a valid number between 1 and ${totalItems}`);
+              }
+            }
+          }}
+          className="bg-pink-50 hover:bg-pink-100 text-pink-700 px-2.5 py-1 rounded text-xs font-bold font-mono transition-colors"
+          title="Click to jump to position"
+        >
+          #{index + 1}
+        </button>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onMoveDown();
+          }}
+          disabled={index === totalItems - 1}
+          className="p-1.5 hover:bg-gray-100 rounded text-gray-500 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+          title="Move Down"
+        >
+          <ChevronDown size={16} />
+        </button>
       </div>
     </Reorder.Item>
   )
@@ -136,6 +196,32 @@ export default function AdminProductsPage() {
   const displayedProducts = filteredProducts.slice(0, visibleCount)
   // Limit reorder to top 50 items to prevent browser lag with 1500+ items
   const reorderProducts = products.slice(0, 50)
+
+  const moveUp = (index: number) => {
+    if (index === 0) return
+    const newTopOrder = [...reorderProducts]
+    const temp = newTopOrder[index]
+    newTopOrder[index] = newTopOrder[index - 1]
+    newTopOrder[index - 1] = temp
+    handleReorder(newTopOrder)
+  }
+
+  const moveDown = (index: number) => {
+    if (index >= reorderProducts.length - 1) return
+    const newTopOrder = [...reorderProducts]
+    const temp = newTopOrder[index]
+    newTopOrder[index] = newTopOrder[index + 1]
+    newTopOrder[index + 1] = temp
+    handleReorder(newTopOrder)
+  }
+
+  const moveToPosition = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= reorderProducts.length || fromIndex === toIndex) return
+    const newTopOrder = [...reorderProducts]
+    const [movedItem] = newTopOrder.splice(fromIndex, 1)
+    newTopOrder.splice(toIndex, 0, movedItem)
+    handleReorder(newTopOrder)
+  }
 
   const fetchProducts = async () => {
     try {
@@ -269,8 +355,16 @@ export default function AdminProductsPage() {
               Drag top 50 items below to sort
             </div>
             <Reorder.Group values={reorderProducts} onReorder={handleReorder} className="space-y-2">
-              {reorderProducts.map((product) => (
-                <DraggableProductRow key={product.id} product={product} />
+              {reorderProducts.map((product, idx) => (
+                <DraggableProductRow 
+                  key={product.id} 
+                  product={product} 
+                  index={idx}
+                  totalItems={reorderProducts.length}
+                  onMoveUp={() => moveUp(idx)}
+                  onMoveDown={() => moveDown(idx)}
+                  onMoveToPosition={(targetPos) => moveToPosition(idx, targetPos)}
+                />
               ))}
             </Reorder.Group>
             {products.length > 50 && (
