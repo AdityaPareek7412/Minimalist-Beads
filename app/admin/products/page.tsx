@@ -4,7 +4,105 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Plus, Trash2, Edit, ExternalLink, GripVertical, Check, Loader2 } from "lucide-react"
 import { formatPrice } from "@/lib/utils/helpers"
-import { Reorder, motion } from "framer-motion"
+import { Reorder, useDragControls } from "framer-motion"
+
+interface ProductRowProps {
+  product: any
+  handleDelete: (id: string) => void
+}
+
+function ProductRow({ product, handleDelete }: ProductRowProps) {
+  const dragControls = useDragControls()
+
+  return (
+    <Reorder.Item
+      value={product}
+      dragListener={false}
+      dragControls={dragControls}
+      className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 flex items-center gap-4 hover:border-pink-200 transition-all select-none"
+    >
+      {/* Drag Handle - touch-none to prevent scrolling on grip handle, but allow drag */}
+      <div
+        className="text-gray-400 cursor-grab active:cursor-grabbing hover:text-pink-500 transition-colors flex-shrink-0 p-2 touch-none"
+        onPointerDown={(event) => dragControls.start(event)}
+      >
+        <GripVertical size={20} />
+      </div>
+
+      {/* Thumbnail */}
+      <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100 select-none pointer-events-none">
+        {product.images?.[0]?.url && (
+          <img src={product.images[0].url} alt="" className="w-full h-full object-cover" />
+        )}
+      </div>
+
+      {/* Details */}
+      <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+        {/* Name & Slug */}
+        <div className="md:col-span-5 min-w-0">
+          <div className="font-bold text-gray-900 truncate">{product.name}</div>
+          <div className="text-xs text-gray-400 font-mono truncate">/{product.slug}</div>
+        </div>
+
+        {/* Category */}
+        <div className="md:col-span-3">
+          <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-semibold">
+            {product.category?.name || "Uncategorized"}
+          </span>
+        </div>
+
+        {/* Price */}
+        <div className="md:col-span-2">
+          <div className="font-bold text-pink-600 text-sm sm:text-base">{formatPrice(product.price)}</div>
+        </div>
+
+        {/* Inventory */}
+        <div className="md:col-span-2 flex flex-col gap-1">
+          <div className="text-xs font-bold text-gray-900">{product.stock} in stock</div>
+          {product.stock === 0 ? (
+            <span className="text-[9px] font-bold text-red-500 uppercase tracking-wider bg-red-50 px-2 py-0.5 rounded w-fit">
+              Out of Stock
+            </span>
+          ) : product.stock <= 5 ? (
+            <span className="text-[9px] font-bold text-orange-500 uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded w-fit">
+              Low Stock
+            </span>
+          ) : (
+            <span className="text-[9px] font-bold text-green-500 uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded w-fit">
+              Healthy
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <Link
+          href={`/admin/products/edit/${product.id}`}
+          className="p-2.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-xl transition-all"
+          title="Edit Inventory"
+        >
+          <Edit className="w-4.5 h-4.5" />
+        </Link>
+        <button
+          onClick={() => handleDelete(product.id)}
+          className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+          title="Delete"
+        >
+          <Trash2 className="w-4.5 h-4.5" />
+        </button>
+        <a
+          href={`/products/${product.slug}`}
+          target="_blank"
+          className="p-2.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
+          title="View on site"
+        >
+          <ExternalLink className="w-4.5 h-4.5" />
+        </a>
+      </div>
+    </Reorder.Item>
+  )
+}
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([])
@@ -76,7 +174,7 @@ export default function AdminProductsPage() {
               )}
             </div>
             <p className="text-gray-500 mt-1.5 text-sm">
-              Drag and drop any piece using the handle on the left to reorder how they appear on the storefront.
+              Drag and drop any piece using the grip handle (⋮⋮) on the left to reorder. Swipe/scroll anywhere else to scroll the page.
             </p>
           </div>
           <Link
@@ -100,88 +198,11 @@ export default function AdminProductsPage() {
           <div className="space-y-4">
             <Reorder.Group values={products} onReorder={handleReorder} className="space-y-4">
               {products.map((product) => (
-                <Reorder.Item
+                <ProductRow
                   key={product.id}
-                  value={product}
-                  className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 flex items-center gap-4 hover:border-pink-200 transition-all select-none cursor-grab active:cursor-grabbing"
-                >
-                  {/* Drag Handle */}
-                  <div className="text-gray-400 cursor-grab active:cursor-grabbing hover:text-pink-500 transition-colors flex-shrink-0 p-1">
-                    <GripVertical size={20} />
-                  </div>
-
-                  {/* Thumbnail */}
-                  <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100">
-                    {product.images?.[0]?.url && (
-                      <img src={product.images[0].url} alt="" className="w-full h-full object-cover" />
-                    )}
-                  </div>
-
-                  {/* Details */}
-                  <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                    {/* Name & Slug */}
-                    <div className="md:col-span-5 min-w-0">
-                      <div className="font-bold text-gray-900 truncate">{product.name}</div>
-                      <div className="text-xs text-gray-400 font-mono truncate">/{product.slug}</div>
-                    </div>
-
-                    {/* Category */}
-                    <div className="md:col-span-3">
-                      <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-semibold">
-                        {product.category?.name || "Uncategorized"}
-                      </span>
-                    </div>
-
-                    {/* Price */}
-                    <div className="md:col-span-2">
-                      <div className="font-bold text-pink-600 text-sm sm:text-base">{formatPrice(product.price)}</div>
-                    </div>
-
-                    {/* Inventory */}
-                    <div className="md:col-span-2 flex flex-col gap-1">
-                      <div className="text-xs font-bold text-gray-900">{product.stock} in stock</div>
-                      {product.stock === 0 ? (
-                        <span className="text-[9px] font-bold text-red-500 uppercase tracking-wider bg-red-50 px-2 py-0.5 rounded w-fit">
-                          Out of Stock
-                        </span>
-                      ) : product.stock <= 5 ? (
-                        <span className="text-[9px] font-bold text-orange-500 uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded w-fit">
-                          Low Stock
-                        </span>
-                      ) : (
-                        <span className="text-[9px] font-bold text-green-500 uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded w-fit">
-                          Healthy
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <Link
-                      href={`/admin/products/edit/${product.id}`}
-                      className="p-2.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-xl transition-all"
-                      title="Edit Inventory"
-                    >
-                      <Edit className="w-4.5 h-4.5" />
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(product.id)}
-                      className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4.5 h-4.5" />
-                    </button>
-                    <a
-                      href={`/products/${product.slug}`}
-                      target="_blank"
-                      className="p-2.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
-                      title="View on site"
-                    >
-                      <ExternalLink className="w-4.5 h-4.5" />
-                    </a>
-                  </div>
-                </Reorder.Item>
+                  product={product}
+                  handleDelete={handleDelete}
+                />
               ))}
             </Reorder.Group>
           </div>
