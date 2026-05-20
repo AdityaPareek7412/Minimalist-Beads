@@ -69,6 +69,10 @@ export default function CheckoutPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [currentStep])
+
   const [formData, setFormData] = useState({
     firstName: "", lastName: "", email: "", phone: "",
     countryCode: "+91", street: "", city: "", state: "",
