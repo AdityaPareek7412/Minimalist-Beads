@@ -50,6 +50,22 @@ export default function AdminCouponsPage() {
     }
   }
 
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this coupon?")) return
+    try {
+      const res = await fetch(`/api/admin/coupons?id=${id}`, {
+        method: "DELETE",
+      })
+      if (res.ok) {
+        fetchCoupons()
+      } else {
+        alert("Failed to delete coupon")
+      }
+    } catch (err) {
+      alert("Something went wrong")
+    }
+  }
+
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-8">
@@ -133,7 +149,10 @@ export default function AdminCouponsPage() {
                       </p>
                       <p className="text-sm font-medium text-gray-700">{new Date(coupon.validUntil).toLocaleDateString()}</p>
                     </div>
-                    <button className="text-gray-300 hover:text-red-500 transition-colors p-2">
+                    <button 
+                      onClick={() => handleDelete(coupon.id)}
+                      className="text-gray-300 hover:text-red-500 transition-colors p-2"
+                    >
                       <Trash2 size={20} />
                     </button>
                   </div>
