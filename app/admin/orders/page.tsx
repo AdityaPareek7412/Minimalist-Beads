@@ -9,6 +9,11 @@ export const dynamic = "force-dynamic"
 
 export default async function AdminOrdersPage() {
   const orders = await prisma.order.findMany({
+    where: {
+      status: {
+        not: "PENDING"
+      }
+    },
     orderBy: { createdAt: "desc" },
     include: {
       shippingAddress: true,
