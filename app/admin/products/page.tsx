@@ -1,90 +1,15 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Plus, Trash2, Edit, ExternalLink, GripVertical, Check, Loader2 } from "lucide-react"
+import { Plus, Trash2, Edit, ExternalLink, GripVertical, Check, Loader2, Settings } from "lucide-react"
 import { formatPrice } from "@/lib/utils/helpers"
-import { Reorder, useDragControls } from "framer-motion"
+import { Reorder } from "framer-motion"
 
-interface ProductRowProps {
-  product: any
-  handleDelete: (id: string) => void
-}
-
-function ProductRow({ product, handleDelete }: ProductRowProps) {
-  const dragControls = useDragControls()
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const startPos = useRef({ x: 0, y: 0 })
-  const [isReadyToDrag, setIsReadyToDrag] = useState(false)
-  const [isPressing, setIsPressing] = useState(false)
-
-  const startLongPress = (event: React.PointerEvent) => {
-    // Only handle primary touch / click
-    if (event.button !== 0) return
-
-    setIsPressing(true)
-    startPos.current = { x: event.clientX, y: event.clientY }
-    
-    // Set a quick hold timer (250ms) to differentiate tap/drag from swipe scroll
-    timeoutRef.current = setTimeout(() => {
-      setIsReadyToDrag(true)
-      dragControls.start(event)
-    }, 250)
-  }
-
-  const cancelLongPress = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
-    setIsReadyToDrag(false)
-    setIsPressing(false)
-  }
-
-  const handlePointerMove = (event: React.PointerEvent) => {
-    if (!timeoutRef.current || isReadyToDrag) return
-
-    const diffX = Math.abs(event.clientX - startPos.current.x)
-    const diffY = Math.abs(event.clientY - startPos.current.y)
-
-    // If they start moving their finger immediately, they are scrolling the page.
-    // Cancel the drag action.
-    if (diffX > 5 || diffY > 5) {
-      cancelLongPress()
-    }
-  }
-
+// Static Row for Normal Mode - 100% native HTML, zero drag listeners, super smooth scrolling.
+function StaticProductRow({ product, handleDelete }: { product: any, handleDelete: (id: string) => void }) {
   return (
-    <Reorder.Item
-      value={product}
-      dragListener={false}
-      dragControls={dragControls}
-      className={`bg-white rounded-2xl p-4 sm:p-5 shadow-sm border flex items-center gap-4 transition-all select-none ${
-        isReadyToDrag 
-          ? "border-pink-500 shadow-xl scale-[1.02] z-50 ring-2 ring-pink-500/20" 
-          : "border-gray-100 hover:border-pink-200"
-      }`}
-    >
-      {/* Drag Handle - ONLY this element has touch listeners to protect native scroll momentum */}
-      <div
-        onPointerDown={startLongPress}
-        onPointerUp={cancelLongPress}
-        onPointerCancel={cancelLongPress}
-        onPointerMove={handlePointerMove}
-        style={{
-          touchAction: isReadyToDrag ? "none" : "pan-y"
-        }}
-        className={`text-gray-400 flex-shrink-0 p-3 rounded-xl border border-transparent transition-all cursor-grab active:cursor-grabbing ${
-          isReadyToDrag 
-            ? "text-pink-500 bg-pink-50 border-pink-100" 
-            : isPressing 
-              ? "bg-gray-100" 
-              : "hover:bg-gray-50 hover:text-pink-500"
-        }`}
-      >
-        <GripVertical size={20} />
-      </div>
-
+    <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 flex items-center gap-4 hover:border-pink-200 transition-all">
       {/* Thumbnail */}
       <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100 select-none pointer-events-none">
         {product.images?.[0]?.url && (
@@ -156,6 +81,32 @@ function ProductRow({ product, handleDelete }: ProductRowProps) {
           <ExternalLink className="w-4.5 h-4.5" />
         </a>
       </div>
+    </div>
+  )
+}
+
+// Compact Draggable Row for Reorder Mode - optimized to fit many items on screen for easy sorting.
+function DraggableProductRow({ product }: { product: any }) {
+  return (
+    <Reorder.Item
+      value={product}
+      className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex items-center gap-4 cursor-row-resize hover:border-pink-200 active:border-pink-500 active:scale-[1.01] transition-all select-none"
+    >
+      <div className="text-gray-400 flex-shrink-0">
+        <GripVertical size={20} />
+      </div>
+      <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 pointer-events-none">
+        {product.images?.[0]?.url && (
+          <img src={product.images[0].url} alt="" className="w-full h-full object-cover" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-bold text-gray-900 truncate text-sm">{product.name}</div>
+        <div className="text-xs text-gray-400 font-mono truncate">/{product.slug}</div>
+      </div>
+      <div className="text-xs font-semibold text-pink-600 bg-pink-50 px-2.5 py-1 rounded-full flex-shrink-0">
+        {formatPrice(product.price)}
+      </div>
     </Reorder.Item>
   )
 }
@@ -164,6 +115,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [isReorderMode, setIsReorderMode] = useState(false)
 
   useEffect(() => {
     fetchProducts()
@@ -213,10 +165,14 @@ export default function AdminProductsPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        
+        {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-bold text-gray-900">Manage Products</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {isReorderMode ? "Sort Products" : "Manage Products"}
+              </h1>
               {!loading && products.length > 0 && (
                 saving ? (
                   <span className="flex items-center gap-1.5 text-xs text-pink-600 font-bold bg-pink-50 px-3 py-1 rounded-full animate-pulse">
@@ -230,18 +186,44 @@ export default function AdminProductsPage() {
               )}
             </div>
             <p className="text-gray-500 mt-1.5 text-sm">
-              Touch and hold the grip handle (⋮⋮) for a split second to drag. Swipe anywhere else to scroll the list at full native speed.
+              {isReorderMode 
+                ? "Drag and drop the items below to customize their display order, then click Finish."
+                : "Manage product stock and catalog with 100% native smooth scrolling."
+              }
             </p>
           </div>
-          <Link
-            href="/admin/products/add"
-            className="inline-flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-pink-200"
-          >
-            <Plus className="w-5 h-5" />
-            Add New Product
-          </Link>
+
+          <div className="flex items-center gap-3">
+            {isReorderMode ? (
+              <button
+                onClick={() => setIsReorderMode(false)}
+                className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl font-bold transition-all shadow-lg shadow-green-100"
+              >
+                <Check className="w-5 h-5" />
+                Finish & Save
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => setIsReorderMode(true)}
+                  className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-5 py-3 rounded-xl font-bold transition-all shadow-lg"
+                >
+                  <GripVertical className="w-4.5 h-4.5 text-pink-400" />
+                  Sort Products
+                </button>
+                <Link
+                  href="/admin/products/add"
+                  className="inline-flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white px-5 py-3 rounded-xl font-bold transition-all shadow-lg shadow-pink-200"
+                >
+                  <Plus className="w-5 h-5" />
+                  Add New Product
+                </Link>
+              </>
+            )}
+          </div>
         </div>
 
+        {/* Content Section */}
         {loading ? (
           <div className="flex justify-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
@@ -250,17 +232,28 @@ export default function AdminProductsPage() {
           <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
             <p className="text-gray-400 text-lg">No products found. Start by adding your first aesthetic piece! ✨</p>
           </div>
-        ) : (
-          <div className="space-y-4">
-            <Reorder.Group values={products} onReorder={handleReorder} className="space-y-4">
+        ) : isReorderMode ? (
+          /* Draggable List for Reorder Mode */
+          <div className="max-w-2xl mx-auto space-y-3 bg-gray-100/50 p-4 rounded-3xl border border-gray-200">
+            <div className="text-xs text-gray-500 font-bold uppercase tracking-wider text-center mb-2">
+              Drag items below to sort
+            </div>
+            <Reorder.Group values={products} onReorder={handleReorder} className="space-y-2">
               {products.map((product) => (
-                <ProductRow
-                  key={product.id}
-                  product={product}
-                  handleDelete={handleDelete}
-                />
+                <DraggableProductRow key={product.id} product={product} />
               ))}
             </Reorder.Group>
+          </div>
+        ) : (
+          /* Static List for Normal Mode - Super smooth, 100% native momentum scrolling */
+          <div className="space-y-4">
+            {products.map((product) => (
+              <StaticProductRow
+                key={product.id}
+                product={product}
+                handleDelete={handleDelete}
+              />
+            ))}
           </div>
         )}
       </div>
