@@ -83,8 +83,10 @@ export default function CheckoutPage() {
   const subtotal = getCartTotal()
   const shipping = settings.shippingFee
   const discount = appliedCoupon ? appliedCoupon.discount : 0
-  const total = subtotal + shipping - discount
-  const isBelowMinimum = total < 199
+  const baseTotal = subtotal + shipping - discount
+  const processingFee = Math.round((baseTotal * 0.0236) * 100) / 100
+  const finalTotal = baseTotal + processingFee
+  const isBelowMinimum = baseTotal < 199
 
   const validateCoupon = async () => {
     if (!couponCode) return
@@ -169,7 +171,7 @@ export default function CheckoutPage() {
           shippingCost: shipping,
           discount,
           couponId: appliedCoupon?.couponId,
-          totalAmount: total,
+          totalAmount: finalTotal,
           paymentMethod: "razorpay"
         })
       })
@@ -186,7 +188,7 @@ export default function CheckoutPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: total,
+          amount: finalTotal,
           receipt: dbOrderId,
           notes: {
             customerName: `${formData.firstName} ${formData.lastName}`,
@@ -228,7 +230,7 @@ export default function CheckoutPage() {
             }
 
             clearCart()
-            router.push(`/order-confirmation?orderId=${response.razorpay_order_id}&amount=${total}&method=online`)
+            router.push(`/order-confirmation?orderId=${response.razorpay_order_id}&amount=${finalTotal}&method=online`)
           } catch (err: any) {
             alert("Payment confirmation error: " + err.message)
             setIsProcessing(false)
@@ -276,7 +278,7 @@ export default function CheckoutPage() {
               <p className="text-rose-600 text-xs font-bold uppercase tracking-widest flex items-center gap-2 px-6">
                 <XCircle size={16} /> Minimum order value is ₹199 (including shipping)
               </p>
-              <p className="text-rose-400 text-[10px] mt-1 font-medium italic">Please add ₹{(199 - total).toFixed(2)} more to continue</p>
+              <p className="text-rose-400 text-[10px] mt-1 font-medium italic">Please add ₹{(199 - baseTotal).toFixed(2)} more to continue</p>
             </motion.div>
           )}
         </div>
@@ -462,9 +464,18 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-xs text-gray-500 uppercase tracking-widest"><span>Subtotal</span><span className="text-gray-900 font-bold">{formatPrice(subtotal)}</span></div>
                 <div className="flex justify-between text-xs text-gray-500 uppercase tracking-widest"><span>Shipping</span><span className="text-gray-900 font-bold">{formatPrice(shipping)}</span></div>
                 {discount > 0 && <div className="flex justify-between text-pink-600 font-bold text-xs uppercase tracking-widest"><span>Discount</span><span>-{formatPrice(discount)}</span></div>}
+                <div className="flex justify-between text-xs text-gray-500 uppercase tracking-widest"><span>Payment Processing Fee</span><span className="text-gray-900 font-bold">{formatPrice(processingFee)}</span></div>
                 <div className="border-t border-pink-50 pt-6 flex justify-between items-center">
                   <span className="font-serif font-bold text-gray-900">Total</span>
-                  <span className="font-bold text-pink-600 text-2xl">{formatPrice(total)}</span>
+                  <motion.span 
+                    key={finalTotal}
+                    initial={{ opacity: 0.5, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="font-bold text-pink-600 text-2xl"
+                  >
+                    {formatPrice(finalTotal)}
+                  </motion.span>
                 </div>
               </div>
 
