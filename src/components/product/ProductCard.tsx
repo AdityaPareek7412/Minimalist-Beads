@@ -134,56 +134,6 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           <Heart size={18} className={isInWishlist(product.id) ? "fill-current" : ""} />
         </button>
 
-        {/* Quick Add Overlay */}
-        {product.stock > 0 && (
-          <div className={`absolute bottom-3 left-3 right-3 transition-all duration-300 transform z-10 ${isHovered && cartQty === 0 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-            <button
-              onClick={handleAddToCart}
-              className="w-full bg-gray-900/90 backdrop-blur-sm text-white py-2.5 rounded-full font-bold text-xs flex items-center justify-center gap-2 hover:bg-pink-500 transition-colors shadow-lg"
-            >
-              <ShoppingBag size={14} />
-              ADD TO CART
-            </button>
-          </div>
-        )}
-
-        {/* Cart Quantity Overlay */}
-        {cartQty > 0 && product.stock > 0 && (
-          <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center z-10">
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex items-center bg-white rounded-full shadow-lg border border-pink-100 p-1">
-                <button
-                  onClick={handleDecrement}
-                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-pink-50 text-gray-600 transition-colors"
-                >
-                  <Minus size={14} />
-                </button>
-                <span className="w-8 text-center font-bold text-gray-900">{cartQty}</span>
-                <button
-                  onClick={handleIncrement}
-                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-pink-50 text-gray-600 transition-colors"
-                >
-                  <Plus size={14} />
-                </button>
-              </div>
-              <button
-                onClick={handleGoToCart}
-                className="bg-gray-900 text-white text-[10px] font-bold px-4 py-1.5 rounded-full hover:bg-pink-500 transition-colors shadow-md"
-              >
-                GO TO CART
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Out of Stock Overlay Text */}
-        {product.stock === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/5">
-             <span className="bg-white/90 backdrop-blur-md text-gray-900 px-6 py-2 rounded-full font-bold text-[10px] uppercase tracking-[0.2em] shadow-xl border border-pink-100 scale-90 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300">
-                Unavailable
-             </span>
-          </div>
-        )}
       </Link>
 
       {/* Product Info */}
@@ -215,6 +165,50 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             <span className="text-[10px] font-bold text-orange-500 uppercase tracking-tighter">
               Only {product.stock} left!
             </span>
+          )}
+        </div>
+
+        {/* Always Visible Add to Cart Button Section */}
+        <div className="mt-4 pt-3 border-t border-pink-50/50">
+          {product.stock === 0 ? (
+            <button
+              disabled
+              className="w-full bg-gray-100 text-gray-400 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest cursor-not-allowed text-center"
+            >
+              Out of Stock
+            </button>
+          ) : cartQty > 0 ? (
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center bg-pink-50/50 rounded-xl border border-pink-100 p-0.5 flex-1">
+                <button
+                  onClick={handleDecrement}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-pink-100 text-pink-600 transition-colors"
+                >
+                  <Minus size={12} />
+                </button>
+                <span className="flex-1 text-center font-bold text-xs text-gray-800">{cartQty}</span>
+                <button
+                  onClick={handleIncrement}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-pink-100 text-pink-600 transition-colors"
+                >
+                  <Plus size={12} />
+                </button>
+              </div>
+              <button
+                onClick={handleGoToCart}
+                className="bg-pink-600 text-white text-xs font-bold px-3 py-2 rounded-xl hover:bg-pink-700 transition-colors shadow-sm flex items-center gap-1"
+              >
+                Cart <ShoppingCart size={12} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleAddToCart}
+              className="w-full bg-gray-900 hover:bg-pink-600 text-white py-2.5 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-sm"
+            >
+              <ShoppingBag size={14} />
+              ADD TO CART
+            </button>
           )}
         </div>
       </div>
