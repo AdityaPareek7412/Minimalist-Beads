@@ -26,11 +26,17 @@ export default function AddProductPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files) {
-      Array.from(files).forEach(file => {
-        if (images.length >= 4) return
+      const filesArray = Array.from(files);
+      const maxRemaining = 10 - images.length;
+      const filesToProcess = filesArray.slice(0, maxRemaining);
+
+      filesToProcess.forEach(file => {
         const reader = new FileReader()
         reader.onloadend = () => {
-          setImages(prev => [...prev, reader.result as string])
+          setImages(prev => {
+            if (prev.length >= 10) return prev;
+            return [...prev, reader.result as string];
+          })
         }
         reader.readAsDataURL(file)
       })
@@ -86,7 +92,7 @@ export default function AddProductPage() {
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
           <div className="p-8 border-b border-gray-100 bg-gray-50/50">
             <h1 className="text-2xl font-bold text-gray-900">Add New Aesthetic Piece</h1>
-            <p className="text-gray-500">Add up to 4 photos to showcase your piece in detail.</p>
+            <p className="text-gray-500">Add up to 10 photos to showcase your piece in detail.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 space-y-8">
@@ -95,7 +101,7 @@ export default function AddProductPage() {
               <div className="lg:col-span-5 space-y-6">
                 <label className="block text-sm font-bold text-gray-700 flex items-center justify-between">
                   Product Gallery
-                  <span className="text-[10px] font-bold text-pink-500 uppercase tracking-widest">{images.length}/4 Photos</span>
+                  <span className="text-[10px] font-bold text-pink-500 uppercase tracking-widest">{images.length}/10 Photos</span>
                 </label>
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -115,7 +121,7 @@ export default function AddProductPage() {
                      </div>
                    ))}
                    
-                   {images.length < 4 && (
+                   {images.length < 10 && (
                      <div className="relative aspect-square">
                         <div className="w-full h-full rounded-xl border-2 border-dashed border-gray-200 hover:border-pink-300 bg-gray-50 flex flex-col items-center justify-center transition-all">
                            <Upload className="w-6 h-6 text-gray-400 mb-2" />
