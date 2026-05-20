@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
-import crypto from "crypto"
+
 
 export const dynamic = "force-dynamic"
 
@@ -26,8 +26,10 @@ export async function POST(req: NextRequest) {
     const orderItems = data.cart.map((item: any) => ({
       productId: item.product.id,
       quantity: item.quantity,
-      price: item.product.price,
-      total: item.product.price * item.quantity,
+      price: item.selectedVariant?.price ?? item.product.price,
+      total: (item.selectedVariant?.price ?? item.product.price) * item.quantity,
+      selectedVariantId: item.selectedVariant?.id || null,
+      selectedVariantName: item.selectedVariant?.name || null,
     }))
 
     const isCod = data.paymentMethod === "cod"
@@ -70,12 +72,30 @@ export async function POST(req: NextRequest) {
       if (isCod) {
         // 2. Decrement stock for each item
         for (const item of orderItems) {
+          if (item.selectedVariantId) {
+            await tx.productVariant.update({
+              where: { id: item.selectedVariantId },
+              data: {
+                stock: {
+                  decrement: item.quantity
+                }
+              }
+            })
+          } else {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: {
+                stock: {
+                  decrement: item.quantity
+                }
+              }
+            })
+          }
+
+          // Increment sold count for the main product in both cases
           await tx.product.update({
             where: { id: item.productId },
             data: {
-              stock: {
-                decrement: item.quantity
-              },
               sold: {
                 increment: item.quantity
               }

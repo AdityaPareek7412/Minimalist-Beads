@@ -3,13 +3,13 @@
 "use client"
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react"
-import { CartItem, Product } from "@/types"
+import { CartItem, Product, ProductVariant } from "@/types"
 
 interface CartContextType {
   cart: CartItem[]
-  addToCart: (product: Product, quantity: number) => void
-  removeFromCart: (productId: string) => void
-  updateQuantity: (productId: string, quantity: number) => void
+  addToCart: (product: Product, quantity: number, selectedVariant?: ProductVariant) => void
+  removeFromCart: (cartItemId: string) => void
+  updateQuantity: (cartItemId: string, quantity: number) => void
   clearCart: () => void
   getCartTotal: () => number
   getCartCount: () => number
@@ -37,24 +37,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("cart", JSON.stringify(cart))
   }, [cart])
 
-  const addToCart = useCallback((product: Product, quantity: number) => {
+  const addToCart = useCallback((product: Product, quantity: number, selectedVariant?: ProductVariant) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.productId === product.id)
+      const existingItem = prevCart.find(
+        (item) => item.productId === product.id && item.selectedVariant?.id === selectedVariant?.id
+      )
 
       if (existingItem) {
         return prevCart.map((item) =>
-          item.productId === product.id ? { ...item, quantity: item.quantity + quantity } : item
+          item.productId === product.id && item.selectedVariant?.id === selectedVariant?.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
         )
       }
 
       return [
         ...prevCart,
         {
-          id: `${product.id}-${Date.now()}`,
+          id: `${product.id}-${selectedVariant?.id || "default"}-${Date.now()}`,
           userId: "",
           productId: product.id,
           product,
           quantity,
+          selectedVariant,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -62,18 +67,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
-  const removeFromCart = useCallback((productId: string) => {
-    setCart((prevCart) => prevCart.filter((item) => item.productId !== productId))
+  const removeFromCart = useCallback((cartItemId: string) => {
+    setCart((prevCart) => prevCart.filter((item) => item.id !== cartItemId))
   }, [])
 
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
+  const updateQuantity = useCallback((cartItemId: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(productId)
+      removeFromCart(cartItemId)
       return
     }
 
     setCart((prevCart) =>
-      prevCart.map((item) => (item.productId === productId ? { ...item, quantity } : item))
+      prevCart.map((item) => (item.id === cartItemId ? { ...item, quantity } : item))
     )
   }, [removeFromCart])
 
@@ -82,7 +87,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const getCartTotal = useCallback(() => {
-    return cart.reduce((total, item) => total + (item.product?.price || 0) * item.quantity, 0)
+    return cart.reduce((total, item) => {
+      const price = item.selectedVariant?.price ?? item.product?.price ?? 0
+      return total + price * item.quantity
+    }, 0)
   }, [cart])
 
   const getCartCount = useCallback(() => {

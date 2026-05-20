@@ -79,12 +79,30 @@ export async function POST(req: NextRequest) {
 
       // 3. Decrement stock for each item in the order
       for (const item of order.items) {
+        if (item.selectedVariantId) {
+          await tx.productVariant.update({
+            where: { id: item.selectedVariantId },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
+            },
+          })
+        } else {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
+            },
+          })
+        }
+
+        // Increment sold count for the main product in both cases
         await tx.product.update({
           where: { id: item.productId },
           data: {
-            stock: {
-              decrement: item.quantity,
-            },
             sold: {
               increment: item.quantity,
             },

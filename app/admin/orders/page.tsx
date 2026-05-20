@@ -112,6 +112,11 @@ export default async function AdminOrdersPage() {
                           </div>
                           <div>
                             <p className="font-semibold text-gray-900">{item.product?.name || "Deleted Product"}</p>
+                            {item.selectedVariantName && (
+                              <p className="text-pink-600 text-[10px] font-bold uppercase tracking-wider">
+                                Variant: {item.selectedVariantName}
+                              </p>
+                            )}
                             <p className="text-gray-500 text-xs font-medium">Qty: {item.quantity} × {formatPrice(item.price)}</p>
                           </div>
                         </div>

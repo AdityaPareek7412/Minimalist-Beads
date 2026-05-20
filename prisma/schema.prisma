@@ -89,6 +89,7 @@ model Product {
   wishlistItems WishlistItem[]
   reviews     Review[]
   cartItems   CartItem[]
+  variants    ProductVariant[]
 
   @@index([slug])
   @@index([categoryId])
@@ -241,9 +242,11 @@ model OrderItem {
   productId String
   product   Product  @relation(fields: [productId], references: [id])
   quantity  Int
-  price     Float
-  total     Float
-  createdAt DateTime @default(now())
+  price               Float
+  total               Float
+  selectedVariantId   String?
+  selectedVariantName String?
+  createdAt           DateTime @default(now())
 
   @@index([orderId])
   @@index([productId])
@@ -344,4 +347,18 @@ enum PaymentMethod {
   UPI
   WALLET
   COD
+}
+
+// ProductVariant model
+model ProductVariant {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name        String   // e.g. "red", "blue"
+  price       Float?   // specific price, null if same as base product price
+  stock       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([productId])
 }

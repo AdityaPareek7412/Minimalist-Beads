@@ -22,6 +22,7 @@ export interface Product {
   }>;
   createdAt: Date;
   updatedAt: Date;
+  variants?: ProductVariant[];
 }
 
 export interface ProductImage {
@@ -61,6 +62,17 @@ export interface CartItem {
   productId: string;
   product?: Product;
   quantity: number;
+  selectedVariant?: ProductVariant;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ProductVariant {
+  id: string;
+  productId: string;
+  name: string;
+  price: number | null;
+  stock: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -102,6 +114,8 @@ export interface OrderItem {
   quantity: number;
   price: number;
   total: number;
+  selectedVariantId?: string | null;
+  selectedVariantName?: string | null;
 }
 
 export interface Payment {

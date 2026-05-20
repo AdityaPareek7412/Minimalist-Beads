@@ -10,6 +10,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
     include: {
       images: true,
       category: true,
+      variants: true,
     }
   })
 

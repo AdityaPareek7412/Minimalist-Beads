@@ -15,12 +15,15 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
   const [quantity, setQuantity] = useState(1)
   const [selectedImage, setSelectedImage] = useState(0)
   const [isAdded, setIsAdded] = useState(false)
+  const [selectedVariant, setSelectedVariant] = useState<any>(
+    product.variants && product.variants.length > 0 ? product.variants[0] : null
+  )
   const { addToCart } = useCart()
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
   const router = useRouter()
 
   const handleAddToCart = () => {
-    addToCart(product, quantity)
+    addToCart(product, quantity, selectedVariant || undefined)
     setIsAdded(true)
     setTimeout(() => setIsAdded(false), 2000)
   }
@@ -32,6 +35,10 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
       addToWishlist(product)
     }
   }
+
+  const displayPrice = selectedVariant?.price ?? product.price
+  const displayStock = selectedVariant ? selectedVariant.stock : product.stock
+  const hasVariants = product.variants && product.variants.length > 0
 
   return (
     <div className="min-h-screen bg-[#fdf0f5]">
@@ -95,7 +102,7 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
           >
             {/* Badges */}
             <div className="flex gap-2 mb-6">
-              {product.stock === 0 ? (
+              {displayStock === 0 ? (
                 <span className="bg-gray-900 text-white px-4 py-1.5 text-[10px] font-bold rounded-full shadow-lg tracking-[0.2em] border border-white/10 uppercase">
                   OUT OF STOCK
                 </span>
@@ -115,38 +122,72 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
               )}
             </div>
 
-            <h1 className={`text-4xl sm:text-5xl font-sans font-bold mb-4 leading-tight tracking-tight ${product.stock === 0 ? 'text-gray-400' : 'text-gray-900'}`}>
+            <h1 className={`text-4xl sm:text-5xl font-sans font-bold mb-4 leading-tight tracking-tight ${displayStock === 0 ? 'text-gray-400' : 'text-gray-900'}`}>
               {product.name}
             </h1>
             
             <div className="flex items-center gap-4 mb-8 pb-8 border-b border-pink-50">
               <div className="flex items-center gap-2">
-                <span className={`text-3xl font-bold ${product.stock === 0 ? 'text-gray-300' : 'text-pink-600'}`}>
-                  {formatPrice(product.price)}
+                <span className={`text-3xl font-bold ${displayStock === 0 ? 'text-gray-300' : 'text-pink-600'}`}>
+                  {formatPrice(displayPrice)}
                 </span>
-                {product.originalPrice && product.originalPrice > product.price && (
+                {product.originalPrice && product.originalPrice > displayPrice && (
                   <span className="text-xl text-gray-400 line-through">
                     {formatPrice(product.originalPrice)}
                   </span>
                 )}
               </div>
-              {product.originalPrice && product.originalPrice > product.price && product.stock > 0 && (
+              {product.originalPrice && product.originalPrice > displayPrice && displayStock > 0 && (
                 <span className="bg-pink-100 text-pink-500 px-2 py-0.5 rounded-lg text-sm font-bold">
-                  SAVE {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                  SAVE {Math.round(((product.originalPrice - displayPrice) / product.originalPrice) * 100)}%
                 </span>
               )}
             </div>
 
-            <div className="prose prose-sm text-gray-600 mb-10 leading-relaxed font-light">
+            <div className="prose prose-sm text-gray-600 mb-8 leading-relaxed font-light">
               <p>{product.description}</p>
             </div>
+
+            {/* Product Variants (Colors/Styles) */}
+            {hasVariants && (
+              <div className="mb-8 bg-pink-50/20 p-5 rounded-2xl border border-pink-100/50">
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">
+                  Select Option/Color
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {product.variants.map((variant: any) => {
+                    const isSelected = selectedVariant?.id === variant.id;
+                    const variantPrice = variant.price ?? product.price;
+                    return (
+                      <button
+                        key={variant.id}
+                        type="button"
+                        onClick={() => setSelectedVariant(variant)}
+                        className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all border ${
+                          isSelected
+                            ? "bg-pink-500 border-pink-500 text-white shadow-md shadow-pink-200 scale-105"
+                            : "bg-white border-pink-100 text-gray-700 hover:border-pink-300 hover:bg-pink-50/30"
+                        }`}
+                      >
+                        {variant.name}
+                        {variant.price && variant.price !== product.price && (
+                          <span className={`ml-1.5 text-[10px] font-normal ${isSelected ? 'text-pink-100' : 'text-pink-500'}`}>
+                            ({formatPrice(variant.price)})
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Stock & Features */}
             <div className="space-y-4 mb-10">
               <div className="flex items-center gap-3">
-                <div className={`w-2 h-2 rounded-full ${product.stock > 0 ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
-                <span className={`text-xs font-bold uppercase tracking-wider ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {product.stock > 0 ? `In Stock (${product.stock} available)` : 'Sold Out / Unavailable'}
+                <div className={`w-2 h-2 rounded-full ${displayStock > 0 ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                <span className={`text-xs font-bold uppercase tracking-wider ${displayStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {displayStock > 0 ? `In Stock (${displayStock} available)` : 'Sold Out / Unavailable'}
                 </span>
               </div>
               <div className="flex items-center gap-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -163,7 +204,7 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
 
             {/* Quantity & Actions */}
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className={`flex items-center bg-pink-50/50 border border-pink-100 rounded-full p-1.5 shadow-inner ${product.stock === 0 ? 'opacity-50 pointer-events-none' : ''}`}>
+              <div className={`flex items-center bg-pink-50/50 border border-pink-100 rounded-full p-1.5 shadow-inner ${displayStock === 0 ? 'opacity-50 pointer-events-none' : ''}`}>
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="w-10 h-10 flex items-center justify-center rounded-full bg-white hover:bg-pink-100 text-gray-600 transition-all border border-pink-100 shadow-sm"
@@ -181,9 +222,9 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
 
               <button
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
+                disabled={displayStock === 0}
                 className={`flex-1 py-4 px-8 rounded-full font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 shadow-lg hover:shadow-pink-200 flex items-center justify-center gap-3 ${
-                  product.stock === 0
+                  displayStock === 0
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
                     : isAdded
                     ? "bg-emerald-600 text-white"
@@ -191,7 +232,7 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
                 }`}
               >
                 <ShoppingBag size={18} />
-                {product.stock === 0 ? "SOLD OUT" : isAdded ? "ADDED TO MAGIC" : "ADD TO CART"}
+                {displayStock === 0 ? "SOLD OUT" : isAdded ? "ADDED TO BAG" : "ADD TO BAG"}
               </button>
             </div>
 

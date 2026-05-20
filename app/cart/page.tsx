@@ -52,58 +52,66 @@ export default function CartPage() {
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
               <AnimatePresence>
-                {cart.map((item) => (
-                  <motion.div
-                    key={item.productId}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-white rounded-2xl border border-pink-50 shadow-sm hover:shadow-md transition-all group"
-                  >
-                    <div className="relative w-32 h-32 rounded-xl overflow-hidden bg-pink-50/30 flex-shrink-0 border border-pink-100">
-                      <Image
-                        src={item.product?.images?.[0]?.url || ""}
-                        alt={item.product?.name || ""}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    
-                    <div className="flex-1 text-center sm:text-left">
-                      <h3 className="text-lg font-sans font-bold text-gray-900 group-hover:text-pink-600 transition-colors">
-                        {item.product?.name}
-                      </h3>
-                      <p className="text-pink-600 font-bold mt-1">{formatPrice(item.product?.price || 0)}</p>
-                    </div>
+                {cart.map((item) => {
+                  const itemPrice = item.selectedVariant?.price ?? item.product?.price ?? 0;
+                  return (
+                    <motion.div
+                      key={item.id}
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-white rounded-2xl border border-pink-50 shadow-sm hover:shadow-md transition-all group"
+                    >
+                      <div className="relative w-32 h-32 rounded-xl overflow-hidden bg-pink-50/30 flex-shrink-0 border border-pink-100">
+                        <Image
+                          src={item.product?.images?.[0]?.url || ""}
+                          alt={item.product?.name || ""}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                      
+                      <div className="flex-1 text-center sm:text-left">
+                        <h3 className="text-lg font-sans font-bold text-gray-900 group-hover:text-pink-600 transition-colors">
+                          {item.product?.name}
+                        </h3>
+                        {item.selectedVariant && (
+                          <span className="inline-block mt-1.5 px-3 py-1 bg-pink-50 text-pink-700 rounded-full text-xs font-bold font-mono">
+                            Color/Variant: {item.selectedVariant.name}
+                          </span>
+                        )}
+                        <p className="text-pink-600 font-bold mt-1">{formatPrice(itemPrice)}</p>
+                      </div>
 
-                    <div className="flex items-center bg-pink-50/50 border border-pink-100 rounded-full p-1 shadow-inner">
-                      <button
-                        onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))}
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-pink-100 text-gray-600 transition-all shadow-sm"
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <span className="w-10 text-center font-bold text-gray-900">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-pink-100 text-gray-600 transition-all shadow-sm"
-                      >
-                        <Plus size={14} />
-                      </button>
-                    </div>
+                      <div className="flex items-center bg-pink-50/50 border border-pink-100 rounded-full p-1 shadow-inner">
+                        <button
+                          onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                          className="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-pink-100 text-gray-600 transition-all shadow-sm"
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="w-10 text-center font-bold text-gray-900">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-pink-100 text-gray-600 transition-all shadow-sm"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
 
-                    <div className="text-center sm:text-right min-w-[100px]">
-                      <p className="text-gray-900 font-bold mb-2">{formatPrice((item.product?.price || 0) * item.quantity)}</p>
-                      <button
-                        onClick={() => removeFromCart(item.productId)}
-                        className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
+                      <div className="text-center sm:text-right min-w-[100px]">
+                        <p className="text-gray-900 font-bold mb-2">{formatPrice(itemPrice * item.quantity)}</p>
+                        <button
+                          onClick={() => removeFromCart(item.id)}
+                          className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </AnimatePresence>
             </div>
 

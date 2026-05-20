@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Upload, Image as ImageIcon, X } from "lucide-react"
+import { ArrowLeft, Upload, Image as ImageIcon, X, Plus, Trash2 } from "lucide-react"
 import Link from "next/link"
 
 export default function AddProductPage() {
@@ -16,6 +16,10 @@ export default function AddProductPage() {
   const [isFeatured, setIsFeatured] = useState(false)
   const [loading, setLoading] = useState(false)
   const [compressingCount, setCompressingCount] = useState(0)
+  
+  // Variants State
+  const [variants, setVariants] = useState<any[]>([])
+
   const router = useRouter()
 
   const compressImage = (base64Str: string): Promise<string> => {
@@ -98,23 +102,44 @@ export default function AddProductPage() {
     setImages(prev => prev.filter((_, i) => i !== index))
   }
 
+  const addVariant = () => {
+    setVariants(prev => [...prev, { name: "", price: "", stock: "10" }])
+  }
+
+  const updateVariant = (index: number, field: string, value: string) => {
+    setVariants(prev => prev.map((v, i) => i === index ? { ...v, [field]: value } : v))
+  }
+
+  const removeVariant = (index: number) => {
+    setVariants(prev => prev.filter((_, i) => i !== index))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (images.length === 0) return alert("Please select at least one image")
     
     setLoading(true)
     try {
+      const formattedVariants = variants
+        .filter(v => v.name.trim() !== "")
+        .map(v => ({
+          name: v.name.trim(),
+          price: v.price ? parseFloat(v.price) : null,
+          stock: parseInt(v.stock) || 0
+        }))
+
       const res = await fetch("/api/admin/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           name, 
-          price, 
-          stock,
+          price: parseFloat(price), 
+          stock: parseInt(stock) || 0,
           description, 
           categoryId, 
           imagesBase64: images, 
-          featured: isFeatured 
+          featured: isFeatured,
+          variants: formattedVariants
         }),
       })
 
@@ -143,7 +168,7 @@ export default function AddProductPage() {
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
           <div className="p-8 border-b border-gray-100 bg-gray-50/50">
             <h1 className="text-2xl font-bold text-gray-900">Add New Aesthetic Piece</h1>
-            <p className="text-gray-500">Add up to 10 photos to showcase your piece in detail.</p>
+            <p className="text-gray-500 text-sm mt-1">Add up to 10 photos to showcase your piece in detail.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 space-y-8">
@@ -193,7 +218,7 @@ export default function AddProductPage() {
               </div>
 
               {/* Basic Info */}
-              <div className="space-y-4">
+              <div className="lg:col-span-7 space-y-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">Product Name</label>
                   <input
@@ -202,30 +227,30 @@ export default function AddProductPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Vintage Resin Frame"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all text-gray-900"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Price (₹)</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Base Price (₹)</label>
                     <input
                       type="number"
                       required
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
                       placeholder="499"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all text-gray-900"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Stock Level</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Base Stock Level</label>
                     <input
                       type="number"
                       required
                       value={stock}
                       onChange={(e) => setStock(e.target.value)}
                       placeholder="10"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all text-gray-900"
                     />
                   </div>
                 </div>
@@ -235,7 +260,7 @@ export default function AddProductPage() {
                     required
                     value={categoryId}
                     onChange={(e) => setCategoryId(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all appearance-none"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all appearance-none text-gray-900"
                   >
                     <option value="">Select Category</option>
                     {categories.map(cat => (
@@ -253,8 +278,79 @@ export default function AddProductPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Tell your customers about this aesthetic piece..."
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all resize-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all resize-none text-gray-900"
               ></textarea>
+            </div>
+
+            {/* Product Variants Section */}
+            <div className="border-t border-gray-100 pt-8">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Product Variations</h3>
+                  <p className="text-xs text-gray-500">Define colors, sizes, or styles. Leave variant price empty to inherit the base price.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={addVariant}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-pink-50 text-pink-600 hover:bg-pink-100 rounded-xl text-xs font-bold transition-all"
+                >
+                  <Plus size={16} /> Add Variant Option
+                </button>
+              </div>
+
+              {variants.length === 0 ? (
+                <div className="p-8 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                  <span className="text-2xl">✨</span>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-2">No Variations Added</p>
+                  <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">This product only has one default option. Click above to add choices like color overrides.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {variants.map((variant, index) => (
+                    <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 bg-pink-50/20 border border-pink-100 rounded-2xl">
+                      <div className="flex-1 w-full">
+                        <label className="block text-[10px] font-bold text-pink-500 uppercase tracking-widest mb-1">Variant Name (e.g. Red, Blue, Large)</label>
+                        <input
+                          type="text"
+                          required
+                          value={variant.name}
+                          onChange={(e) => updateVariant(index, "name", e.target.value)}
+                          placeholder="e.g. Ocean Blue"
+                          className="w-full px-4 py-2.5 bg-white border border-pink-100 rounded-xl text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                        />
+                      </div>
+                      <div className="w-full sm:w-36">
+                        <label className="block text-[10px] font-bold text-pink-500 uppercase tracking-widest mb-1">Price Override (₹)</label>
+                        <input
+                          type="number"
+                          value={variant.price}
+                          onChange={(e) => updateVariant(index, "price", e.target.value)}
+                          placeholder="Optional"
+                          className="w-full px-4 py-2.5 bg-white border border-pink-100 rounded-xl text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                        />
+                      </div>
+                      <div className="w-full sm:w-28">
+                        <label className="block text-[10px] font-bold text-pink-500 uppercase tracking-widest mb-1">Stock Level</label>
+                        <input
+                          type="number"
+                          required
+                          value={variant.stock}
+                          onChange={(e) => updateVariant(index, "stock", e.target.value)}
+                          placeholder="10"
+                          className="w-full px-4 py-2.5 bg-white border border-pink-100 rounded-xl text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeVariant(index)}
+                        className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all self-end sm:self-center"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             
             <div className="flex items-center gap-3 p-4 bg-pink-50/50 rounded-xl border border-pink-100">

@@ -419,23 +419,31 @@ export default function CheckoutPage() {
               <h3 className="text-lg font-serif font-bold text-gray-900 mb-6 pb-4 border-b border-pink-50 uppercase tracking-widest text-center">Your Bag</h3>
               
               <div className="space-y-4 max-h-[240px] overflow-y-auto pr-2 mb-8 custom-scrollbar">
-                {cart.map((item) => (
-                  <div key={item.productId} className="flex items-center gap-4">
-                    <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-pink-50/30 flex-shrink-0 border border-pink-100">
-                      <Image 
-                        src={item.product?.images?.[0]?.url || ""} 
-                        alt={item.product?.name || ""} 
-                        fill 
-                        className="object-cover" 
-                      />
+                {cart.map((item) => {
+                  const itemPrice = item.selectedVariant?.price ?? item.product?.price ?? 0;
+                  return (
+                    <div key={item.id} className="flex items-center gap-4">
+                      <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-pink-50/30 flex-shrink-0 border border-pink-100">
+                        <Image 
+                          src={item.product?.images?.[0]?.url || ""} 
+                          alt={item.product?.name || ""} 
+                          fill 
+                          className="object-cover" 
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-serif font-bold text-gray-900 truncate">{item.product?.name}</p>
+                        {item.selectedVariant && (
+                          <p className="text-[9px] font-bold text-pink-500 uppercase tracking-widest mt-0.5 truncate">
+                            Variant: {item.selectedVariant.name}
+                          </p>
+                        )}
+                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Qty: {item.quantity}</p>
+                      </div>
+                      <p className="text-xs font-bold text-pink-600 flex-shrink-0">{formatPrice(itemPrice * item.quantity)}</p>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-xs font-serif font-bold text-gray-900 truncate">{item.product?.name}</p>
-                      <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Qty: {item.quantity}</p>
-                    </div>
-                    <p className="text-xs font-bold text-pink-600">{formatPrice((item.product?.price || 0) * item.quantity)}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Coupon Section */}
