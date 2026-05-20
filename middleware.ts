@@ -24,5 +24,5 @@ export function middleware(request: NextRequest) {
 
 // Configure which paths middleware should run on
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin', '/admin/:path*'],
 }
