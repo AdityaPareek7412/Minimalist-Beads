@@ -1,11 +1,36 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import crypto from "crypto"
 
 export const dynamic = "force-dynamic"
 
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json()
+
+    // Verify payment if using Razorpay
+    if (data.paymentMethod === "razorpay") {
+      const { razorpayOrderId, paymentId, razorpaySignature } = data
+      if (!razorpayOrderId || !paymentId || !razorpaySignature) {
+        return NextResponse.json(
+          { success: false, error: "Missing Razorpay payment verification details" },
+          { status: 400 }
+        )
+      }
+
+      const body = razorpayOrderId + "|" + paymentId
+      const expectedSignature = crypto
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+        .update(body.toString())
+        .digest("hex")
+
+      if (expectedSignature !== razorpaySignature) {
+        return NextResponse.json(
+          { success: false, error: "Payment verification failed. Invalid signature." },
+          { status: 400 }
+        )
+      }
+    }
     
     // Create guest address
     const address = await prisma.address.create({

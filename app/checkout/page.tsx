@@ -179,24 +179,53 @@ export default function CheckoutPage() {
         description: "Handcrafted Jewelry",
         order_id: data.order.id,
         handler: async function (response: any) {
-          await fetch("/api/orders", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ...formData,
-              cart,
-              subtotal,
-              shippingCost: shipping,
-              discount,
-              couponId: appliedCoupon?.couponId,
-              totalAmount: total,
-              paymentMethod: "razorpay",
-              paymentId: response.razorpay_payment_id
+          try {
+            // Step 1: Verify signature with the backend verify endpoint
+            const verifyRes = await fetch("/api/razorpay/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              })
             })
-          })
 
-          clearCart()
-          router.push(`/order-confirmation?orderId=${response.razorpay_order_id}&amount=${total}&method=online`)
+            const verifyData = await verifyRes.json()
+            if (!verifyData.success) {
+              throw new Error(verifyData.message || "Payment verification failed")
+            }
+
+            // Step 2: Create the order with verified payment details
+            const orderRes = await fetch("/api/orders", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ...formData,
+                cart,
+                subtotal,
+                shippingCost: shipping,
+                discount,
+                couponId: appliedCoupon?.couponId,
+                totalAmount: total,
+                paymentMethod: "razorpay",
+                paymentId: response.razorpay_payment_id,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpaySignature: response.razorpay_signature,
+              })
+            })
+
+            const orderData = await orderRes.json()
+            if (!orderData.success) {
+              throw new Error(orderData.error || "Failed to save order")
+            }
+
+            clearCart()
+            router.push(`/order-confirmation?orderId=${response.razorpay_order_id}&amount=${total}&method=online`)
+          } catch (err: any) {
+            alert("Verification / order saving error: " + err.message)
+            setIsProcessing(false)
+          }
         },
         prefill: {
           name: `${formData.firstName} ${formData.lastName}`,
