@@ -116,10 +116,26 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isReorderMode, setIsReorderMode] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [visibleCount, setVisibleCount] = useState(20)
 
   useEffect(() => {
     fetchProducts()
   }, [])
+
+  useEffect(() => {
+    setVisibleCount(20)
+  }, [searchQuery])
+
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (product.category?.name && product.category.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  )
+
+  const displayedProducts = filteredProducts.slice(0, visibleCount)
+  // Limit reorder to top 50 items to prevent browser lag with 1500+ items
+  const reorderProducts = products.slice(0, 50)
 
   const fetchProducts = async () => {
     try {
@@ -133,11 +149,12 @@ export default function AdminProductsPage() {
     }
   }
 
-  const handleReorder = async (newOrder: any[]) => {
-    setProducts(newOrder)
+  const handleReorder = async (newTopOrder: any[]) => {
+    const updatedProducts = [...newTopOrder, ...products.slice(50)]
+    setProducts(updatedProducts)
     setSaving(true)
     try {
-      const productIds = newOrder.map(p => p.id)
+      const productIds = updatedProducts.map(p => p.id)
       const res = await fetch("/api/admin/products", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -223,6 +240,19 @@ export default function AdminProductsPage() {
           </div>
         </div>
 
+        {/* Search Bar */}
+        {!isReorderMode && !loading && products.length > 0 && (
+          <div className="mb-6">
+            <input
+              type="text"
+              placeholder="Search products by name, slug, or category..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all shadow-sm font-medium"
+            />
+          </div>
+        )}
+
         {/* Content Section */}
         {loading ? (
           <div className="flex justify-center py-20">
@@ -236,24 +266,49 @@ export default function AdminProductsPage() {
           /* Draggable List for Reorder Mode */
           <div className="max-w-2xl mx-auto space-y-3 bg-gray-100/50 p-4 rounded-3xl border border-gray-200">
             <div className="text-xs text-gray-500 font-bold uppercase tracking-wider text-center mb-2">
-              Drag items below to sort
+              Drag top 50 items below to sort
             </div>
-            <Reorder.Group values={products} onReorder={handleReorder} className="space-y-2">
-              {products.map((product) => (
+            <Reorder.Group values={reorderProducts} onReorder={handleReorder} className="space-y-2">
+              {reorderProducts.map((product) => (
                 <DraggableProductRow key={product.id} product={product} />
               ))}
             </Reorder.Group>
+            {products.length > 50 && (
+              <div className="text-xs text-center text-gray-400 mt-2 italic">
+                Only the top 50 products are loaded for reordering to ensure smooth performance.
+              </div>
+            )}
           </div>
         ) : (
-          /* Static List for Normal Mode - Super smooth, 100% native momentum scrolling */
-          <div className="space-y-4">
-            {products.map((product) => (
-              <StaticProductRow
-                key={product.id}
-                product={product}
-                handleDelete={handleDelete}
-              />
-            ))}
+          /* Static List for Normal Mode - Super smooth, 100% native momentum scrolling with search + load more */
+          <div className="space-y-6">
+            {displayedProducts.length > 0 ? (
+              <div className="space-y-4">
+                {displayedProducts.map((product) => (
+                  <StaticProductRow
+                    key={product.id}
+                    product={product}
+                    handleDelete={handleDelete}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
+                <p className="text-gray-400 text-lg">No products match your search query.</p>
+              </div>
+            )}
+
+            {/* Load More Button */}
+            {!loading && visibleCount < filteredProducts.length && (
+              <div className="text-center pt-4">
+                <button
+                  onClick={() => setVisibleCount(prev => prev + 20)}
+                  className="px-8 py-3.5 bg-white border border-gray-200 text-gray-700 font-bold text-xs rounded-xl hover:bg-pink-50 hover:border-pink-200 transition-all shadow-sm uppercase tracking-wider"
+                >
+                  Load More Products ({filteredProducts.length - visibleCount} remaining)
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

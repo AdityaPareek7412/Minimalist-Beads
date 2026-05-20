@@ -20,6 +20,12 @@ function ShopContent() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState({ min: 0, max: 2000 })
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(12)
+
+  // Reset pagination when search/filter/sort changes
+  useEffect(() => {
+    setVisibleCount(12)
+  }, [sortBy, selectedCategories, priceRange, searchParams])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,6 +86,8 @@ function ShopContent() {
       if (sortBy === "default") return (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
       return 0
     })
+
+  const displayedProducts = filteredProducts.slice(0, visibleCount)
 
   return (
     <div className="min-h-screen bg-[#fdf0f5] text-gray-900 pb-20">
@@ -241,9 +249,9 @@ function ShopContent() {
                 <div className="w-12 h-12 border-4 border-pink-100 border-t-pink-500 rounded-full animate-spin"></div>
                 <p className="text-xs font-bold text-pink-300 uppercase tracking-[0.2em]">Crafting Magic...</p>
               </div>
-            ) : filteredProducts.length > 0 ? (
+            ) : displayedProducts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product, index) => (
+                {displayedProducts.map((product, index) => (
                   <ProductCard key={product.id} product={product} index={index} />
                 ))}
               </div>
@@ -265,9 +273,12 @@ function ShopContent() {
             )}
 
             {/* Load More */}
-            {!loading && filteredProducts.length > 0 && (
+            {!loading && visibleCount < filteredProducts.length && (
               <div className="mt-16 text-center">
-                <button className="px-10 py-4 bg-white border border-pink-100 text-gray-700 font-bold text-xs rounded-full hover:bg-pink-50 hover:border-pink-200 transition-all shadow-sm uppercase tracking-[0.2em]">
+                <button 
+                  onClick={() => setVisibleCount(prev => prev + 12)}
+                  className="px-10 py-4 bg-white border border-pink-100 text-gray-700 font-bold text-xs rounded-full hover:bg-pink-50 hover:border-pink-200 transition-all shadow-sm uppercase tracking-[0.2em]"
+                >
                   View More Pieces
                 </button>
               </div>
