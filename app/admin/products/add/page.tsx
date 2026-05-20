@@ -15,7 +15,49 @@ export default function AddProductPage() {
   const [images, setImages] = useState<string[]>([])
   const [isFeatured, setIsFeatured] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [compressingCount, setCompressingCount] = useState(0)
   const router = useRouter()
+
+  const compressImage = (base64Str: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.src = base64Str
+      img.onload = () => {
+        const canvas = document.createElement("canvas")
+        const MAX_WIDTH = 1000
+        const MAX_HEIGHT = 1000
+        let width = img.width
+        let height = img.height
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width
+            width = MAX_WIDTH
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height
+            height = MAX_HEIGHT
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext("2d")
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height)
+          // Compress quality to 70% as JPEG to minimize payload size
+          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7)
+          resolve(compressedBase64)
+        } else {
+          resolve(base64Str)
+        }
+      }
+      img.onerror = () => {
+        resolve(base64Str)
+      }
+    })
+  }
 
   useEffect(() => {
     fetch("/api/categories")
@@ -26,17 +68,26 @@ export default function AddProductPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files) {
-      const filesArray = Array.from(files);
-      const maxRemaining = 10 - images.length;
-      const filesToProcess = filesArray.slice(0, maxRemaining);
+      const filesArray = Array.from(files)
+      const maxRemaining = 10 - images.length
+      const filesToProcess = filesArray.slice(0, maxRemaining)
 
       filesToProcess.forEach(file => {
+        setCompressingCount(prev => prev + 1)
         const reader = new FileReader()
-        reader.onloadend = () => {
-          setImages(prev => {
-            if (prev.length >= 10) return prev;
-            return [...prev, reader.result as string];
-          })
+        reader.onloadend = async () => {
+          try {
+            const base64 = reader.result as string
+            const compressed = await compressImage(base64)
+            setImages(prev => {
+              if (prev.length >= 10) return prev
+              return [...prev, compressed]
+            })
+          } catch (err) {
+            console.error("Image compression failed:", err)
+          } finally {
+            setCompressingCount(prev => Math.max(0, prev - 1))
+          }
         }
         reader.readAsDataURL(file)
       })
@@ -222,12 +273,17 @@ export default function AddProductPage() {
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || compressingCount > 0}
                 className={`w-full py-4 rounded-xl text-white font-bold text-lg shadow-xl transition-all ${
-                  loading ? "bg-gray-400" : "bg-pink-600 hover:bg-pink-700 shadow-pink-200 hover:-translate-y-1"
+                  (loading || compressingCount > 0) ? "bg-gray-400 cursor-not-allowed" : "bg-pink-600 hover:bg-pink-700 shadow-pink-200 hover:-translate-y-1"
                 }`}
               >
-                {loading ? "Adding Product..." : "Launch Product 🚀"}
+                {compressingCount > 0 
+                  ? `Compressing Photos (${compressingCount} remaining)...` 
+                  : loading 
+                    ? "Adding Product..." 
+                    : "Launch Product 🚀"
+                }
               </button>
             </div>
           </form>
