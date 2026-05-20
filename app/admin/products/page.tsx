@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Plus, Trash2, Edit, ExternalLink, GripVertical, Check, Loader2 } from "lucide-react"
 import { formatPrice } from "@/lib/utils/helpers"
@@ -13,20 +13,73 @@ interface ProductRowProps {
 
 function ProductRow({ product, handleDelete }: ProductRowProps) {
   const dragControls = useDragControls()
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const startPos = useRef({ x: 0, y: 0 })
+  const [isReadyToDrag, setIsReadyToDrag] = useState(false)
+  const [isPressing, setIsPressing] = useState(false)
+
+  const startLongPress = (event: React.PointerEvent) => {
+    // Prevent dragging when clicking interactive buttons, inputs or links
+    const target = event.target as HTMLElement
+    if (target.closest("button") || target.closest("a") || target.closest("input")) {
+      return
+    }
+
+    setIsPressing(true)
+    startPos.current = { x: event.clientX, y: event.clientY }
+    
+    // Set a timer (500ms) to trigger the drag state
+    timeoutRef.current = setTimeout(() => {
+      setIsReadyToDrag(true)
+      dragControls.start(event)
+    }, 500)
+  }
+
+  const cancelLongPress = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+    setIsReadyToDrag(false)
+    setIsPressing(false)
+  }
+
+  const handlePointerMove = (event: React.PointerEvent) => {
+    if (!timeoutRef.current || isReadyToDrag) return
+
+    const diffX = Math.abs(event.clientX - startPos.current.x)
+    const diffY = Math.abs(event.clientY - startPos.current.y)
+
+    // If user moves their finger more than 10px before the 500ms timer,
+    // they are scrolling the page. Cancel the drag session.
+    if (diffX > 10 || diffY > 10) {
+      cancelLongPress()
+    }
+  }
 
   return (
     <Reorder.Item
       value={product}
       dragListener={false}
       dragControls={dragControls}
-      className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 flex items-center gap-4 hover:border-pink-200 transition-all select-none"
+      onPointerDown={startLongPress}
+      onPointerUp={cancelLongPress}
+      onPointerCancel={cancelLongPress}
+      onPointerMove={handlePointerMove}
+      style={{
+        touchAction: isReadyToDrag ? "none" : "pan-y"
+      }}
+      className={`bg-white rounded-2xl p-4 sm:p-5 shadow-sm border transition-all select-none ${
+        isReadyToDrag 
+          ? "border-pink-500 shadow-xl scale-[1.02] z-50 ring-2 ring-pink-500/20" 
+          : isPressing 
+            ? "border-pink-200 bg-pink-50/10 scale-[0.99]" 
+            : "border-gray-100 hover:border-pink-200"
+      }`}
     >
-      {/* Drag Handle - touch-none to prevent scrolling on grip handle, but allow drag */}
-      <div
-        className="text-gray-400 cursor-grab active:cursor-grabbing hover:text-pink-500 transition-colors flex-shrink-0 p-2 touch-none"
-        onPointerDown={(event) => dragControls.start(event)}
-      >
-        <GripVertical size={20} />
+      {/* Grip Indicator Handle */}
+      <div className="text-gray-400 flex-shrink-0 p-2 pointer-events-none">
+        <GripVertical size={20} className={isReadyToDrag ? "text-pink-500" : ""} />
       </div>
 
       {/* Thumbnail */}
@@ -174,7 +227,7 @@ export default function AdminProductsPage() {
               )}
             </div>
             <p className="text-gray-500 mt-1.5 text-sm">
-              Drag and drop any piece using the grip handle (⋮⋮) on the left to reorder. Swipe/scroll anywhere else to scroll the page.
+              Press and hold any product for 0.5s to start dragging and reordering. Scroll normally by swiping immediately.
             </p>
           </div>
           <Link
