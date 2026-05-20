@@ -19,20 +19,17 @@ function ProductRow({ product, handleDelete }: ProductRowProps) {
   const [isPressing, setIsPressing] = useState(false)
 
   const startLongPress = (event: React.PointerEvent) => {
-    // Prevent dragging when clicking interactive buttons, inputs or links
-    const target = event.target as HTMLElement
-    if (target.closest("button") || target.closest("a") || target.closest("input")) {
-      return
-    }
+    // Only handle primary touch / click
+    if (event.button !== 0) return
 
     setIsPressing(true)
     startPos.current = { x: event.clientX, y: event.clientY }
     
-    // Set a timer (500ms) to trigger the drag state
+    // Set a quick hold timer (250ms) to differentiate tap/drag from swipe scroll
     timeoutRef.current = setTimeout(() => {
       setIsReadyToDrag(true)
       dragControls.start(event)
-    }, 500)
+    }, 250)
   }
 
   const cancelLongPress = () => {
@@ -50,9 +47,9 @@ function ProductRow({ product, handleDelete }: ProductRowProps) {
     const diffX = Math.abs(event.clientX - startPos.current.x)
     const diffY = Math.abs(event.clientY - startPos.current.y)
 
-    // If user moves their finger more than 10px before the 500ms timer,
-    // they are scrolling the page. Cancel the drag session.
-    if (diffX > 10 || diffY > 10) {
+    // If they start moving their finger immediately, they are scrolling the page.
+    // Cancel the drag action.
+    if (diffX > 5 || diffY > 5) {
       cancelLongPress()
     }
   }
@@ -62,24 +59,30 @@ function ProductRow({ product, handleDelete }: ProductRowProps) {
       value={product}
       dragListener={false}
       dragControls={dragControls}
-      onPointerDown={startLongPress}
-      onPointerUp={cancelLongPress}
-      onPointerCancel={cancelLongPress}
-      onPointerMove={handlePointerMove}
-      style={{
-        touchAction: isReadyToDrag ? "none" : "pan-y"
-      }}
-      className={`bg-white rounded-2xl p-4 sm:p-5 shadow-sm border transition-all select-none ${
+      className={`bg-white rounded-2xl p-4 sm:p-5 shadow-sm border flex items-center gap-4 transition-all select-none ${
         isReadyToDrag 
           ? "border-pink-500 shadow-xl scale-[1.02] z-50 ring-2 ring-pink-500/20" 
-          : isPressing 
-            ? "border-pink-200 bg-pink-50/10 scale-[0.99]" 
-            : "border-gray-100 hover:border-pink-200"
+          : "border-gray-100 hover:border-pink-200"
       }`}
     >
-      {/* Grip Indicator Handle */}
-      <div className="text-gray-400 flex-shrink-0 p-2 pointer-events-none">
-        <GripVertical size={20} className={isReadyToDrag ? "text-pink-500" : ""} />
+      {/* Drag Handle - ONLY this element has touch listeners to protect native scroll momentum */}
+      <div
+        onPointerDown={startLongPress}
+        onPointerUp={cancelLongPress}
+        onPointerCancel={cancelLongPress}
+        onPointerMove={handlePointerMove}
+        style={{
+          touchAction: isReadyToDrag ? "none" : "pan-y"
+        }}
+        className={`text-gray-400 flex-shrink-0 p-3 rounded-xl border border-transparent transition-all cursor-grab active:cursor-grabbing ${
+          isReadyToDrag 
+            ? "text-pink-500 bg-pink-50 border-pink-100" 
+            : isPressing 
+              ? "bg-gray-100" 
+              : "hover:bg-gray-50 hover:text-pink-500"
+        }`}
+      >
+        <GripVertical size={20} />
       </div>
 
       {/* Thumbnail */}
@@ -227,7 +230,7 @@ export default function AdminProductsPage() {
               )}
             </div>
             <p className="text-gray-500 mt-1.5 text-sm">
-              Press and hold any product for 0.5s to start dragging and reordering. Scroll normally by swiping immediately.
+              Touch and hold the grip handle (⋮⋮) for a split second to drag. Swipe anywhere else to scroll the list at full native speed.
             </p>
           </div>
           <Link
