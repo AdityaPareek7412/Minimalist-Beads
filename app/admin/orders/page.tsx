@@ -9,11 +9,6 @@ export const dynamic = "force-dynamic"
 
 export default async function AdminOrdersPage() {
   const orders = await prisma.order.findMany({
-    where: {
-      status: {
-        not: "PENDING"
-      }
-    },
     orderBy: { createdAt: "desc" },
     include: {
       shippingAddress: true,
@@ -70,12 +65,15 @@ export default async function AdminOrdersPage() {
 
                 {/* Order Summary */}
                 <div className="flex-1 space-y-4">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <span className="font-mono text-sm text-gray-500">#{order.orderNumber}</span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      order.paymentStatus === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
+                      {order.payment?.paymentMethod === 'COD' ? '💵 COD' : '💳 Online'}
+                    </span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      order.paymentStatus === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
                     }`}>
-                      {order.payment?.paymentMethod === 'COD' ? '💵 COD' : '💳 Online Payment'}
+                      {order.paymentStatus === 'COMPLETED' ? '✅ Paid' : '⏳ Unpaid / Pending'}
                     </span>
                     <OrderStatusDropdown orderId={order.id} currentStatus={order.status} />
                     <span className="text-sm text-gray-400">
