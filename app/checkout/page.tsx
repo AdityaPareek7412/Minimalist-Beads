@@ -154,16 +154,41 @@ export default function CheckoutPage() {
   const initiateRazorpay = async () => {
     setIsProcessing(true)
     try {
+      // Step 1: Create a PENDING order in the database first
+      const orderRes = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          cart,
+          subtotal,
+          shippingCost: shipping,
+          discount,
+          couponId: appliedCoupon?.couponId,
+          totalAmount: total,
+          paymentMethod: "razorpay"
+        })
+      })
+
+      const orderData = await orderRes.json()
+      if (!orderData.success) {
+        throw new Error(orderData.error || "Failed to initiate order in database")
+      }
+
+      const dbOrderId = orderData.order.id
+
+      // Step 2: Create the Razorpay Order with dbOrderId as the receipt
       const res = await fetch("/api/razorpay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: total,
-          receipt: `order_${Date.now()}`,
+          receipt: dbOrderId,
           notes: {
             customerName: `${formData.firstName} ${formData.lastName}`,
             email: formData.email,
             phone: `${formData.countryCode}${formData.phone}`,
+            dbOrderId: dbOrderId
           },
         }),
       })
@@ -171,59 +196,37 @@ export default function CheckoutPage() {
       const data = await res.json()
       if (!data.success) throw new Error(data.error)
 
+      // Step 3: Open the Razorpay Payment Modal
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: data.order.amount,
         currency: data.order.currency,
         name: "Minimalist Beads",
-        description: "Handcrafted Jewelry",
+        description: "Curated Accessories",
         order_id: data.order.id,
         handler: async function (response: any) {
           try {
-            // Step 1: Verify signature with the backend verify endpoint
-            const verifyRes = await fetch("/api/razorpay/verify", {
+            // Step 4: Verify signature and confirm the order in the database
+            const confirmRes = await fetch("/api/orders/confirm", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              })
-            })
-
-            const verifyData = await verifyRes.json()
-            if (!verifyData.success) {
-              throw new Error(verifyData.message || "Payment verification failed")
-            }
-
-            // Step 2: Create the order with verified payment details
-            const orderRes = await fetch("/api/orders", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                ...formData,
-                cart,
-                subtotal,
-                shippingCost: shipping,
-                discount,
-                couponId: appliedCoupon?.couponId,
-                totalAmount: total,
-                paymentMethod: "razorpay",
-                paymentId: response.razorpay_payment_id,
                 razorpayOrderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
                 razorpaySignature: response.razorpay_signature,
+                dbOrderId: dbOrderId
               })
             })
 
-            const orderData = await orderRes.json()
-            if (!orderData.success) {
-              throw new Error(orderData.error || "Failed to save order")
+            const confirmData = await confirmRes.json()
+            if (!confirmData.success) {
+              throw new Error(confirmData.error || "Payment verification failed")
             }
 
             clearCart()
             router.push(`/order-confirmation?orderId=${response.razorpay_order_id}&amount=${total}&method=online`)
           } catch (err: any) {
-            alert("Verification / order saving error: " + err.message)
+            alert("Payment confirmation error: " + err.message)
             setIsProcessing(false)
           }
         },

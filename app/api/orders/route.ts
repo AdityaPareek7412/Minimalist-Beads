@@ -7,30 +7,6 @@ export const dynamic = "force-dynamic"
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json()
-
-    // Verify payment if using Razorpay
-    if (data.paymentMethod === "razorpay") {
-      const { razorpayOrderId, paymentId, razorpaySignature } = data
-      if (!razorpayOrderId || !paymentId || !razorpaySignature) {
-        return NextResponse.json(
-          { success: false, error: "Missing Razorpay payment verification details" },
-          { status: 400 }
-        )
-      }
-
-      const body = razorpayOrderId + "|" + paymentId
-      const expectedSignature = crypto
-        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
-        .update(body.toString())
-        .digest("hex")
-
-      if (expectedSignature !== razorpaySignature) {
-        return NextResponse.json(
-          { success: false, error: "Payment verification failed. Invalid signature." },
-          { status: 400 }
-        )
-      }
-    }
     
     // Create guest address
     const address = await prisma.address.create({
@@ -54,6 +30,8 @@ export async function POST(req: NextRequest) {
       total: item.product.price * item.quantity,
     }))
 
+    const isCod = data.paymentMethod === "cod"
+
     // Use a transaction to ensure all operations succeed or fail together
     const result = await prisma.$transaction(async (tx) => {
       // 1. Create the order
@@ -68,17 +46,17 @@ export async function POST(req: NextRequest) {
           customerName: `${data.firstName} ${data.lastName}`,
           customerEmail: data.email,
           customerPhone: `${data.countryCode}${data.phone}`,
-          status: "PENDING",
-          paymentStatus: data.paymentMethod === "cod" ? "PENDING" : "COMPLETED",
+          status: isCod ? "CONFIRMED" : "PENDING",
+          paymentStatus: "PENDING",
           items: {
             create: orderItems
           },
           payment: {
             create: {
               amount: data.totalAmount,
-              paymentMethod: data.paymentMethod === "cod" ? "COD" : "RAZORPAY",
-              paymentId: data.paymentId || null,
-              status: data.paymentMethod === "cod" ? "PENDING" : "COMPLETED",
+              paymentMethod: isCod ? "COD" : "RAZORPAY",
+              paymentId: null,
+              status: "PENDING",
             }
           }
         },
@@ -88,31 +66,34 @@ export async function POST(req: NextRequest) {
         }
       })
 
-      // 2. Decrement stock for each item
-      for (const item of orderItems) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: {
-            stock: {
-              decrement: item.quantity
-            },
-            sold: {
-              increment: item.quantity
+      // Only complete stock decrement and coupon usage immediately for COD orders
+      if (isCod) {
+        // 2. Decrement stock for each item
+        for (const item of orderItems) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              stock: {
+                decrement: item.quantity
+              },
+              sold: {
+                increment: item.quantity
+              }
             }
-          }
-        })
-      }
+          })
+        }
 
-      // 3. Update coupon usage if applicable
-      if (data.couponId) {
-        await tx.coupon.update({
-          where: { id: data.couponId },
-          data: {
-            usedCount: {
-              increment: 1
+        // 3. Update coupon usage if applicable
+        if (data.couponId) {
+          await tx.coupon.update({
+            where: { id: data.couponId },
+            data: {
+              usedCount: {
+                increment: 1
+              }
             }
-          }
-        })
+          })
+        }
       }
 
       return order
