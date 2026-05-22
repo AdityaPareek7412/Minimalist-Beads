@@ -27,6 +27,25 @@ function ShopContent() {
     setVisibleCount(12)
   }, [sortBy, selectedCategories, priceRange, searchParams])
 
+  // Infinite Scroll - Auto-loads products on scroll without database overhead
+  useEffect(() => {
+    const handleScroll = () => {
+      if (loading) return
+      if (visibleCount >= filteredProducts.length) return
+
+      const threshold = 600 // Load more when 600px from the bottom
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - threshold
+      ) {
+        setVisibleCount(prev => prev + 12)
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [visibleCount, filteredProducts.length, loading])
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -250,7 +269,7 @@ function ShopContent() {
                 <p className="text-xs font-bold text-pink-300 uppercase tracking-[0.2em]">Crafting Magic...</p>
               </div>
             ) : displayedProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                 {displayedProducts.map((product, index) => (
                   <ProductCard key={product.id} product={product} index={index} />
                 ))}
@@ -272,15 +291,16 @@ function ShopContent() {
               </div>
             )}
 
-            {/* Load More */}
+            {/* Load More (Infinite Scroll Indicator) */}
             {!loading && visibleCount < filteredProducts.length && (
-              <div className="mt-16 text-center">
-                <button 
-                  onClick={() => setVisibleCount(prev => prev + 12)}
-                  className="px-10 py-4 bg-white border border-pink-100 text-gray-700 font-bold text-xs rounded-full hover:bg-pink-50 hover:border-pink-200 transition-all shadow-sm uppercase tracking-[0.2em]"
-                >
-                  View More Pieces
-                </button>
+              <div className="mt-12 text-center text-[10px] font-bold text-pink-400 uppercase tracking-[0.2em] animate-pulse py-4">
+                Loading more aesthetic pieces...
+              </div>
+            )}
+
+            {!loading && visibleCount >= filteredProducts.length && filteredProducts.length > 0 && (
+              <div className="mt-16 text-center text-xs font-medium text-gray-400 uppercase tracking-[0.15em] font-sans py-4">
+                ✨ curated for your universe. you have viewed all products. ✨
               </div>
             )}
           </main>

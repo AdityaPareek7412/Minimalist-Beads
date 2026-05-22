@@ -137,33 +137,33 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       </Link>
 
       {/* Product Info */}
-      <div className="p-4 flex flex-col flex-grow bg-white">
+      <div className="p-3 sm:p-4 flex flex-col flex-grow bg-white">
         <Link href={`/products/${product.slug}`} className="flex-grow">
-          <h3 className={`font-sans font-semibold text-lg leading-tight group-hover:text-pink-500 transition-colors truncate ${product.stock === 0 ? 'text-gray-400' : 'text-gray-900'}`}>
+          <h3 className={`font-sans font-semibold text-sm sm:text-base md:text-lg leading-tight group-hover:text-pink-500 transition-colors truncate ${product.stock === 0 ? 'text-gray-400' : 'text-gray-900'}`}>
             {product.name}
           </h3>
-          <p className="text-gray-400 text-xs mt-1 font-medium">{product.category?.name || "Handmade"}</p>
+          <p className="text-gray-400 text-[10px] sm:text-xs mt-1 font-medium">{product.category?.name || "Handmade"}</p>
         </Link>
 
         {/* Price */}
         <div className="mt-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className={`font-bold text-lg ${product.stock === 0 ? 'text-gray-300' : 'text-pink-600'}`}>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className={`font-bold text-sm sm:text-base md:text-lg ${product.stock === 0 ? 'text-gray-300' : 'text-pink-600'}`}>
               {formatPrice(product.price)}
             </span>
             {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-gray-400 text-xs line-through">
+              <span className="text-gray-400 text-[10px] sm:text-xs line-through">
                 {formatPrice(product.originalPrice)}
               </span>
             )}
           </div>
           {product.stock === 0 ? (
-            <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded">
+            <span className="text-[9px] sm:text-[10px] font-bold text-red-500 uppercase tracking-wider bg-red-50 px-1.5 py-0.5 rounded">
               SOLD
             </span>
           ) : product.stock <= 5 && (
-            <span className="text-[10px] font-bold text-orange-500 uppercase tracking-tighter">
-              Only {product.stock} left!
+            <span className="text-[9px] sm:text-[10px] font-bold text-orange-500 uppercase tracking-tighter">
+              Only {product.stock}!
             </span>
           )}
         </div>
@@ -173,40 +173,40 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           {product.stock === 0 ? (
             <button
               disabled
-              className="w-full bg-gray-100 text-gray-400 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest cursor-not-allowed text-center"
+              className="w-full bg-gray-100 text-gray-400 py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-widest cursor-not-allowed text-center"
             >
               Out of Stock
             </button>
           ) : cartQty > 0 ? (
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-1.5 sm:gap-2">
               <div className="flex items-center bg-pink-50/50 rounded-xl border border-pink-100 p-0.5 flex-1">
                 <button
                   onClick={handleDecrement}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-pink-100 text-pink-600 transition-colors"
+                  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg hover:bg-pink-100 text-pink-600 transition-colors"
                 >
-                  <Minus size={12} />
+                  <Minus size={10} className="sm:w-3 sm:h-3" />
                 </button>
-                <span className="flex-1 text-center font-bold text-xs text-gray-800">{cartQty}</span>
+                <span className="flex-1 text-center font-bold text-[10px] sm:text-xs text-gray-800">{cartQty}</span>
                 <button
                   onClick={handleIncrement}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-pink-100 text-pink-600 transition-colors"
+                  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg hover:bg-pink-100 text-pink-600 transition-colors"
                 >
-                  <Plus size={12} />
+                  <Plus size={10} className="sm:w-3 sm:h-3" />
                 </button>
               </div>
               <button
                 onClick={handleGoToCart}
-                className="bg-pink-600 text-white text-xs font-bold px-3 py-2 rounded-xl hover:bg-pink-700 transition-colors shadow-sm flex items-center gap-1"
+                className="bg-pink-600 text-white text-[10px] sm:text-xs font-bold px-2.5 py-2 rounded-xl hover:bg-pink-700 transition-colors shadow-sm flex items-center gap-1"
               >
-                Cart <ShoppingCart size={12} />
+                Cart <ShoppingCart size={10} className="sm:w-3 sm:h-3" />
               </button>
             </div>
           ) : (
             <button
               onClick={handleAddToCart}
-              className="w-full bg-gray-900 hover:bg-pink-600 text-white py-2.5 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 shadow-sm"
+              className="w-full bg-gray-900 hover:bg-pink-600 text-white py-2 sm:py-2.5 rounded-xl font-bold text-[10px] sm:text-xs transition-colors flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm"
             >
-              <ShoppingBag size={14} />
+              <ShoppingBag size={12} className="sm:w-3.5 sm:h-3.5" />
               ADD TO CART
             </button>
           )}
