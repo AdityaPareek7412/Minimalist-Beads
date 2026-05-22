@@ -2,7 +2,7 @@
 
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { ProductCard } from "@/components/product/ProductCard"
 import { ChevronDown, Filter, X } from "lucide-react"
@@ -19,6 +19,7 @@ function ShopContent() {
   const [priceRange, setPriceRange] = useState({ min: 0, max: 2000 })
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [visibleCount, setVisibleCount] = useState(12)
+  const observerRef = useRef<HTMLDivElement | null>(null)
 
   // Filter and Sort products (declared early so useEffects can reference it)
   const filteredProducts = products
@@ -46,23 +47,32 @@ function ShopContent() {
     setVisibleCount(12)
   }, [sortBy, selectedCategories, priceRange, searchParams])
 
-  // Infinite Scroll - Auto-loads products on scroll without database overhead
+  // Infinite Scroll - Auto-loads products using IntersectionObserver for maximum mobile compatibility
   useEffect(() => {
-    const handleScroll = () => {
-      if (loading) return
-      if (visibleCount >= filteredProducts.length) return
+    if (loading) return
+    if (visibleCount >= filteredProducts.length) return
 
-      const threshold = 600 // Load more when 600px from the bottom
-      if (
-        window.innerHeight + window.scrollY >=
-        document.documentElement.scrollHeight - threshold
-      ) {
-        setVisibleCount(prev => prev + 12)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount(prev => Math.min(prev + 12, filteredProducts.length))
+        }
+      },
+      {
+        rootMargin: "300px", // Trigger when the sentinel is within 300px of the viewport
       }
+    )
+
+    const currentSentinel = observerRef.current
+    if (currentSentinel) {
+      observer.observe(currentSentinel)
     }
 
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
+    return () => {
+      if (currentSentinel) {
+        observer.unobserve(currentSentinel)
+      }
+    }
   }, [visibleCount, filteredProducts.length, loading])
 
   useEffect(() => {
@@ -291,7 +301,7 @@ function ShopContent() {
 
             {/* Load More (Infinite Scroll Indicator) */}
             {!loading && visibleCount < filteredProducts.length && (
-              <div className="mt-12 text-center text-[10px] font-bold text-pink-400 uppercase tracking-[0.2em] animate-pulse py-4">
+              <div ref={observerRef} className="mt-12 text-center text-[10px] font-bold text-pink-400 uppercase tracking-[0.2em] animate-pulse py-4">
                 Loading more aesthetic pieces...
               </div>
             )}
