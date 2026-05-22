@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Plus, Trash2, Edit, ExternalLink, Check, Loader2, Settings, ChevronUp, ChevronDown, GripVertical, Upload } from "lucide-react"
 import { formatPrice } from "@/lib/utils/helpers"
@@ -168,6 +168,9 @@ export default function AdminProductsPage() {
   const [sortSearchQuery, setSortSearchQuery] = useState("")
   const [sortVisibleCount, setSortVisibleCount] = useState(50)
 
+  const normalLoadMoreRef = useRef<HTMLDivElement | null>(null)
+  const sortLoadMoreRef = useRef<HTMLDivElement | null>(null)
+
   useEffect(() => {
     fetchProducts()
   }, [])
@@ -186,8 +189,6 @@ export default function AdminProductsPage() {
     (product.category?.name && product.category.name.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
-  const displayedProducts = filteredProducts.slice(0, visibleCount)
-
   const sortedFilteredProducts = products
     .map((product: any, index: number) => ({ product, index }))
     .filter(({ product }: any) =>
@@ -196,6 +197,51 @@ export default function AdminProductsPage() {
       (product.category?.name && product.category.name.toLowerCase().includes(sortSearchQuery.toLowerCase()))
     )
 
+  // Observer for Normal Mode
+  useEffect(() => {
+    if (loading || isReorderMode) return
+    if (visibleCount >= filteredProducts.length) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount(prev => Math.min(prev + 20, filteredProducts.length))
+        }
+      },
+      { rootMargin: "300px" }
+    )
+
+    const currentSentinel = normalLoadMoreRef.current
+    if (currentSentinel) observer.observe(currentSentinel)
+
+    return () => {
+      if (currentSentinel) observer.unobserve(currentSentinel)
+    }
+  }, [visibleCount, filteredProducts.length, loading, isReorderMode])
+
+  // Observer for Sort/Reorder Mode
+  useEffect(() => {
+    if (loading || !isReorderMode) return
+    if (sortVisibleCount >= sortedFilteredProducts.length) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setSortVisibleCount(prev => Math.min(prev + 50, sortedFilteredProducts.length))
+        }
+      },
+      { rootMargin: "300px" }
+    )
+
+    const currentSentinel = sortLoadMoreRef.current
+    if (currentSentinel) observer.observe(currentSentinel)
+
+    return () => {
+      if (currentSentinel) observer.unobserve(currentSentinel)
+    }
+  }, [sortVisibleCount, sortedFilteredProducts.length, loading, isReorderMode])
+
+  const displayedProducts = filteredProducts.slice(0, visibleCount)
   const displayedSortProducts = sortedFilteredProducts.slice(0, sortVisibleCount)
 
   const moveUp = (index: number) => {
@@ -395,13 +441,8 @@ export default function AdminProductsPage() {
 
               {/* Load More Button for Reorder Mode */}
               {sortVisibleCount < sortedFilteredProducts.length && (
-                <div className="text-center pt-4">
-                  <button
-                    onClick={() => setSortVisibleCount((prev: number) => prev + 50)}
-                    className="px-6 py-2 bg-white border border-gray-200 text-gray-700 font-bold text-xs rounded-xl hover:bg-pink-50 hover:border-pink-200 transition-all shadow-sm uppercase tracking-wider"
-                  >
-                    Show More ({sortedFilteredProducts.length - sortVisibleCount} remaining)
-                  </button>
+                <div ref={sortLoadMoreRef} className="text-center text-xs font-bold text-pink-500 uppercase tracking-widest py-4 animate-pulse">
+                  Loading more for sorting... ({sortedFilteredProducts.length - sortVisibleCount} remaining)
                 </div>
               )}
             </div>
@@ -427,13 +468,8 @@ export default function AdminProductsPage() {
 
             {/* Load More Button */}
             {!loading && visibleCount < filteredProducts.length && (
-              <div className="text-center pt-4">
-                <button
-                  onClick={() => setVisibleCount((prev: number) => prev + 20)}
-                  className="px-8 py-3.5 bg-white border border-gray-200 text-gray-700 font-bold text-xs rounded-xl hover:bg-pink-50 hover:border-pink-200 transition-all shadow-sm uppercase tracking-wider"
-                >
-                  Load More Products ({filteredProducts.length - visibleCount} remaining)
-                </button>
+              <div ref={normalLoadMoreRef} className="text-center text-xs font-bold text-pink-500 uppercase tracking-widest py-6 animate-pulse">
+                Loading more products... ({filteredProducts.length - visibleCount} remaining)
               </div>
             )}
           </div>
