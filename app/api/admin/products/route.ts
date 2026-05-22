@@ -16,10 +16,36 @@ cloudinary.config({
 const getCachedProducts = unstable_cache(
   async () => {
     return prisma.product.findMany({
-      include: {
-        images: true,
-        category: true,
-        variants: true,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        price: true,
+        originalPrice: true,
+        stock: true,
+        featured: true,
+        trending: true,
+        newArrival: true,
+        displayOrder: true,
+        categoryId: true,
+        createdAt: true,
+        images: {
+          select: {
+            url: true,
+            alt: true,
+            order: true,
+          },
+          orderBy: {
+            order: "asc"
+          }
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          }
+        }
       },
       orderBy: [
         { displayOrder: "asc" },
