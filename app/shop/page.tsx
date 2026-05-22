@@ -22,6 +22,27 @@ function ShopContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [visibleCount, setVisibleCount] = useState(12)
 
+  // Filter and Sort products (declared early so useEffects can reference it)
+  const filteredProducts = products
+    .filter(product => {
+      const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(product.categoryId)
+      const priceMatch = product.price >= priceRange.min && product.price <= priceRange.max
+      const searchMatch = !searchParams?.get("q") ||
+        product.name.toLowerCase().includes(searchParams.get("q")!.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchParams.get("q")!.toLowerCase())
+      return categoryMatch && priceMatch && searchMatch
+    })
+    .sort((a, b) => {
+      if (sortBy === "price-low") return a.price - b.price
+      if (sortBy === "price-high") return b.price - a.price
+      if (sortBy === "trending") return (b.trending ? 1 : 0) - (a.trending ? 1 : 0)
+      if (sortBy === "newest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      if (sortBy === "default") return (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
+      return 0
+    })
+
+  const displayedProducts = filteredProducts.slice(0, visibleCount)
+
   // Reset pagination when search/filter/sort changes
   useEffect(() => {
     setVisibleCount(12)
@@ -86,31 +107,6 @@ function ShopContent() {
         : [...prev, categoryId]
     )
   }
-
-  // Filter and Sort products
-  const filteredProducts = products
-    .filter(product => {
-      // Category filter
-      const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(product.categoryId)
-      // Price filter
-      const priceMatch = product.price >= priceRange.min && product.price <= priceRange.max
-      // Search filter
-      const searchMatch = !searchParams?.get("q") || 
-        product.name.toLowerCase().includes(searchParams.get("q")!.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchParams.get("q")!.toLowerCase())
-        
-      return categoryMatch && priceMatch && searchMatch
-    })
-    .sort((a, b) => {
-      if (sortBy === "price-low") return a.price - b.price
-      if (sortBy === "price-high") return b.price - a.price
-      if (sortBy === "trending") return (b.trending ? 1 : 0) - (a.trending ? 1 : 0)
-      if (sortBy === "newest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      if (sortBy === "default") return (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
-      return 0
-    })
-
-  const displayedProducts = filteredProducts.slice(0, visibleCount)
 
   return (
     <div className="min-h-screen bg-[#fdf0f5] text-gray-900 pb-20">
