@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Plus, Trash2, Edit, ExternalLink, Check, Loader2, Settings, ChevronUp, ChevronDown, GripVertical } from "lucide-react"
+import { Plus, Trash2, Edit, ExternalLink, Check, Loader2, Settings, ChevronUp, ChevronDown, GripVertical, Upload } from "lucide-react"
 import { formatPrice } from "@/lib/utils/helpers"
 
 // Static Row for Normal Mode - 100% native HTML, zero drag listeners, super smooth scrolling.
@@ -314,6 +314,13 @@ export default function AdminProductsPage() {
                   <GripVertical className="w-4.5 h-4.5 text-pink-400" />
                   Sort Products
                 </button>
+                <Link
+                  href="/admin/products/import"
+                  className="inline-flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-5 py-3 rounded-xl font-bold transition-all shadow-md"
+                >
+                  <Upload className="w-4.5 h-4.5 text-pink-500" />
+                  Bulk Import (CSV)
+                </Link>
                 <Link
                   href="/admin/products/add"
                   className="inline-flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white px-5 py-3 rounded-xl font-bold transition-all shadow-lg shadow-pink-200"
