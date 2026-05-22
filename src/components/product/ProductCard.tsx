@@ -74,7 +74,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.5 }}
+      transition={{ delay: Math.min(index * 0.05, 0.3), duration: 0.4 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={`group relative flex flex-col h-full bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-pink-100/50 transition-all duration-300 ${product.stock === 0 ? 'grayscale-[0.5]' : ''}`}

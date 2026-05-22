@@ -72,7 +72,7 @@ const JewelryCharmDecoration = ({ emoji, className, delay = 0 }: { emoji: string
       scale: [1, 1.1, 1]
     }}
     transition={{ 
-      duration: 15 + Math.random() * 10,
+      duration: 18,
       repeat: Infinity,
       delay,
       ease: "linear"
@@ -236,28 +236,32 @@ export function HeroSection() {
           <div className="w-[1px] h-12 bg-pink-200" />
         </motion.div>
 
-        {/* Floating Background Sparkles (Particles) */}
-        {[...Array(6)].map((_, i) => (
+        {/* Floating Background Sparkles (Particles) - fixed positions to prevent hydration mismatch */}
+        {[
+          { top: "15%", left: "20%", dur: 5.2, delay: 0.3, xOff: 18, yOff: -28 },
+          { top: "35%", left: "75%", dur: 6.8, delay: 1.1, xOff: -22, yOff: -18 },
+          { top: "55%", left: "40%", dur: 4.9, delay: 2.5, xOff: 14, yOff: -32 },
+          { top: "70%", left: "60%", dur: 7.1, delay: 0.8, xOff: -10, yOff: -20 },
+          { top: "25%", left: "88%", dur: 5.5, delay: 3.2, xOff: 25, yOff: -15 },
+          { top: "80%", left: "15%", dur: 6.3, delay: 1.7, xOff: -18, yOff: -25 },
+        ].map((p, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0 }}
             animate={{ 
               opacity: [0, 0.4, 0],
               scale: [0.5, 1, 0.5],
-              x: [0, Math.random() * 50 - 25],
-              y: [0, Math.random() * 50 - 25]
+              x: [0, p.xOff, 0],
+              y: [0, p.yOff, 0]
             }}
             transition={{ 
-              duration: 4 + Math.random() * 4, 
+              duration: p.dur, 
               repeat: Infinity, 
-              delay: Math.random() * 5,
+              delay: p.delay,
               ease: "easeInOut"
             }}
             className="absolute hidden sm:block w-1.5 h-1.5 bg-pink-300 rounded-full blur-[1px]"
-            style={{ 
-              top: `${Math.random() * 80 + 10}%`, 
-              left: `${Math.random() * 80 + 10}%` 
-            }}
+            style={{ top: p.top, left: p.left }}
           />
         ))}
 

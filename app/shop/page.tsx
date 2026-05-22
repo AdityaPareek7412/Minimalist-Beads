@@ -4,9 +4,7 @@
 
 import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import { Header } from "@/components/common/Header"
 import { ProductCard } from "@/components/product/ProductCard"
-import { motion } from "framer-motion"
 import { ChevronDown, Filter, X } from "lucide-react"
 
 function ShopContent() {
