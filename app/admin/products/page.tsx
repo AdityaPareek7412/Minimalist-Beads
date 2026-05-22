@@ -8,7 +8,10 @@ import { formatPrice } from "@/lib/utils/helpers"
 // Static Row for Normal Mode - 100% native HTML, zero drag listeners, super smooth scrolling.
 function StaticProductRow({ product, handleDelete }: { product: any, handleDelete: (id: string) => void }) {
   return (
-    <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 flex items-center gap-4 hover:border-pink-200 transition-all">
+    <div 
+      id={`product-row-${product.id}`}
+      className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 flex items-center gap-4 hover:border-pink-200 transition-all"
+    >
       {/* Thumbnail */}
       <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100 select-none pointer-events-none">
         {product.images?.[0]?.url && (
@@ -59,6 +62,9 @@ function StaticProductRow({ product, handleDelete }: { product: any, handleDelet
       <div className="flex items-center gap-2 flex-shrink-0">
         <Link
           href={`/admin/products/edit/${product.id}`}
+          onClick={() => {
+            sessionStorage.setItem("lastEditedProductId", product.id)
+          }}
           className="p-2.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-xl transition-all"
           title="Edit Inventory"
         >
@@ -196,6 +202,42 @@ export default function AdminProductsPage() {
       product.slug.toLowerCase().includes(sortSearchQuery.toLowerCase()) ||
       (product.category?.name && product.category.name.toLowerCase().includes(sortSearchQuery.toLowerCase()))
     )
+
+  // Restore scroll position to last edited product
+  useEffect(() => {
+    if (loading) return
+
+    const lastEditedProductId = sessionStorage.getItem("lastEditedProductId")
+    if (!lastEditedProductId) return
+
+    const index = filteredProducts.findIndex((p: any) => p.id === lastEditedProductId)
+    if (index === -1) {
+      sessionStorage.removeItem("lastEditedProductId")
+      return
+    }
+
+    if (index >= visibleCount) {
+      setVisibleCount(index + 10)
+      return
+    }
+
+    sessionStorage.removeItem("lastEditedProductId")
+
+    const timer = setTimeout(() => {
+      const element = document.getElementById(`product-row-${lastEditedProductId}`)
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" })
+        
+        // Add a subtle brief highlight animation
+        element.classList.add("ring-4", "ring-pink-100", "border-pink-300", "transition-all")
+        setTimeout(() => {
+          element.classList.remove("ring-4", "ring-pink-100", "border-pink-300")
+        }, 2000)
+      }
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [loading, filteredProducts, visibleCount])
 
   // Observer for Normal Mode
   useEffect(() => {
