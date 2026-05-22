@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { requireAdmin } from "@/lib/auth"
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  // 🔒 Admin only
+  const authError = requireAdmin(req)
+  if (authError) return authError
+
   try {
     const { id } = params
 
-    // Delete the order (Prisma will handle cascading deletes if configured, 
-    // but we should check if we need to delete OrderItems and Payments manually)
     await prisma.order.delete({
       where: { id }
     })

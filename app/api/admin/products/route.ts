@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { v2 as cloudinary } from "cloudinary"
 import { unstable_cache, revalidateTag } from "next/cache"
+import { requireAdmin } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
@@ -58,6 +59,7 @@ const getCachedProducts = unstable_cache(
 )
 
 export async function GET(req: NextRequest) {
+  // Products list is public (used by shop page) — no auth required for GET
   try {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get("id")
@@ -82,6 +84,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const authError = requireAdmin(req)
+  if (authError) return authError
   try {
     const data = await req.json()
     const { productIds } = data
@@ -110,6 +114,8 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const authError = requireAdmin(req)
+  if (authError) return authError
   try {
     const data = await req.json()
     const { name, price, description, categoryId, imagesBase64, featured, stock, variants } = data
@@ -173,6 +179,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const authError = requireAdmin(req)
+  if (authError) return authError
   try {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get("id")
@@ -193,6 +201,8 @@ export async function DELETE(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const authError = requireAdmin(req)
+  if (authError) return authError
   try {
     const data = await req.json()
     const { id, stock, variants } = data

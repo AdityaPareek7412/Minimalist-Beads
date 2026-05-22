@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { v2 as cloudinary } from "cloudinary"
 import { revalidateTag } from "next/cache"
+import { requireAdmin } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
@@ -13,6 +14,10 @@ cloudinary.config({
 })
 
 export async function POST(req: NextRequest) {
+  // 🔒 Admin only
+  const authError = requireAdmin(req)
+  if (authError) return authError
+
   try {
     const data = await req.json()
     const { products } = data
@@ -65,7 +70,6 @@ export async function POST(req: NextRequest) {
         // 2. Upload Image to Cloudinary (if URL provided)
         let finalImageUrl = "/placeholder.jpg"
         if (image && typeof image === "string" && image.startsWith("http")) {
-          // Auto-fix legacy image URLs on-the-fly before uploading
           const cleanImageUrl = image
             .replace(/dm2buy-resize-dynamic-cebdcaefgydgh6hu\.z02\.azurefd\.net\/dm2buy/g, "dm2buy-aqbqh9cwb5cwb9he.z02.azurefd.net/dm2buy")
             .replace(/s3\.ap-south-1\.amazonaws\.com\/dm2buy/g, "dm2buy-aqbqh9cwb5cwb9he.z02.azurefd.net/dm2buy")
@@ -77,11 +81,9 @@ export async function POST(req: NextRequest) {
             finalImageUrl = uploadResponse.secure_url
           } catch (uploadErr) {
             console.error("Cloudinary upload failed for URL:", cleanImageUrl, uploadErr)
-            // Fallback to corrected external URL if Cloudinary upload fails
             finalImageUrl = cleanImageUrl
           }
         } else if (image && typeof image === "string") {
-          // If it is base64 or already an uploaded URL
           finalImageUrl = image
         }
 
@@ -96,11 +98,9 @@ export async function POST(req: NextRequest) {
         let uniqueSlug = baseSlug
         let count = 1
         while (true) {
-          const existing = await prisma.product.findUnique({
-            where: { slug: uniqueSlug }
-          })
+          const existing = await prisma.product.findUnique({ where: { slug: uniqueSlug } })
           if (!existing) break
-          uniqueSlug = `${baseSlug}-${count}-${Math.floor(Math.random() * 1000)}`
+          uniqueSlug = `${baseSlug}-${count}`
           count++
         }
 
@@ -114,19 +114,10 @@ export async function POST(req: NextRequest) {
             stock: parseInt(stock) || 0,
             categoryId: category.id,
             images: {
-              create: [
-                {
-                  url: finalImageUrl,
-                  alt: name,
-                  order: 0
-                }
-              ]
+              create: [{ url: finalImageUrl, alt: name, order: 0 }]
             }
           },
-          include: {
-            images: true,
-            category: true
-          }
+          include: { images: true, category: true }
         })
 
         importedProducts.push(createdProduct)
@@ -136,7 +127,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Trigger cache revalidation
     revalidateTag("products")
 
     return NextResponse.json({

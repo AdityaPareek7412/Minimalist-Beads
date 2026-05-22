@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { requireAdmin } from "@/lib/auth"
 
+// GET is public — needed by Header to show announcement, and checkout for shipping fees
 export async function GET() {
   try {
     let settings = await prisma.siteSettings.findUnique({
@@ -24,6 +26,10 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  // 🔒 Admin only — only POST (write) requires auth, GET is public
+  const authError = requireAdmin(req)
+  if (authError) return authError
+
   try {
     const data = await req.json()
     const { shippingFee, freeShippingLimit, announcement } = data

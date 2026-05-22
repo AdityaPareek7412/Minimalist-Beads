@@ -5,6 +5,9 @@ import Razorpay from "razorpay"
 
 export const dynamic = "force-dynamic"
 
+const MIN_AMOUNT_INR = 1       // ₹1 minimum
+const MAX_AMOUNT_INR = 100000  // ₹1,00,000 maximum per order (safety cap)
+
 export async function POST(req: NextRequest) {
   try {
     const razorpay = new Razorpay({
@@ -14,9 +17,26 @@ export async function POST(req: NextRequest) {
 
     const { amount, currency = "INR", receipt, notes } = await req.json()
 
+    // 🔒 Server-side amount validation — never trust client
+    const amountNum = parseFloat(amount)
+    if (isNaN(amountNum) || amountNum < MIN_AMOUNT_INR || amountNum > MAX_AMOUNT_INR) {
+      return NextResponse.json(
+        { success: false, error: `Invalid amount. Must be between ₹${MIN_AMOUNT_INR} and ₹${MAX_AMOUNT_INR}` },
+        { status: 400 }
+      )
+    }
+
+    // Only allow INR
+    if (currency !== "INR") {
+      return NextResponse.json(
+        { success: false, error: "Only INR currency is supported" },
+        { status: 400 }
+      )
+    }
+
     const options = {
-      amount: Math.round(amount * 100), // Razorpay expects amount in paise
-      currency,
+      amount: Math.round(amountNum * 100), // Razorpay expects amount in paise
+      currency: "INR",
       receipt: receipt || `order_${Date.now()}`,
       notes: notes || {},
     }

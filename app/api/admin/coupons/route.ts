@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { requireAdmin } from "@/lib/auth"
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // 🔒 Admin only
+  const authError = requireAdmin(req)
+  if (authError) return authError
+
   try {
     const coupons = await prisma.coupon.findMany({
       orderBy: { createdAt: "desc" }
@@ -13,6 +18,10 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  // 🔒 Admin only
+  const authError = requireAdmin(req)
+  if (authError) return authError
+
   try {
     const data = await req.json()
     const { code, discountType, discountValue, minOrderValue, validUntil } = data
@@ -40,6 +49,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  // 🔒 Admin only
+  const authError = requireAdmin(req)
+  if (authError) return authError
+
   try {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get("id")
@@ -47,9 +60,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Missing coupon ID" }, { status: 400 })
     }
 
-    await prisma.coupon.delete({
-      where: { id }
-    })
+    await prisma.coupon.delete({ where: { id } })
 
     return NextResponse.json({ success: true, message: "Coupon deleted successfully" })
   } catch (error: any) {

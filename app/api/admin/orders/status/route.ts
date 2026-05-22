@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { requireAdmin } from "@/lib/auth"
 
 export async function PATCH(req: NextRequest) {
+  // 🔒 Admin only
+  const authError = requireAdmin(req)
+  if (authError) return authError
+
   try {
     const { orderId, status, trackingId, trackingUrl } = await req.json()
 
