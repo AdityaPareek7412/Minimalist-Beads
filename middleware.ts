@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { verifyToken } from '@/lib/auth'
 
 export function middleware(request: NextRequest) {
   // Only protect /admin routes (not API — those have their own requireAdmin guards)
@@ -10,13 +9,8 @@ export function middleware(request: NextRequest) {
       return NextResponse.next()
     }
 
-    const jwtSecret = process.env.JWT_SECRET
-    if (!jwtSecret) {
-      // If JWT_SECRET is not configured, redirect to login — fail safe
-      const loginUrl = new URL('/admin/login', request.url)
-      return NextResponse.redirect(loginUrl)
-    }
-
+    // Edge Runtime compatible: just check cookie presence
+    // Actual HMAC signature verification is done in each API route via requireAdmin()
     const token = request.cookies.get('admin_token')?.value
 
     if (!token) {
@@ -24,9 +18,9 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl)
     }
 
-    // Verify the HMAC-signed token
-    const payload = verifyToken(token, jwtSecret)
-    if (!payload || !payload.startsWith('admin:')) {
+    // Basic structural check: our signed tokens always have format "base64.hexsig"
+    const parts = token.split('.')
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
       const loginUrl = new URL('/admin/login', request.url)
       return NextResponse.redirect(loginUrl)
     }
