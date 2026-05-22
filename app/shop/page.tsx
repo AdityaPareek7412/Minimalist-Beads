@@ -56,12 +56,16 @@ function ShopContent() {
         const prodData = await prodRes.json()
         const catData = await catRes.json()
         
-        setProducts(prodData)
-        setCategories(catData)
+        // Ensure we only set arrays (guard against API error responses)
+        const prodArray = Array.isArray(prodData) ? prodData : []
+        const catArray = Array.isArray(catData) ? catData : []
+
+        setProducts(prodArray)
+        setCategories(catArray)
 
         // Set initial category from URL if present
-        if (initialCategory) {
-          const cat = catData.find((c: any) => c.slug.toLowerCase() === initialCategory.toLowerCase())
+        if (initialCategory && catArray.length > 0) {
+          const cat = catArray.find((c: any) => c.slug.toLowerCase() === initialCategory.toLowerCase())
           if (cat) {
             setSelectedCategories([cat.id])
           }
