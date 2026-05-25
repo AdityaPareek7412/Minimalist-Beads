@@ -12,13 +12,13 @@ import { formatPrice } from "@/lib/utils/helpers"
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getCartTotal } = useCart()
-  const [settings, setSettings] = useState({ shippingFee: 80, freeShippingLimit: 500 })
+  const [settings, setSettings] = useState({ shippingFee: 80, freeShippingLimit: 0 })
 
   useEffect(() => {
     fetch("/api/admin/settings")
       .then(res => res.json())
       .then(data => setSettings(data))
-      .catch(() => {})
+      .catch(() => { })
   }, [])
 
   const subtotal = getCartTotal()
@@ -71,7 +71,7 @@ export default function CartPage() {
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>
-                      
+
                       <div className="flex-1 text-center sm:text-left">
                         <h3 className="text-lg font-sans font-bold text-gray-900 group-hover:text-pink-600 transition-colors">
                           {item.product?.name}
@@ -119,7 +119,7 @@ export default function CartPage() {
             <div className="lg:col-span-1">
               <div className="bg-white p-8 rounded-[2rem] border border-pink-100 shadow-sm sticky top-28">
                 <h2 className="text-xl font-serif font-bold text-gray-900 mb-8 pb-4 border-b border-pink-50 uppercase tracking-widest text-center">Bag Summary</h2>
-                
+
                 <div className="space-y-4 mb-8">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Subtotal</span>
@@ -143,7 +143,7 @@ export default function CartPage() {
                 >
                   Checkout Now <ArrowRight size={18} />
                 </Link>
-                
+
                 <p className="mt-6 text-[10px] text-center text-gray-400 font-medium uppercase tracking-widest">
                   ✨ Secure Checkout & Fast Delivery
                 </p>

@@ -33,7 +33,7 @@ export default function CheckoutPage() {
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Settings & Coupon State
-  const [settings, setSettings] = useState({ shippingFee: 80, freeShippingLimit: 500 })
+  const [settings, setSettings] = useState({ shippingFee: 80, freeShippingLimit: 0 })
   const [couponCode, setCouponCode] = useState("")
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
   const [couponLoading, setCouponLoading] = useState(false)
@@ -50,11 +50,11 @@ export default function CheckoutPage() {
       .then(res => res.json())
       .then(data => {
         if (data) setSettings({
-          shippingFee: data.shippingFee || 80,
-          freeShippingLimit: data.freeShippingLimit || 500
+          shippingFee: typeof data.shippingFee === 'number' ? data.shippingFee : 80,
+          freeShippingLimit: typeof data.freeShippingLimit === 'number' ? data.freeShippingLimit : 0
         })
       })
-      .catch(() => {})
+      .catch(() => { })
 
     return () => { if (document.body.contains(script)) document.body.removeChild(script) }
   }, [])
@@ -114,7 +114,7 @@ export default function CheckoutPage() {
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (isBelowMinimum) {
       alert("Minimum order value is ₹199 (including shipping). Please add more items to your bag!");
       return;
@@ -272,7 +272,7 @@ export default function CheckoutPage() {
               Payment
             </div>
           </div>
-          
+
           {isBelowMinimum && (
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 bg-rose-50 border border-rose-200 p-4 rounded-2xl inline-block">
               <p className="text-rose-600 text-xs font-bold uppercase tracking-widest flex items-center gap-2 px-6">
@@ -295,24 +295,24 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-gray-400 uppercase ml-4 tracking-widest">First Name</label>
-                      <input type="text" placeholder="Aditya" required value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} className={inputClass} />
+                      <input type="text" placeholder="Aditya" required value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} className={inputClass} />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-gray-400 uppercase ml-4 tracking-widest">Last Name</label>
-                      <input type="text" placeholder="Pareek" required value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} className={inputClass} />
+                      <input type="text" placeholder="Pareek" required value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} className={inputClass} />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-gray-400 uppercase ml-4 tracking-widest">Email Address</label>
-                    <input type="email" placeholder="hello@example.com" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className={inputClass} />
+                    <input type="email" placeholder="hello@example.com" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className={inputClass} />
                   </div>
-                  
+
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-gray-400 uppercase ml-4 tracking-widest">Phone Number</label>
                     <div className="flex gap-3">
                       <div className="relative" ref={dropdownRef}>
-                        <div onClick={() => setShowDropdown(!showDropdown)} 
+                        <div onClick={() => setShowDropdown(!showDropdown)}
                           className="h-[52px] px-5 border border-pink-100 rounded-2xl bg-pink-50/30 flex items-center gap-2 cursor-pointer hover:border-pink-300 transition-all min-w-[100px]">
                           <img src={`https://flagcdn.com/w20/${countries.find(c => c.code === formData.countryCode)?.country || 'in'}.png`} alt="" className="w-5 rounded-sm" />
                           <span className="font-bold text-sm text-gray-700">{formData.countryCode}</span>
@@ -321,7 +321,7 @@ export default function CheckoutPage() {
                         {showDropdown && (
                           <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-pink-100 rounded-2xl shadow-xl z-50 py-2 overflow-hidden">
                             {countries.map(c => (
-                              <div key={c.code} onClick={() => { setFormData({...formData, countryCode: c.code}); setShowDropdown(false) }}
+                              <div key={c.code} onClick={() => { setFormData({ ...formData, countryCode: c.code }); setShowDropdown(false) }}
                                 className="px-4 py-2.5 hover:bg-pink-50 flex items-center gap-3 cursor-pointer transition-colors">
                                 <img src={`https://flagcdn.com/w20/${c.country}.png`} alt="" className="w-5 rounded-sm" />
                                 <span className="text-sm font-bold text-gray-700">{c.code}</span>
@@ -331,52 +331,52 @@ export default function CheckoutPage() {
                           </div>
                         )}
                       </div>
-                      <input 
-                        type="tel" 
-                        placeholder="10-digit Number" 
-                        required 
+                      <input
+                        type="tel"
+                        placeholder="10-digit Number"
+                        required
                         maxLength={10}
                         pattern="\d{10}"
-                        value={formData.phone} 
+                        value={formData.phone}
                         onChange={e => {
                           const val = e.target.value.replace(/\D/g, '');
-                          if (val.length <= 10) setFormData({...formData, phone: val});
-                        }} 
-                        className={inputClass} 
+                          if (val.length <= 10) setFormData({ ...formData, phone: val });
+                        }}
+                        className={inputClass}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-gray-400 uppercase ml-4 tracking-widest">Street Address</label>
-                    <input type="text" placeholder="House no., Street name, Area" required value={formData.street} onChange={e => setFormData({...formData, street: e.target.value})} className={inputClass} />
+                    <input type="text" placeholder="House no., Street name, Area" required value={formData.street} onChange={e => setFormData({ ...formData, street: e.target.value })} className={inputClass} />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-gray-400 uppercase ml-4 tracking-widest">City</label>
-                      <input type="text" placeholder="Jaipur" required value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className={inputClass} />
+                      <input type="text" placeholder="Jaipur" required value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className={inputClass} />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-gray-400 uppercase ml-4 tracking-widest">State</label>
-                      <input type="text" placeholder="Rajasthan" required value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} className={inputClass} />
+                      <input type="text" placeholder="Rajasthan" required value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })} className={inputClass} />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-gray-400 uppercase ml-4 tracking-widest">Pincode</label>
-                      <input 
-                        type="text" 
-                        placeholder="302001" 
-                        required 
-                        value={formData.postalCode} 
+                      <input
+                        type="text"
+                        placeholder="302001"
+                        required
+                        value={formData.postalCode}
                         onChange={e => {
                           const val = e.target.value.replace(/\D/g, '');
-                          setFormData({...formData, postalCode: val});
-                        }} 
-                        className={inputClass} 
+                          setFormData({ ...formData, postalCode: val });
+                        }}
+                        className={inputClass}
                       />
                     </div>
                   </div>
-                  
+
                   <button type="submit" className="w-full py-4 bg-gray-900 text-white font-bold rounded-full shadow-lg hover:bg-pink-600 transition-all mt-6 uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-2">
                     Continue to Payment <ArrowRight size={18} />
                   </button>
@@ -400,9 +400,9 @@ export default function CheckoutPage() {
 
                   <div className="flex flex-col sm:flex-row gap-4 pt-8">
                     <button onClick={() => setCurrentStep("address")} className="flex-1 py-4 border border-pink-100 font-bold rounded-full text-gray-400 hover:bg-pink-50 transition-all uppercase tracking-widest text-xs">Back</button>
-                    <button 
-                      onClick={initiateRazorpay} 
-                      disabled={isProcessing || isBelowMinimum} 
+                    <button
+                      onClick={initiateRazorpay}
+                      disabled={isProcessing || isBelowMinimum}
                       className="flex-[2] py-4 bg-gray-900 text-white font-bold rounded-full shadow-lg hover:bg-pink-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2 uppercase tracking-[0.2em] text-xs"
                     >
                       {isProcessing ? <Loader2 className="animate-spin" /> : "Place Order"}
@@ -417,18 +417,18 @@ export default function CheckoutPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-[2.5rem] p-8 sticky top-28 border border-pink-100 shadow-sm">
               <h3 className="text-lg font-serif font-bold text-gray-900 mb-6 pb-4 border-b border-pink-50 uppercase tracking-widest text-center">Your Bag</h3>
-              
+
               <div className="space-y-4 max-h-[240px] overflow-y-auto pr-2 mb-8 custom-scrollbar">
                 {cart.map((item) => {
                   const itemPrice = item.selectedVariant?.price ?? item.product?.price ?? 0;
                   return (
                     <div key={item.id} className="flex items-center gap-4">
                       <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-pink-50/30 flex-shrink-0 border border-pink-100">
-                        <Image 
-                          src={item.product?.images?.[0]?.url || ""} 
-                          alt={item.product?.name || ""} 
-                          fill 
-                          className="object-cover" 
+                        <Image
+                          src={item.product?.images?.[0]?.url || ""}
+                          alt={item.product?.name || ""}
+                          fill
+                          className="object-cover"
                         />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -475,7 +475,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-xs text-gray-500 uppercase tracking-widest"><span>Payment Processing Fee</span><span className="text-gray-900 font-bold">{formatPrice(processingFee)}</span></div>
                 <div className="border-t border-pink-50 pt-6 flex justify-between items-center">
                   <span className="font-serif font-bold text-gray-900">Total</span>
-                  <motion.span 
+                  <motion.span
                     key={finalTotal}
                     initial={{ opacity: 0.5, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}

@@ -74,8 +74,8 @@ export async function POST(req: NextRequest) {
     // Fetch server-side shipping settings
     const siteSettings = await prisma.siteSettings.findUnique({ where: { id: "default" } })
     const shippingFee = siteSettings?.shippingFee ?? 80
-    const freeShippingLimit = siteSettings?.freeShippingLimit ?? 500
-    const serverShippingCost = serverSubtotal >= freeShippingLimit ? 0 : shippingFee
+    const freeShippingLimit = siteSettings?.freeShippingLimit ?? 0
+    const serverShippingCost = (freeShippingLimit > 0 && serverSubtotal >= freeShippingLimit) ? 0 : shippingFee
 
     // Apply coupon discount if present (validate server-side)
     let serverDiscount = 0

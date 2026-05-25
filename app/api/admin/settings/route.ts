@@ -14,7 +14,7 @@ export async function GET() {
         data: {
           id: "default",
           shippingFee: 80,
-          freeShippingLimit: 500,
+          freeShippingLimit: 0,
         }
       })
     }

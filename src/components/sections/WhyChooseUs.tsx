@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 import { Heart, Sparkles, CreditCard, ShieldCheck } from "lucide-react"
 
 export function WhyChooseUs() {
-  const [settings, setSettings] = useState({ freeShippingLimit: 500 })
+  const [settings, setSettings] = useState({ freeShippingLimit: 0 })
 
   useEffect(() => {
     fetch("/api/admin/settings")
