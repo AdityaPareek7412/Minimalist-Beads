@@ -230,7 +230,7 @@ export default function CheckoutPage() {
             }
 
             clearCart()
-            router.push(`/order-confirmation?orderId=${response.razorpay_order_id}&amount=${finalTotal}&method=online`)
+            router.push(`/order-confirmation?orderId=${dbOrderId}&amount=${finalTotal}&method=online`)
           } catch (err: any) {
             alert("Payment confirmation error: " + err.message)
             setIsProcessing(false)
