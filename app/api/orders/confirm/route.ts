@@ -139,9 +139,11 @@ export async function POST(req: NextRequest) {
     })
 
     if (fullOrder) {
-      sendOrderConfirmationEmail(fullOrder).catch(err => {
+      try {
+        await sendOrderConfirmationEmail(fullOrder)
+      } catch (err) {
         console.error("Failed to send order confirmation email:", err)
-      })
+      }
     }
 
     return NextResponse.json({
