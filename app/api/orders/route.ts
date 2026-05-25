@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { sendOrderConfirmationEmail } from "@/lib/mail"
 
 export const dynamic = "force-dynamic"
 
@@ -182,6 +183,28 @@ export async function POST(req: NextRequest) {
 
       return order
     })
+
+    // If COD, send confirmation email immediately since it is confirmed
+    if (isCod) {
+      const fullOrder = await prisma.order.findUnique({
+        where: { id: result.id },
+        include: {
+          items: {
+            include: { product: { include: { images: true } } }
+          },
+          shippingAddress: true,
+          payment: true,
+        }
+      })
+
+      if (fullOrder) {
+        try {
+          await sendOrderConfirmationEmail(fullOrder)
+        } catch (err) {
+          console.error("Failed to send COD order confirmation email:", err)
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,

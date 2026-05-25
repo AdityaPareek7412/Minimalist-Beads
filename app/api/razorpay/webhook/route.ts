@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import crypto from "crypto"
+import { sendOrderConfirmationEmail } from "@/lib/mail"
 
 export const dynamic = "force-dynamic"
 
@@ -145,6 +146,26 @@ export async function POST(req: NextRequest) {
           })
         }
       })
+
+      // Fetch the full order with relations for the confirmation email
+      const fullOrder = await prisma.order.findUnique({
+        where: { id: dbOrderId },
+        include: {
+          items: {
+            include: { product: { include: { images: true } } }
+          },
+          shippingAddress: true,
+          payment: true,
+        }
+      })
+
+      if (fullOrder) {
+        try {
+          await sendOrderConfirmationEmail(fullOrder)
+        } catch (err) {
+          console.error("Failed to send order confirmation email from webhook:", err)
+        }
+      }
 
       console.log(`Webhook: Successfully confirmed order ${dbOrderId}`)
     }
