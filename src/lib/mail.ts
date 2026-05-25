@@ -156,7 +156,7 @@ export async function sendOrderConfirmationEmail(order: any) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        from: "Minimalist Beads <onboarding@resend.dev>", // Or custom domain
+        from: "Minimalist Beads <orders@minimalistbeads.in>",
         to: [email],
         subject: `Order Confirmed: #${orderNumber} ✨`,
         html: emailHtml,
