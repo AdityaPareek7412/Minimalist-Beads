@@ -6,7 +6,7 @@ import { useWishlist } from "@/context/wishlistContext"
 import { Trash2, ShoppingBag, Heart, ArrowRight } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useCart } from "@/context/cartContext"
-import { formatPrice } from "@/lib/utils/helpers"
+import { formatPrice, getImageUrl } from "@/lib/utils/helpers"
 
 export default function WishlistPage() {
   const { wishlistItems, removeFromWishlist } = useWishlist()
@@ -48,7 +48,7 @@ export default function WishlistPage() {
                 >
                   <Link href={`/products/${product.slug}`} className="block relative aspect-square overflow-hidden bg-pink-50/30">
                     <Image
-                      src={product.images?.[0]?.url || ""}
+                      src={getImageUrl(product.images?.[0]?.url)}
                       alt={product.name}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-700"

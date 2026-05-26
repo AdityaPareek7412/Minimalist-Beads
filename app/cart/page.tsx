@@ -8,7 +8,7 @@ import Image from "next/image"
 import { useCart } from "@/context/cartContext"
 import { X, Plus, Minus, ArrowRight, Truck, Trash2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { formatPrice } from "@/lib/utils/helpers"
+import { formatPrice, getImageUrl } from "@/lib/utils/helpers"
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getCartTotal } = useCart()
@@ -66,7 +66,7 @@ export default function CartPage() {
                     >
                       <div className="relative w-32 h-32 rounded-xl overflow-hidden bg-pink-50/30 flex-shrink-0 border border-pink-100">
                         <Image
-                          src={item.product?.images?.[0]?.url || ""}
+                          src={getImageUrl(item.product?.images?.[0]?.url)}
                           alt={item.product?.name || ""}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-500"

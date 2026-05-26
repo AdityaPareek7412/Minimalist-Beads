@@ -11,7 +11,7 @@ import { useCart } from "@/context/cartContext"
 import { useWishlist } from "@/context/wishlistContext"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { calculateDiscount, formatPrice } from "@/lib/utils/helpers"
+import { calculateDiscount, formatPrice, getImageUrl } from "@/lib/utils/helpers"
 
 interface ProductCardProps {
   product: Product
@@ -92,7 +92,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         {/* Main Image */}
         {mainImage && (
           <Image
-            src={mainImage.url}
+            src={getImageUrl(mainImage.url)}
             alt={mainImage.alt || product.name}
             fill
             className={`object-cover transition-transform duration-700 ${product.stock === 0 ? 'opacity-40' : ''} ${isHovered && hoverImage && product.stock > 0 ? 'opacity-0' : 'opacity-100 scale-100 group-hover:scale-105'}`}
@@ -102,7 +102,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         {/* Hover Image */}
         {hoverImage && product.stock > 0 && (
           <Image
-            src={hoverImage.url}
+            src={getImageUrl(hoverImage.url)}
             alt={hoverImage.alt || product.name}
             fill
             className={`object-cover transition-all duration-700 ${isHovered ? 'opacity-100 scale-105' : 'opacity-0 scale-100'}`}

@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { MapPin, Lock, ChevronDown, CreditCard, Loader2, Tag, ShoppingBag, ArrowRight, Truck, CheckCircle2, XCircle } from "lucide-react"
 import { useCart } from "@/context/cartContext"
-import { formatPrice } from "@/lib/utils/helpers"
+import { formatPrice, getImageUrl } from "@/lib/utils/helpers"
 
 declare global {
   interface Window {
@@ -425,7 +425,7 @@ export default function CheckoutPage() {
                     <div key={item.id} className="flex items-center gap-4">
                       <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-pink-50/30 flex-shrink-0 border border-pink-100">
                         <Image
-                          src={item.product?.images?.[0]?.url || ""}
+                          src={getImageUrl(item.product?.images?.[0]?.url)}
                           alt={item.product?.name || ""}
                           fill
                           className="object-cover"

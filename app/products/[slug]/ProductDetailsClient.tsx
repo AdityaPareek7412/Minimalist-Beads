@@ -9,7 +9,7 @@ import { motion } from "framer-motion"
 import { useCart } from "@/context/cartContext"
 import { useWishlist } from "@/context/wishlistContext"
 import { ProductCard } from "@/components/product/ProductCard"
-import { formatPrice } from "@/lib/utils/helpers"
+import { formatPrice, getImageUrl } from "@/lib/utils/helpers"
 
 export default function ProductDetailsClient({ product, relatedProducts }: { product: any, relatedProducts: any[] }) {
   const [quantity, setQuantity] = useState(1)
@@ -92,7 +92,7 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
             <div className="mb-6">
               <div className="relative bg-pink-50/30 rounded-2xl overflow-hidden aspect-square border border-pink-100/50 shadow-inner">
                 <Image
-                  src={product.images[selectedImage]?.url || ""}
+                  src={getImageUrl(product.images[selectedImage]?.url)}
                   alt={product.images[selectedImage]?.alt || product.name}
                   fill
                   className="object-cover transition-transform duration-500"
@@ -115,7 +115,7 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
                     }`}
                   >
                     <Image
-                      src={image.url}
+                      src={getImageUrl(image.url)}
                       alt={image.alt || product.name}
                       fill
                       className="object-cover"

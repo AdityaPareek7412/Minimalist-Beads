@@ -66,7 +66,14 @@ export function validatePhone(phone: string): boolean {
 
 export function getImageUrl(url: string | undefined): string {
   if (!url) return "/images/placeholder.jpg"
-  if (url.startsWith("http")) return url
+  if (url.startsWith("http")) {
+    if (url.includes("res.cloudinary.com") && url.includes("/upload/")) {
+      if (!url.includes("/q_auto")) {
+        return url.replace("/upload/", "/upload/q_auto,f_auto/")
+      }
+    }
+    return url
+  }
   return `/images/${url}`
 }
 

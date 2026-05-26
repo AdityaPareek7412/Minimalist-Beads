@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { CheckCircle, Package, ArrowRight, Copy, Check, MapPin, CreditCard, ShoppingBag, Loader2, AlertCircle } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
-import { formatPrice } from "@/lib/utils/helpers"
+import { formatPrice, getImageUrl } from "@/lib/utils/helpers"
 
 function OrderConfirmationContent() {
   const searchParams = useSearchParams()
@@ -164,7 +164,7 @@ function OrderConfirmationContent() {
                       <div className="flex items-center gap-3">
                         <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-pink-50/20 flex-shrink-0 border border-pink-50">
                           {imgUrl ? (
-                            <Image src={imgUrl} alt="" fill className="object-cover" />
+                            <Image src={getImageUrl(imgUrl)} alt="" fill className="object-cover" />
                           ) : (
                             <div className="w-full h-full bg-pink-50/30 flex items-center justify-center"><Package size={16} className="text-pink-300" /></div>
                           )}
