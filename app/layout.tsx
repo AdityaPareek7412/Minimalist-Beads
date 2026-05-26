@@ -6,8 +6,8 @@ import "@/styles/globals.css"
 import { Header } from "@/components/common/Header"
 import { Footer } from "@/components/common/Footer"
 import { CartProvider } from "@/context/cartContext"
-
 import { WishlistProvider } from "@/context/wishlistContext"
+import { Analytics } from "@vercel/analytics/react"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 const cormorant = Cormorant_Garamond({
@@ -45,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Header />
             <main className="min-h-screen">{children}</main>
             <Footer />
+            <Analytics />
           </CartProvider>
         </WishlistProvider>
       </body>
