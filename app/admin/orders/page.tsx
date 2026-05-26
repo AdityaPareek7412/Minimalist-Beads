@@ -23,6 +23,16 @@ export default async function AdminOrdersPage() {
     }
   })
 
+  // Calculate statistics
+  const pendingCount = orders.filter(o => o.status === "PENDING").length
+  const confirmedCount = orders.filter(o => ["CONFIRMED", "PROCESSING", "SHIPPED"].includes(o.status)).length
+  const deliveredCount = orders.filter(o => o.status === "DELIVERED").length
+  
+  const earnedStatuses = ["CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"]
+  const totalEarning = orders
+    .filter(o => earnedStatuses.includes(o.status))
+    .reduce((acc, o) => acc + o.total, 0)
+
   // Helper to format date in IST
   const formatIST = (date: Date) => {
     return new Intl.DateTimeFormat('en-IN', {
@@ -46,6 +56,45 @@ export default async function AdminOrdersPage() {
               Total Orders: {orders.length}
             </div>
             <LogoutButton />
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          {/* Total Pending */}
+          <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 shadow-sm flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-1">Pending Orders</p>
+              <h3 className="text-3xl font-black text-amber-700">{pendingCount}</h3>
+            </div>
+            <div className="p-3 bg-amber-100/50 text-amber-600 rounded-xl text-2xl">⏳</div>
+          </div>
+
+          {/* Total Confirmed */}
+          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 shadow-sm flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">Confirmed Orders</p>
+              <h3 className="text-3xl font-black text-blue-700">{confirmedCount}</h3>
+            </div>
+            <div className="p-3 bg-blue-100/50 text-blue-600 rounded-xl text-2xl">📦</div>
+          </div>
+
+          {/* Total Delivered */}
+          <div className="bg-green-50 border border-green-100 rounded-2xl p-6 shadow-sm flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold text-green-500 uppercase tracking-widest mb-1">Delivered Orders</p>
+              <h3 className="text-3xl font-black text-green-700">{deliveredCount}</h3>
+            </div>
+            <div className="p-3 bg-green-100/50 text-green-600 rounded-xl text-2xl">🎉</div>
+          </div>
+
+          {/* Total Earning */}
+          <div className="bg-pink-50 border border-pink-100 rounded-2xl p-6 shadow-sm flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold text-pink-500 uppercase tracking-widest mb-1">Total Earnings</p>
+              <h3 className="text-3xl font-black text-pink-700">{formatPrice(totalEarning)}</h3>
+            </div>
+            <div className="p-3 bg-pink-100/50 text-pink-600 rounded-xl text-2xl">💰</div>
           </div>
         </div>
 
