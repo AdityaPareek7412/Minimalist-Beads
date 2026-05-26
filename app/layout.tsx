@@ -7,7 +7,7 @@ import { Header } from "@/components/common/Header"
 import { Footer } from "@/components/common/Footer"
 import { CartProvider } from "@/context/cartContext"
 import { WishlistProvider } from "@/context/wishlistContext"
-import { Analytics } from "@vercel/analytics/react"
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
 const cormorant = Cormorant_Garamond({
