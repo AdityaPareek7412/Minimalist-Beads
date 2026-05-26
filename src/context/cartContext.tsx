@@ -43,10 +43,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         (item) => item.productId === product.id && item.selectedVariant?.id === selectedVariant?.id
       )
 
+      const maxStock = selectedVariant ? selectedVariant.stock : product.stock
+      const currentQty = existingItem ? existingItem.quantity : 0
+      const allowedQty = maxStock - currentQty
+
+      if (allowedQty <= 0) {
+        alert(`All available stock (${maxStock} items) is already in your bag.`)
+        return prevCart
+      }
+
+      const qtyToAdd = Math.min(quantity, allowedQty)
+
+      if (qtyToAdd < quantity) {
+        alert(`Only ${maxStock} items are in stock. Added ${qtyToAdd} more to your bag.`)
+      }
+
       if (existingItem) {
         return prevCart.map((item) =>
           item.productId === product.id && item.selectedVariant?.id === selectedVariant?.id
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: item.quantity + qtyToAdd }
             : item
         )
       }
@@ -58,7 +73,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           userId: "",
           productId: product.id,
           product,
-          quantity,
+          quantity: qtyToAdd,
           selectedVariant,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -78,7 +93,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     setCart((prevCart) =>
-      prevCart.map((item) => (item.id === cartItemId ? { ...item, quantity } : item))
+      prevCart.map((item) => {
+        if (item.id === cartItemId) {
+          const maxStock = item.selectedVariant ? item.selectedVariant.stock : (item.product?.stock ?? 0)
+          if (quantity > maxStock) {
+            alert(`Only ${maxStock} items are in stock.`)
+            return { ...item, quantity: maxStock }
+          }
+          return { ...item, quantity }
+        }
+        return item
+      })
     )
   }, [removeFromCart])
 

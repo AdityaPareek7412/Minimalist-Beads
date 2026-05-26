@@ -35,22 +35,31 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    if (cartQty >= product.stock) {
+      alert(`Only ${product.stock} items are in stock.`)
+      return
+    }
     addToCart(product, 1)
   }
 
   const handleIncrement = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    if (cartQty >= product.stock) {
+      alert(`Only ${product.stock} items are in stock.`)
+      return
+    }
     addToCart(product, 1)
   }
 
   const handleDecrement = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    if (!cartItem) return
     if (cartQty <= 1) {
-      removeFromCart(product.id)
+      removeFromCart(cartItem.id)
     } else {
-      updateQuantity(product.id, cartQty - 1)
+      updateQuantity(cartItem.id, cartQty - 1)
     }
   }
 
@@ -189,7 +198,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 <span className="flex-1 text-center font-bold text-[10px] sm:text-xs text-gray-800">{cartQty}</span>
                 <button
                   onClick={handleIncrement}
-                  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg hover:bg-pink-100 text-pink-600 transition-colors"
+                  disabled={cartQty >= product.stock}
+                  className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg transition-colors ${cartQty >= product.stock ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-pink-100 text-pink-600'}`}
                 >
                   <Plus size={10} className="sm:w-3 sm:h-3" />
                 </button>

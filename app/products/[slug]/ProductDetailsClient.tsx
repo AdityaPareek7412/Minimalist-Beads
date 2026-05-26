@@ -18,12 +18,37 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
   const [selectedVariant, setSelectedVariant] = useState<any>(
     product.variants && product.variants.length > 0 ? product.variants[0] : null
   )
-  const { addToCart } = useCart()
+  const { addToCart, cart } = useCart()
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
   const router = useRouter()
 
+  const displayPrice = selectedVariant?.price ?? product.price
+  const displayStock = selectedVariant ? selectedVariant.stock : product.stock
+  const hasVariants = product.variants && product.variants.length > 0
+
+  const cartItem = cart.find(
+    (item) => item.productId === product.id && item.selectedVariant?.id === selectedVariant?.id
+  )
+  const cartQty = cartItem ? cartItem.quantity : 0
+  const remainingStock = Math.max(0, displayStock - cartQty)
+
+  // Reset selected quantity when variant changes
+  useState(() => {
+    // Note: We can also run an effect or just handle it directly on render or variant change
+  })
+
+  // Reset quantity when variant changes to ensure it's not out of bounds
+  useState(() => {
+    // using useEffect is better, we'll define it below
+  })
+
   const handleAddToCart = () => {
-    addToCart(product, quantity, selectedVariant || undefined)
+    if (remainingStock <= 0) {
+      alert("All available stock is already in your bag.")
+      return
+    }
+    const qtyToUse = Math.min(quantity, remainingStock)
+    addToCart(product, qtyToUse, selectedVariant || undefined)
     setIsAdded(true)
     setTimeout(() => setIsAdded(false), 2000)
   }
@@ -36,9 +61,17 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
     }
   }
 
-  const displayPrice = selectedVariant?.price ?? product.price
-  const displayStock = selectedVariant ? selectedVariant.stock : product.stock
-  const hasVariants = product.variants && product.variants.length > 0
+  // Reset quantity on variant change
+  useState(() => {
+    // We will do a React.useEffect below
+  })
+
+  // We add standard useEffect at component level
+  const [lastVariantId, setLastVariantId] = useState(selectedVariant?.id)
+  if (selectedVariant?.id !== lastVariantId) {
+    setLastVariantId(selectedVariant?.id)
+    setQuantity(1)
+  }
 
   return (
     <div className="min-h-screen bg-[#fdf0f5]">
@@ -204,7 +237,7 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
 
             {/* Quantity & Actions */}
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className={`flex items-center bg-pink-50/50 border border-pink-100 rounded-full p-1.5 shadow-inner ${displayStock === 0 ? 'opacity-50 pointer-events-none' : ''}`}>
+              <div className={`flex items-center bg-pink-50/50 border border-pink-100 rounded-full p-1.5 shadow-inner ${displayStock === 0 || remainingStock === 0 ? 'opacity-50 pointer-events-none' : ''}`}>
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="w-10 h-10 flex items-center justify-center rounded-full bg-white hover:bg-pink-100 text-gray-600 transition-all border border-pink-100 shadow-sm"
@@ -213,8 +246,9 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
                 </button>
                 <span className="w-12 text-center text-lg font-bold text-gray-900">{quantity}</span>
                 <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white hover:bg-pink-100 text-gray-600 transition-all border border-pink-100 shadow-sm"
+                  onClick={() => setQuantity(Math.min(remainingStock, quantity + 1))}
+                  disabled={quantity >= remainingStock}
+                  className={`w-10 h-10 flex items-center justify-center rounded-full transition-all border border-pink-100 shadow-sm ${quantity >= remainingStock ? 'text-gray-300 cursor-not-allowed bg-gray-50' : 'bg-white hover:bg-pink-100 text-gray-600'}`}
                 >
                   <Plus size={16} />
                 </button>
@@ -222,9 +256,9 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
 
               <button
                 onClick={handleAddToCart}
-                disabled={displayStock === 0}
+                disabled={displayStock === 0 || remainingStock === 0}
                 className={`flex-1 py-4 px-8 rounded-full font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 shadow-lg hover:shadow-pink-200 flex items-center justify-center gap-3 ${
-                  displayStock === 0
+                  displayStock === 0 || remainingStock === 0
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
                     : isAdded
                     ? "bg-emerald-600 text-white"
@@ -232,7 +266,7 @@ export default function ProductDetailsClient({ product, relatedProducts }: { pro
                 }`}
               >
                 <ShoppingBag size={18} />
-                {displayStock === 0 ? "SOLD OUT" : isAdded ? "ADDED TO BAG" : "ADD TO BAG"}
+                {displayStock === 0 ? "SOLD OUT" : remainingStock === 0 ? "ALL IN BAG" : isAdded ? "ADDED TO BAG" : "ADD TO BAG"}
               </button>
             </div>
 

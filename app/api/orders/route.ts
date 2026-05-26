@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
       let unitPrice: number = dbProduct.price
       let selectedVariantId: string | null = null
       let selectedVariantName: string | null = null
+      let availableStock: number = dbProduct.stock
 
       if (item.selectedVariant?.id) {
         const dbVariant = dbProduct.variants.find(v => v.id === item.selectedVariant.id)
@@ -55,10 +56,23 @@ export async function POST(req: NextRequest) {
           unitPrice = dbVariant.price ?? dbProduct.price
           selectedVariantId = dbVariant.id
           selectedVariantName = dbVariant.name
+          availableStock = dbVariant.stock
         }
       }
 
       const qty = Math.max(1, parseInt(item.quantity) || 1)
+
+      // 🔒 Stock validation check
+      if (qty > availableStock) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: `Only ${availableStock} items of ${dbProduct.name}${selectedVariantName ? ` (${selectedVariantName})` : ''} are available in stock. Please adjust your bag quantity.` 
+          },
+          { status: 400 }
+        )
+      }
+
       const lineTotal = unitPrice * qty
       serverSubtotal += lineTotal
 

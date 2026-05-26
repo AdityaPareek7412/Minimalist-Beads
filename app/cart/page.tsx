@@ -54,6 +54,7 @@ export default function CartPage() {
               <AnimatePresence>
                 {cart.map((item) => {
                   const itemPrice = item.selectedVariant?.price ?? item.product?.price ?? 0;
+                  const itemStock = item.selectedVariant ? item.selectedVariant.stock : (item.product?.stock ?? 0);
                   return (
                     <motion.div
                       key={item.id}
@@ -94,7 +95,8 @@ export default function CartPage() {
                         <span className="w-10 text-center font-bold text-gray-900">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-pink-100 text-gray-600 transition-all shadow-sm"
+                          disabled={item.quantity >= itemStock}
+                          className={`w-8 h-8 flex items-center justify-center rounded-full transition-all shadow-sm ${item.quantity >= itemStock ? 'text-gray-300 bg-gray-50 cursor-not-allowed' : 'bg-white hover:bg-pink-100 text-gray-600'}`}
                         >
                           <Plus size={14} />
                         </button>
