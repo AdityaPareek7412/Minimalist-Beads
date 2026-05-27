@@ -20,7 +20,10 @@ export async function GET(req: NextRequest) {
           { orderNumber: number.replace("#", "") },
           { id: number }
         ],
-        customerEmail: email
+        customerEmail: {
+          equals: email,
+          mode: "insensitive"
+        }
       },
       include: {
         items: {

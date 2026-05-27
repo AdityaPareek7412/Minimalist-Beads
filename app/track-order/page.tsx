@@ -19,7 +19,7 @@ export default function TrackOrderPage() {
     setOrder(null)
 
     try {
-      const res = await fetch(`/api/orders/track?number=${orderNumber}&email=${email}`)
+      const res = await fetch(`/api/orders/track?number=${encodeURIComponent(orderNumber.trim())}&email=${encodeURIComponent(email.trim())}`)
       const data = await res.json()
       if (data.success) {
         setOrder(data.order)
