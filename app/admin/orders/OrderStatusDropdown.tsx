@@ -20,7 +20,8 @@ export default function OrderStatusDropdown({ orderId, currentStatus }: { orderI
   // Tracking inputs
   const [showTrackingForm, setShowTrackingForm] = useState(false)
   const [tId, setTId] = useState("")
-  const [tUrl, setTUrl] = useState("")
+  const [courier, setCourier] = useState("indiapost")
+  const [tUrl, setTUrl] = useState("https://www.indiapost.gov.in/#trackandtrace")
 
   const updateStatus = async (newStatus: string) => {
     if (newStatus === "SHIPPED") {
@@ -103,15 +104,69 @@ export default function OrderStatusDropdown({ orderId, currentStatus }: { orderI
       )}
 
       {showTrackingForm && (
-        <div className="absolute z-30 mt-2 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl p-4 right-0">
-          <h4 className="text-xs font-black uppercase mb-3 flex items-center gap-2"><Truck size={14} /> Shipping Details</h4>
-          <input type="text" placeholder="AWB / Tracking ID" value={tId} onChange={e => setTId(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs mb-2 outline-none focus:border-pink-400" />
-          <input type="text" placeholder="Tracking Link (Optional)" value={tUrl} onChange={e => setTUrl(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs mb-3 outline-none focus:border-pink-400" />
+        <div className="absolute z-30 mt-2 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl p-4 right-0 text-gray-800">
+          <h4 className="text-xs font-black uppercase mb-3 flex items-center gap-2 text-gray-900"><Truck size={14} /> Shipping Details</h4>
+          
+          <div className="mb-2">
+            <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Courier Partner</label>
+            <select
+              value={courier}
+              onChange={(e) => {
+                const val = e.target.value
+                setCourier(val)
+                if (val === "indiapost") {
+                  setTUrl("https://www.indiapost.gov.in/#trackandtrace")
+                } else if (val === "tirupati") {
+                  setTUrl("https://trackcourier.io/tirupati-courier-tracking")
+                } else {
+                  setTUrl("")
+                }
+              }}
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs outline-none focus:border-pink-400 font-medium text-gray-700"
+            >
+              <option value="indiapost">India Post</option>
+              <option value="tirupati">Tirupati Courier</option>
+              <option value="custom">Other / Custom Link</option>
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">AWB / Tracking ID</label>
+            <input 
+              type="text" 
+              placeholder="AWB / Tracking ID" 
+              value={tId} 
+              onChange={e => setTId(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs outline-none focus:border-pink-400 font-medium text-gray-700" 
+            />
+          </div>
+
+          {courier === "custom" && (
+            <div className="mb-3">
+              <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Tracking Link</label>
+              <input 
+                type="text" 
+                placeholder="Tracking Link (Optional)" 
+                value={tUrl} 
+                onChange={e => setTUrl(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs outline-none focus:border-pink-400 font-medium text-gray-700" 
+              />
+            </div>
+          )}
+
           <div className="flex gap-2">
-            <button onClick={() => setShowTrackingForm(false)} className="flex-1 py-2 text-[10px] font-bold text-gray-400 hover:text-gray-600">Cancel</button>
-            <button onClick={handleTrackingSubmit} className="flex-1 py-2 bg-pink-600 text-white text-[10px] font-bold rounded-lg hover:bg-pink-700 transition-all">Ship Order</button>
+            <button 
+              onClick={() => setShowTrackingForm(false)} 
+              className="flex-1 py-2 text-[10px] font-bold text-gray-400 hover:text-gray-600 border border-gray-200 rounded-lg transition-all"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handleTrackingSubmit} 
+              className="flex-1 py-2 bg-pink-600 text-white text-[10px] font-bold rounded-lg hover:bg-pink-700 transition-all shadow-md shadow-pink-100"
+            >
+              Ship Order
+            </button>
           </div>
         </div>
       )}
