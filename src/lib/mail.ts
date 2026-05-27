@@ -131,7 +131,7 @@ export async function sendOrderConfirmationEmail(order: any) {
 
           <!-- Track order button -->
           <div style="text-align: center; margin: 40px 0 20px 0;">
-            <a href="https://minimalistbeads.vercel.app/track-order" style="display: inline-block; padding: 14px 30px; background: linear-gradient(135deg, #f472b6 0%, #c084fc 100%); color: #ffffff; text-decoration: none; font-weight: 700; border-radius: 50px; font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; box-shadow: 0 4px 15px rgba(244, 114, 182, 0.4);">Track Order Live</a>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://minimalistbeads.in'}/track-order" style="display: inline-block; padding: 14px 30px; background: linear-gradient(135deg, #f472b6 0%, #c084fc 100%); color: #ffffff; text-decoration: none; font-weight: 700; border-radius: 50px; font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; box-shadow: 0 4px 15px rgba(244, 114, 182, 0.4);">Track Order Live</a>
           </div>
 
         </div>
