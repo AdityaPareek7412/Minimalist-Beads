@@ -17,6 +17,7 @@ const EXPLORE_LINKS = [
   { name: "New Arrivals", href: "/shop" },
   { name: "Trending", href: "/shop" },
   { name: "Sale", href: "/shop" },
+  { name: "Track Your Order", href: "/track-order" },
 ]
 
 const SUPPORT_LINKS = [
