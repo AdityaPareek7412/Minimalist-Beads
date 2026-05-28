@@ -33,7 +33,7 @@ export default async function AdminOrdersPage() {
     .filter(o => earnedStatuses.includes(o.status))
     .reduce((acc, o) => acc + o.total, 0)
 
-  // Helper to format date in IST
+  // Helper to format date in IST (with time)
   const formatIST = (date: Date) => {
     return new Intl.DateTimeFormat('en-IN', {
       day: 'numeric',
@@ -45,6 +45,42 @@ export default async function AdminOrdersPage() {
       timeZone: 'Asia/Kolkata'
     }).format(new Date(date))
   }
+
+  // Helper to get only the date portion in IST for day grouping
+  const getISTDayString = (date: Date) => {
+    return new Intl.DateTimeFormat('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'Asia/Kolkata'
+    }).format(new Date(date))
+  }
+
+  const todayISTString = getISTDayString(new Date())
+
+  // Calculate today's specific orders and earnings
+  const todayOrders = orders.filter(o => getISTDayString(o.createdAt) === todayISTString)
+  const todayEarning = todayOrders
+    .filter(o => earnedStatuses.includes(o.status))
+    .reduce((acc, o) => acc + o.total, 0)
+
+  // Calculate daily earnings for the last 7 days (oldest to newest)
+  const dailyEarnings = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const dayString = getISTDayString(d)
+    
+    const dayOrders = orders.filter(o => getISTDayString(o.createdAt) === dayString)
+    const dayEarningsAmount = dayOrders
+      .filter(o => earnedStatuses.includes(o.status))
+      .reduce((acc, o) => acc + o.total, 0)
+      
+    return {
+      date: dayString,
+      earnings: dayEarningsAmount,
+      orderCount: dayOrders.length
+    }
+  }).reverse()
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -60,7 +96,7 @@ export default async function AdminOrdersPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
           {/* Total Pending */}
           <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 shadow-sm flex items-center justify-between">
             <div>
@@ -88,13 +124,53 @@ export default async function AdminOrdersPage() {
             <div className="p-3 bg-green-100/50 text-green-600 rounded-xl text-2xl">🎉</div>
           </div>
 
+          {/* Today's Earning */}
+          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 shadow-sm flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold text-emerald-500 uppercase tracking-widest mb-1">Today's Earnings</p>
+              <h3 className="text-3xl font-black text-emerald-700">{formatPrice(todayEarning)}</h3>
+              <p className="text-[10px] text-emerald-600/80 font-bold mt-1">
+                {todayOrders.length} orders today
+              </p>
+            </div>
+            <div className="p-3 bg-emerald-100/50 text-emerald-600 rounded-xl text-2xl">📅</div>
+          </div>
+
           {/* Total Earning */}
           <div className="bg-pink-50 border border-pink-100 rounded-2xl p-6 shadow-sm flex items-center justify-between">
             <div>
               <p className="text-xs font-bold text-pink-500 uppercase tracking-widest mb-1">Total Earnings</p>
               <h3 className="text-3xl font-black text-pink-700">{formatPrice(totalEarning)}</h3>
+              <p className="text-[10px] text-pink-600/80 font-bold mt-1">
+                From {orders.length} orders
+              </p>
             </div>
             <div className="p-3 bg-pink-100/50 text-pink-600 rounded-xl text-2xl">💰</div>
+          </div>
+        </div>
+
+        {/* Daily Earnings Breakdown */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-10">
+          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            📊 Day-wise Earnings (Last 7 Days)
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
+            {dailyEarnings.map((day) => (
+              <div 
+                key={day.date} 
+                className={`p-4 rounded-xl border text-center transition-all ${
+                  day.date === todayISTString 
+                    ? "bg-pink-50 border-pink-200 shadow-sm ring-1 ring-pink-200" 
+                    : "bg-gray-50 border-gray-100 hover:bg-gray-100/50"
+                }`}
+              >
+                <p className="text-xs font-semibold text-gray-500 mb-1">{day.date.split(' ').slice(0, 2).join(' ')}</p>
+                <p className={`text-base font-black ${day.date === todayISTString ? "text-pink-600" : "text-gray-800"}`}>
+                  {formatPrice(day.earnings)}
+                </p>
+                <p className="text-[10px] text-gray-400 mt-1 font-medium">{day.orderCount} orders</p>
+              </div>
+            ))}
           </div>
         </div>
 
