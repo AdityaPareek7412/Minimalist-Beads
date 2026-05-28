@@ -58,11 +58,10 @@ export default async function AdminOrdersPage() {
 
   const todayISTString = getISTDayString(new Date())
 
-  // Calculate today's specific orders and earnings
+  // Calculate today's specific orders and earnings (only earned/confirmed ones for counts and amount)
   const todayOrders = orders.filter(o => getISTDayString(o.createdAt) === todayISTString)
-  const todayEarning = todayOrders
-    .filter(o => earnedStatuses.includes(o.status))
-    .reduce((acc, o) => acc + o.total, 0)
+  const todayEarnedOrders = todayOrders.filter(o => earnedStatuses.includes(o.status))
+  const todayEarning = todayEarnedOrders.reduce((acc, o) => acc + o.total, 0)
 
   // Calculate daily earnings for the last 7 days (oldest to newest)
   const dailyEarnings = Array.from({ length: 7 }, (_, i) => {
@@ -71,14 +70,13 @@ export default async function AdminOrdersPage() {
     const dayString = getISTDayString(d)
     
     const dayOrders = orders.filter(o => getISTDayString(o.createdAt) === dayString)
-    const dayEarningsAmount = dayOrders
-      .filter(o => earnedStatuses.includes(o.status))
-      .reduce((acc, o) => acc + o.total, 0)
+    const dayEarnedOrders = dayOrders.filter(o => earnedStatuses.includes(o.status))
+    const dayEarningsAmount = dayEarnedOrders.reduce((acc, o) => acc + o.total, 0)
       
     return {
       date: dayString,
       earnings: dayEarningsAmount,
-      orderCount: dayOrders.length
+      orderCount: dayEarnedOrders.length
     }
   }).reverse()
 
@@ -130,7 +128,7 @@ export default async function AdminOrdersPage() {
               <p className="text-xs font-bold text-emerald-500 uppercase tracking-widest mb-1">Today's Earnings</p>
               <h3 className="text-3xl font-black text-emerald-700">{formatPrice(todayEarning)}</h3>
               <p className="text-[10px] text-emerald-600/80 font-bold mt-1">
-                {todayOrders.length} orders today
+                {todayEarnedOrders.length} orders today
               </p>
             </div>
             <div className="p-3 bg-emerald-100/50 text-emerald-600 rounded-xl text-2xl">📅</div>
@@ -142,7 +140,7 @@ export default async function AdminOrdersPage() {
               <p className="text-xs font-bold text-pink-500 uppercase tracking-widest mb-1">Total Earnings</p>
               <h3 className="text-3xl font-black text-pink-700">{formatPrice(totalEarning)}</h3>
               <p className="text-[10px] text-pink-600/80 font-bold mt-1">
-                From {orders.length} orders
+                From {orders.filter(o => earnedStatuses.includes(o.status)).length} orders
               </p>
             </div>
             <div className="p-3 bg-pink-100/50 text-pink-600 rounded-xl text-2xl">💰</div>
