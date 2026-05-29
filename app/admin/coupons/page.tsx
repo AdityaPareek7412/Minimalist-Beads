@@ -3,6 +3,82 @@
 import { useState, useEffect } from "react"
 import { Ticket, Plus, Trash2, Loader2, Calendar } from "lucide-react"
 
+function CouponCountdown({ validFrom, validUntil, active }: { validFrom: string; validUntil: string; active: boolean }) {
+  const [timeLeft, setTimeLeft] = useState<string>("")
+  const [status, setStatus] = useState<'upcoming' | 'active' | 'expired'>('upcoming')
+
+  useEffect(() => {
+    const calculateTime = () => {
+      if (!active) {
+        setStatus('expired')
+        setTimeLeft("Inactive")
+        return
+      }
+
+      const now = new Date().getTime()
+      const start = new Date(validFrom).getTime()
+      const end = new Date(validUntil).getTime()
+
+      if (now < start) {
+        setStatus('upcoming')
+        const diff = start - now
+        setTimeLeft(formatDuration(diff))
+      } else if (now >= start && now <= end) {
+        setStatus('active')
+        const diff = end - now
+        setTimeLeft(formatDuration(diff))
+      } else {
+        setStatus('expired')
+        setTimeLeft("Expired")
+      }
+    }
+
+    const formatDuration = (ms: number) => {
+      const seconds = Math.floor((ms / 1000) % 60)
+      const minutes = Math.floor((ms / (1000 * 60)) % 60)
+      const hours = Math.floor((ms / (1000 * 60 * 60)) % 24)
+      const days = Math.floor(ms / (1000 * 60 * 60 * 24))
+
+      const parts = []
+      if (days > 0) parts.push(`${days}d`)
+      if (hours > 0 || days > 0) parts.push(`${hours}h`)
+      if (minutes > 0 || hours > 0 || days > 0) parts.push(`${minutes}m`)
+      parts.push(`${seconds}s`)
+
+      return parts.join(" ")
+    }
+
+    calculateTime()
+    const timer = setInterval(calculateTime, 1000)
+    return () => clearInterval(timer)
+  }, [validFrom, validUntil, active])
+
+  if (status === 'upcoming') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+        Starts in: {timeLeft}
+      </span>
+    )
+  }
+
+  if (status === 'active') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        Expires in: {timeLeft}
+      </span>
+    )
+  }
+
+  return (
+    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-50 text-gray-500 border border-gray-200">
+      <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+      {timeLeft}
+    </span>
+  )
+}
+
 export default function AdminCouponsPage() {
   const [coupons, setCoupons] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -13,9 +89,25 @@ export default function AdminCouponsPage() {
   const [type, setType] = useState("percentage")
   const [value, setValue] = useState("")
   const [minOrder, setMinOrder] = useState("0")
+  const [startDate, setStartDate] = useState("")
   const [expiry, setExpiry] = useState("")
 
+  const getTodayISTDateString = () => {
+    try {
+      const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      })
+      return formatter.format(new Date())
+    } catch (e) {
+      return new Date().toISOString().split('T')[0]
+    }
+  }
+
   useEffect(() => {
+    setStartDate(getTodayISTDateString())
     fetchCoupons()
   }, [])
 
@@ -28,20 +120,33 @@ export default function AdminCouponsPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (new Date(expiry) < new Date(startDate)) {
+      alert("Expiry date cannot be before start date.")
+      return
+    }
     setIsCreating(true)
     try {
       const res = await fetch("/api/admin/coupons", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, discountType: type, discountValue: value, minOrderValue: minOrder, validUntil: expiry }),
+        body: JSON.stringify({ 
+          code, 
+          discountType: type, 
+          discountValue: value, 
+          minOrderValue: minOrder, 
+          validFrom: startDate, 
+          validUntil: expiry 
+        }),
       })
       if (res.ok) {
         setCode("")
         setValue("")
         setExpiry("")
+        setStartDate(getTodayISTDateString())
         fetchCoupons()
       } else {
-        alert("Failed to create coupon")
+        const errData = await res.json().catch(() => ({}))
+        alert(errData.error || "Failed to create coupon")
       }
     } catch (err) {
       alert("Something went wrong")
@@ -107,10 +212,17 @@ export default function AdminCouponsPage() {
                 <input type="number" value={minOrder} onChange={(e) => setMinOrder(e.target.value)} placeholder="0"
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
-                <input type="date" required value={expiry} onChange={(e) => setExpiry(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none" />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                  <input type="date" required value={startDate} onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none text-gray-950 font-bold" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+                  <input type="date" required value={expiry} onChange={(e) => setExpiry(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none text-gray-950 font-bold" />
+                </div>
               </div>
               <button type="submit" disabled={isCreating} className="w-full py-4 bg-pink-600 text-white font-bold rounded-xl shadow-lg hover:bg-pink-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
                 {isCreating ? <Loader2 className="animate-spin" /> : "Create Coupon"}
@@ -132,9 +244,10 @@ export default function AdminCouponsPage() {
                       <Ticket size={24} />
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-lg font-mono font-bold text-gray-900">{coupon.code}</span>
                         {!coupon.active && <span className="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Inactive</span>}
+                        <CouponCountdown validFrom={coupon.validFrom} validUntil={coupon.validUntil} active={coupon.active} />
                       </div>
                       <p className="text-sm text-gray-500">
                         {coupon.discountType === 'percentage' ? `${coupon.discountValue}% Off` : `₹${coupon.discountValue} Off`} 
@@ -145,9 +258,12 @@ export default function AdminCouponsPage() {
                   <div className="flex items-center gap-6">
                     <div className="text-right hidden sm:block">
                       <p className="text-xs text-gray-400 flex items-center gap-1 justify-end">
-                        <Calendar size={12} /> Expires:
+                        <Calendar size={12} /> Validity:
                       </p>
-                      <p className="text-sm font-medium text-gray-700">{new Date(coupon.validUntil).toLocaleDateString()}</p>
+                      <p className="text-sm font-medium text-gray-750">
+                        {new Date(coupon.validFrom).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })} to{' '}
+                        {new Date(coupon.validUntil).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                      </p>
                     </div>
                     <button 
                       onClick={() => handleDelete(coupon.id)}

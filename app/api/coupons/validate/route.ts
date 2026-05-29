@@ -20,7 +20,18 @@ export async function POST(req: NextRequest) {
     }
 
     const now = new Date()
-    if (now < coupon.validFrom || now > coupon.validUntil) {
+    if (now < coupon.validFrom) {
+      const startStr = coupon.validFrom.toLocaleDateString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      })
+      return NextResponse.json({ 
+        error: `This coupon will be active starting from ${startStr}` 
+      }, { status: 400 })
+    }
+    if (now > coupon.validUntil) {
       return NextResponse.json({ error: "Coupon has expired" }, { status: 400 })
     }
 

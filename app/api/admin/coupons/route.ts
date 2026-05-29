@@ -24,27 +24,41 @@ export async function POST(req: NextRequest) {
 
   try {
     const data = await req.json()
-    const { code, discountType, discountValue, minOrderValue, validUntil } = data
+    const { code, discountType, discountValue, minOrderValue, validFrom, validUntil } = data
 
-    const expiryDate = new Date(validUntil)
-    expiryDate.setHours(23, 59, 59, 999)
+    if (!code || !discountType || !discountValue || !validFrom || !validUntil) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    }
+
+    const startStr = validFrom.split('T')[0]
+    const endStr = validUntil.split('T')[0]
+
+    const startDate = new Date(`${startStr}T00:00:00+05:30`)
+    const endDate = new Date(`${endStr}T23:59:59.999+05:30`)
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return NextResponse.json({ error: "Invalid date format" }, { status: 400 })
+    }
 
     const coupon = await prisma.coupon.create({
       data: {
-        code: code.toUpperCase(),
+        code: code.trim().toUpperCase(),
         discountType,
         discountValue: parseFloat(discountValue),
         minOrderValue: parseFloat(minOrderValue || 0),
-        validFrom: new Date(),
-        validUntil: expiryDate,
+        validFrom: startDate,
+        validUntil: endDate,
         active: true
       }
     })
 
     return NextResponse.json(coupon)
-  } catch (error) {
+  } catch (error: any) {
     console.error("Coupon creation error:", error)
-    return NextResponse.json({ error: "Failed to create coupon" }, { status: 500 })
+    if (error.code === 'P2002') {
+      return NextResponse.json({ error: "A coupon with this code already exists" }, { status: 400 })
+    }
+    return NextResponse.json({ error: error.message || "Failed to create coupon" }, { status: 500 })
   }
 }
 
