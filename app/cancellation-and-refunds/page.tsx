@@ -11,7 +11,7 @@ const policies = [
   {
     icon: <Clock className="text-pink-500" size={24} />,
     title: "Order Cancellation",
-    content: "Since we begin preparing and curating your orders almost immediately to ensure fast delivery, we only accept cancellation requests made within 1-2 hours of order placement. Once an order is processed, prepared, or handed over to our shipping partner, it cannot be cancelled or modified under any circumstances."
+    content: "We do not offer order cancellation, as a small business owner we show full transparency and responsibility to our customers that orders reach it to you safely, please ensure everything in first place that you want to place order so you don’t have to cancel i"
   },
   {
     icon: <RotateCcw className="text-pink-500" size={24} />,
@@ -21,7 +21,7 @@ const policies = [
   {
     icon: <ShieldCheck className="text-pink-500" size={24} />,
     title: "Damaged, Defective, or Missing Items",
-    content: "If a package arrives visibly damaged, please reject the delivery. If you receive an item that is damaged in transit or find an item missing from your package, please notify us within 7 days of delivery. We will gladly process a full refund or add a free replacement to your next order — whichever is most convenient for you."
+    content: "If a package arrives visibly damaged, please reject the delivery. If you receive an item that is damaged in transit or find an item missing from your package, please notify us within 7 days of delivery with a proper unboxing video from start to end without any cuts. We will gladly process a full refund or add a free replacement to your next order — whichever is most convenient for you."
   },
   {
     icon: <CreditCard className="text-pink-500" size={24} />,
@@ -44,8 +44,8 @@ export default function CancellationAndRefunds() {
 
         <div className="space-y-6 mb-12">
           {policies.map((policy, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="bg-white rounded-2xl p-6 md:p-8 shadow-md shadow-pink-100 border border-pink-50 hover:border-pink-200 transition-all duration-300 group hover:-translate-y-0.5"
             >
               <div className="flex gap-4 md:gap-6">
@@ -95,14 +95,14 @@ export default function CancellationAndRefunds() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            <a 
-              href="mailto:minimalistbeadsco@gmail.com" 
+            <a
+              href="mailto:minimalistbeadsco@gmail.com"
               className="px-6 py-3 bg-pink-500 text-white text-center rounded-xl font-semibold hover:bg-pink-400 transition text-sm"
             >
               Email Support
             </a>
-            <a 
-              href="tel:+917357814309" 
+            <a
+              href="tel:+917357814309"
               className="px-6 py-3 bg-pink-50 text-pink-700 text-center rounded-xl font-semibold hover:bg-pink-100 transition border border-pink-100 text-sm"
             >
               Call 7357814309
