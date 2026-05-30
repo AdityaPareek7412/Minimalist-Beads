@@ -11,7 +11,7 @@ const policies = [
   {
     icon: <Clock className="text-pink-500" size={24} />,
     title: "Order Cancellation",
-    content: "We do not offer order cancellation, as a small business owner we show full transparency and responsibility to our customers that orders reach it to you safely, please ensure everything in first place that you want to place order so you don’t have to cancel i"
+    content: "We do not offer order cancellation, as a small business owner we show full transparency and responsibility to our customers that orders reach it to you safely, please ensure everything in first place that you want to place order so you don’t have to cancel it"
   },
   {
     icon: <RotateCcw className="text-pink-500" size={24} />,
