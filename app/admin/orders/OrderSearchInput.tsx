@@ -16,7 +16,7 @@ export default function OrderSearchInput() {
       } else {
         params.delete("search")
       }
-      router.push(`?${params.toString()}`)
+      router.push(`?${params.toString()}`, { scroll: false })
     }, 300) // Debounce
 
     return () => clearTimeout(timer)
