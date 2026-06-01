@@ -5,11 +5,14 @@ import DeleteOrderButton from "./DeleteOrderButton"
 import OrderStatusDropdown from "./OrderStatusDropdown"
 import OrderSearchInput from "./OrderSearchInput"
 
+import Link from "next/link"
+
 // Force dynamic to always fetch the latest orders
 export const dynamic = "force-dynamic"
 
-export default async function AdminOrdersPage({ searchParams }: { searchParams: { search?: string } }) {
+export default async function AdminOrdersPage({ searchParams }: { searchParams: { search?: string, filter?: string } }) {
   const search = searchParams?.search?.toLowerCase() || ""
+  const filter = searchParams?.filter || ""
 
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: "desc" },
@@ -44,8 +47,14 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     }).format(new Date(date))
   }
 
-  // Filter orders for display based on search term
+  // Filter orders for display based on search term and status filter
   const displayedOrders = orders.filter(order => {
+    // 1. Status Filter
+    if (filter === "PENDING" && order.status !== "PENDING") return false
+    if (filter === "CONFIRMED" && !["CONFIRMED", "PROCESSING", "SHIPPED"].includes(order.status)) return false
+    if (filter === "DELIVERED" && order.status !== "DELIVERED") return false
+
+    // 2. Search Filter
     if (!search) return true
     
     const idMatch = order.orderNumber.toLowerCase().includes(search)
@@ -55,6 +64,14 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     
     return idMatch || nameMatch || emailMatch || phoneMatch
   })
+
+  // Helper to preserve search param while toggling filter
+  const getFilterUrl = (targetFilter: string) => {
+    const params = new URLSearchParams()
+    if (search) params.set("search", search)
+    if (filter !== targetFilter) params.set("filter", targetFilter) // Toggle off if already selected
+    return `?${params.toString()}`
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -69,49 +86,77 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
           </div>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid - Clickable Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
           {/* Total Pending */}
-          <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 shadow-sm flex items-center justify-between">
+          <Link 
+            href={getFilterUrl("PENDING")} scroll={false}
+            className={`rounded-2xl p-6 flex items-center justify-between transition-all hover:scale-[1.02] cursor-pointer ${
+              filter === "PENDING" 
+                ? "bg-amber-100 border-2 border-amber-300 shadow-md ring-2 ring-amber-200" 
+                : "bg-amber-50 border border-amber-100 shadow-sm"
+            }`}
+          >
             <div>
               <p className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-1">Pending Orders</p>
               <h3 className="text-3xl font-black text-amber-700">{pendingCount}</h3>
             </div>
             <div className="p-3 bg-amber-100/50 text-amber-600 rounded-xl text-2xl">⏳</div>
-          </div>
+          </Link>
 
           {/* Total Confirmed */}
-          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 shadow-sm flex items-center justify-between">
+          <Link 
+            href={getFilterUrl("CONFIRMED")} scroll={false}
+            className={`rounded-2xl p-6 flex items-center justify-between transition-all hover:scale-[1.02] cursor-pointer ${
+              filter === "CONFIRMED" 
+                ? "bg-blue-100 border-2 border-blue-300 shadow-md ring-2 ring-blue-200" 
+                : "bg-blue-50 border border-blue-100 shadow-sm"
+            }`}
+          >
             <div>
               <p className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">Confirmed Orders</p>
               <h3 className="text-3xl font-black text-blue-700">{confirmedCount}</h3>
             </div>
             <div className="p-3 bg-blue-100/50 text-blue-600 rounded-xl text-2xl">📦</div>
-          </div>
+          </Link>
 
           {/* Total Delivered */}
-          <div className="bg-green-50 border border-green-100 rounded-2xl p-6 shadow-sm flex items-center justify-between">
+          <Link 
+            href={getFilterUrl("DELIVERED")} scroll={false}
+            className={`rounded-2xl p-6 flex items-center justify-between transition-all hover:scale-[1.02] cursor-pointer ${
+              filter === "DELIVERED" 
+                ? "bg-green-100 border-2 border-green-300 shadow-md ring-2 ring-green-200" 
+                : "bg-green-50 border border-green-100 shadow-sm"
+            }`}
+          >
             <div>
               <p className="text-xs font-bold text-green-500 uppercase tracking-widest mb-1">Delivered Orders</p>
               <h3 className="text-3xl font-black text-green-700">{deliveredCount}</h3>
             </div>
             <div className="p-3 bg-green-100/50 text-green-600 rounded-xl text-2xl">🎉</div>
-          </div>
+          </Link>
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
           <OrderSearchInput />
-          {search && (
-            <p className="text-sm text-gray-500 font-medium">
-              Found {displayedOrders.length} order{displayedOrders.length !== 1 ? 's' : ''}
-            </p>
-          )}
+          <div className="flex items-center gap-3">
+            {(search || filter) && (
+              <p className="text-sm text-gray-500 font-medium">
+                Found {displayedOrders.length} order{displayedOrders.length !== 1 ? 's' : ''}
+              </p>
+            )}
+            {filter && (
+              <Link href={getFilterUrl(filter)} scroll={false} className="text-xs text-pink-600 hover:text-pink-700 font-bold bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-lg transition-colors">
+                Clear Filter
+              </Link>
+            )}
+          </div>
         </div>
 
         {displayedOrders.length === 0 ? (
           <div className="bg-white rounded-xl p-8 text-center shadow-sm">
-            {search ? (
-              <p className="text-gray-500 text-lg">No orders found matching "{search}".</p>
+            {(search || filter) ? (
+              <p className="text-gray-500 text-lg">No orders found matching your filters.</p>
             ) : (
               <p className="text-gray-500 text-lg">No orders yet. Wait for customers to start buying! 🚀</p>
             )}
