@@ -57,7 +57,18 @@ export async function POST(req: NextRequest) {
           selectedVariantId = dbVariant.id
           selectedVariantName = dbVariant.name
           availableStock = dbVariant.stock
+        } else {
+          return NextResponse.json(
+            { success: false, error: `Selected option for ${dbProduct.name} is no longer available. Please remove and re-add it to your bag.` },
+            { status: 400 }
+          )
         }
+      } else if (dbProduct.variants && dbProduct.variants.length > 0) {
+        // Product has variants, but cart item has none (stale cart issue)
+        return NextResponse.json(
+          { success: false, error: `Please select an option/color for ${dbProduct.name}. Remove it from your bag and add it again.` },
+          { status: 400 }
+        )
       }
 
       const qty = Math.max(1, parseInt(item.quantity) || 1)

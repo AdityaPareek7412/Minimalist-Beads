@@ -2,7 +2,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import crypto from "crypto"
-import { sendOrderConfirmationEmail } from "@/lib/mail"
+import Razorpay from "razorpay"
+import { sendOrderConfirmationEmail, sendOrderCancelledEmail } from "@/lib/mail"
 
 export const dynamic = "force-dynamic"
 
@@ -79,73 +80,139 @@ export async function POST(req: NextRequest) {
         })
       }
 
-      // Confirm order and update stock
-      await prisma.$transaction(async (tx) => {
-        // 1. Update Order status
-        await tx.order.update({
-          where: { id: dbOrderId },
-          data: {
-            status: "CONFIRMED",
-            paymentStatus: "COMPLETED",
-          },
-        })
+      // Check stock before confirmation
+      let hasStockIssue = false
+      let stockIssueNotes = ""
 
-        // 2. Update Payment details
-        if (order.payment) {
-          await tx.payment.update({
-            where: { id: order.payment.id },
-            data: {
-              paymentId: paymentId,
-              status: "COMPLETED",
-            },
-          })
+      for (const item of order.items) {
+        if (item.selectedVariantId) {
+          const variant = await prisma.productVariant.findUnique({ where: { id: item.selectedVariantId } })
+          if (!variant || variant.stock < item.quantity) {
+            hasStockIssue = true
+            stockIssueNotes = `Stock issue for variant ${item.selectedVariantName || item.selectedVariantId}.`
+            break
+          }
+        } else {
+          const product = await prisma.product.findUnique({ where: { id: item.productId } })
+          if (!product || product.stock < item.quantity) {
+            hasStockIssue = true
+            stockIssueNotes = `Stock issue for product ${item.productId}.`
+            break
+          }
+        }
+      }
+
+      if (hasStockIssue) {
+        // Stock is out! Mark as cancelled and auto-refund via Razorpay
+        let refundNotes = "Refund not initiated.";
+        try {
+          const razorpay = new Razorpay({
+            key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+            key_secret: process.env.RAZORPAY_KEY_SECRET!,
+          });
+          // order.total holds the total amount in INR
+          await razorpay.payments.refund(paymentId, {
+            amount: Math.round(Number(order.total) * 100), // convert to paise
+            notes: {
+              reason: "Item out of stock during webhook processing.",
+              dbOrderId: dbOrderId,
+            }
+          });
+          refundNotes = "AUTO-REFUNDED: Amount has been refunded automatically via Razorpay.";
+        } catch (refundError: any) {
+          console.error("Auto-refund failed in webhook:", refundError);
+          refundNotes = `URGENT: Auto-refund failed. Customer was charged. Please process manual refund on Razorpay. Error: ${refundError.message}`;
         }
 
-        // 3. Decrement stock for each item in the order
-        for (const item of order.items) {
-          if (item.selectedVariantId) {
-            await tx.productVariant.update({
-              where: { id: item.selectedVariantId },
+        await prisma.$transaction(async (tx) => {
+          await tx.order.update({
+            where: { id: dbOrderId },
+            data: {
+              status: "CANCELLED",
+              paymentStatus: "COMPLETED",
+              notes: `${refundNotes} ${stockIssueNotes}`,
+            },
+          })
+
+          if (order.payment) {
+            await tx.payment.update({
+              where: { id: order.payment.id },
               data: {
-                stock: {
-                  decrement: item.quantity,
-                },
+                paymentId: paymentId,
+                status: "COMPLETED",
               },
             })
-          } else {
+          }
+        })
+      } else {
+        // Confirm order and update stock
+        await prisma.$transaction(async (tx) => {
+          // 1. Update Order status
+          await tx.order.update({
+            where: { id: dbOrderId },
+            data: {
+              status: "CONFIRMED",
+              paymentStatus: "COMPLETED",
+            },
+          })
+
+          // 2. Update Payment details
+          if (order.payment) {
+            await tx.payment.update({
+              where: { id: order.payment.id },
+              data: {
+                paymentId: paymentId,
+                status: "COMPLETED",
+              },
+            })
+          }
+
+          // 3. Decrement stock for each item in the order
+          for (const item of order.items) {
+            if (item.selectedVariantId) {
+              await tx.productVariant.update({
+                where: { id: item.selectedVariantId },
+                data: {
+                  stock: {
+                    decrement: item.quantity,
+                  },
+                },
+              })
+            } else {
+              await tx.product.update({
+                where: { id: item.productId },
+                data: {
+                  stock: {
+                    decrement: item.quantity,
+                  },
+                },
+              })
+            }
+
+            // Increment sold count for the main product in both cases
             await tx.product.update({
               where: { id: item.productId },
               data: {
-                stock: {
-                  decrement: item.quantity,
+                sold: {
+                  increment: item.quantity,
                 },
               },
             })
           }
 
-          // Increment sold count for the main product in both cases
-          await tx.product.update({
-            where: { id: item.productId },
-            data: {
-              sold: {
-                increment: item.quantity,
+          // 4. Update coupon usage if applicable
+          if (order.couponId) {
+            await tx.coupon.update({
+              where: { id: order.couponId },
+              data: {
+                usedCount: {
+                  increment: 1,
+                },
               },
-            },
-          })
-        }
-
-        // 4. Update coupon usage if applicable
-        if (order.couponId) {
-          await tx.coupon.update({
-            where: { id: order.couponId },
-            data: {
-              usedCount: {
-                increment: 1,
-              },
-            },
-          })
-        }
-      })
+            })
+          }
+        })
+      }
 
       // Fetch the full order with relations for the confirmation email
       const fullOrder = await prisma.order.findUnique({
@@ -161,9 +228,13 @@ export async function POST(req: NextRequest) {
 
       if (fullOrder) {
         try {
-          await sendOrderConfirmationEmail(fullOrder)
+          if (hasStockIssue) {
+            await sendOrderCancelledEmail(fullOrder)
+          } else {
+            await sendOrderConfirmationEmail(fullOrder)
+          }
         } catch (err) {
-          console.error("Failed to send order confirmation email from webhook:", err)
+          console.error("Failed to send order email from webhook:", err)
         }
       }
 
