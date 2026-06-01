@@ -4,6 +4,7 @@ import LogoutButton from "./LogoutButton"
 import DeleteOrderButton from "./DeleteOrderButton"
 import OrderStatusDropdown from "./OrderStatusDropdown"
 import OrderSearchInput from "./OrderSearchInput"
+import DeleteAllPendingButton from "./DeleteAllPendingButton"
 
 import Link from "next/link"
 
@@ -145,6 +146,11 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                 Found {displayedOrders.length} order{displayedOrders.length !== 1 ? 's' : ''}
               </p>
             )}
+            
+            {filter === "PENDING" && displayedOrders.length > 0 && (
+              <DeleteAllPendingButton />
+            )}
+
             {filter && (
               <Link href={getFilterUrl(filter)} scroll={false} className="text-xs text-pink-600 hover:text-pink-700 font-bold bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-lg transition-colors">
                 Clear Filter
