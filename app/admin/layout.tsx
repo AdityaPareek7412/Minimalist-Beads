@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ShoppingBag, Box, LayoutDashboard, LogOut, Ticket, Settings as SettingsIcon } from "lucide-react"
+import { ShoppingBag, Box, LayoutDashboard, LogOut, Ticket, Settings as SettingsIcon, BarChart3 } from "lucide-react"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -14,6 +14,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
+    { name: "Earnings", href: "/admin/earnings", icon: BarChart3 },
     { name: "Products", href: "/admin/products", icon: Box },
     { name: "Coupons", href: "/admin/coupons", icon: Ticket },
     { name: "Settings", href: "/admin/settings", icon: SettingsIcon },
