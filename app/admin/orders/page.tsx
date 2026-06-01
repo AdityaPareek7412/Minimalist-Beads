@@ -3,11 +3,14 @@ import { formatPrice } from "@/lib/utils/helpers"
 import LogoutButton from "./LogoutButton"
 import DeleteOrderButton from "./DeleteOrderButton"
 import OrderStatusDropdown from "./OrderStatusDropdown"
+import OrderSearchInput from "./OrderSearchInput"
 
 // Force dynamic to always fetch the latest orders
 export const dynamic = "force-dynamic"
 
-export default async function AdminOrdersPage() {
+export default async function AdminOrdersPage({ searchParams }: { searchParams: { search?: string } }) {
+  const search = searchParams?.search?.toLowerCase() || ""
+
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: "desc" },
     include: {
@@ -79,6 +82,18 @@ export default async function AdminOrdersPage() {
       orderCount: dayEarnedOrders.length
     }
   }).reverse()
+
+  // Filter orders for display based on search term
+  const displayedOrders = orders.filter(order => {
+    if (!search) return true
+    
+    const idMatch = order.orderNumber.toLowerCase().includes(search)
+    const nameMatch = (order.customerName || "").toLowerCase().includes(search)
+    const emailMatch = (order.customerEmail || "").toLowerCase().includes(search)
+    const phoneMatch = (order.customerPhone || "").toLowerCase().includes(search)
+    
+    return idMatch || nameMatch || emailMatch || phoneMatch
+  })
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -172,13 +187,26 @@ export default async function AdminOrdersPage() {
           </div>
         </div>
 
-        {orders.length === 0 ? (
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <OrderSearchInput />
+          {search && (
+            <p className="text-sm text-gray-500 font-medium">
+              Found {displayedOrders.length} order{displayedOrders.length !== 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+
+        {displayedOrders.length === 0 ? (
           <div className="bg-white rounded-xl p-8 text-center shadow-sm">
-            <p className="text-gray-500 text-lg">No orders yet. Wait for customers to start buying! 🚀</p>
+            {search ? (
+              <p className="text-gray-500 text-lg">No orders found matching "{search}".</p>
+            ) : (
+              <p className="text-gray-500 text-lg">No orders yet. Wait for customers to start buying! 🚀</p>
+            )}
           </div>
         ) : (
           <div className="space-y-6">
-            {orders.map((order) => (
+            {displayedOrders.map((order) => (
               <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col md:flex-row gap-6 relative group">
                 
                 {/* Delete Button - Absolute Positioned */}
