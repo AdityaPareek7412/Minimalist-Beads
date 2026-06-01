@@ -3,23 +3,6 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Star, Quote, CheckCircle, X, Send } from "lucide-react"
 
-const STATIC_REVIEWS = [
-  {
-    id: "static-1",
-    name: "Isha V.",
-    comment: "The quality is absolutely insane! I've been wearing my custom charm bracelet every day and it still looks brand new. Best Gen-Z jewelry brand out there! ✨",
-    rating: 5,
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: "static-2",
-    name: "Ananya R.",
-    comment: "Literally obsessed with the soft gothic vibe. The packaging was so aesthetic, it felt like a luxury gift to myself. 🎀",
-    rating: 5,
-    createdAt: new Date().toISOString()
-  }
-]
-
 export function ReviewsSection() {
   const [reviews, setReviews] = useState<any[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -38,12 +21,10 @@ export function ReviewsSection() {
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          setReviews([...STATIC_REVIEWS, ...data])
-        } else {
-          setReviews(STATIC_REVIEWS)
+          setReviews(data)
         }
       })
-      .catch(() => setReviews(STATIC_REVIEWS))
+      .catch(console.error)
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
