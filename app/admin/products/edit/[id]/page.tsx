@@ -12,6 +12,8 @@ export default function EditProductPage() {
   const [saving, setSaving] = useState(false)
   const [product, setProduct] = useState<any>(null)
   const [stock, setStock] = useState("0")
+  const [price, setPrice] = useState("0")
+  const [originalPrice, setOriginalPrice] = useState("")
   const [variants, setVariants] = useState<any[]>([])
 
   useEffect(() => {
@@ -21,6 +23,8 @@ export default function EditProductPage() {
         .then(data => {
           setProduct(data)
           setStock(data.stock.toString())
+          setPrice(data.price.toString())
+          setOriginalPrice(data.originalPrice ? data.originalPrice.toString() : "")
           setVariants(data.variants || [])
           setLoading(false)
         })
@@ -58,6 +62,8 @@ export default function EditProductPage() {
         body: JSON.stringify({ 
           id, 
           stock: parseInt(stock) || 0,
+          price: parseFloat(price) || 0,
+          originalPrice: originalPrice ? parseFloat(originalPrice) : null,
           variants: formattedVariants
         }),
       })
@@ -112,8 +118,38 @@ export default function EditProductPage() {
 
           <form onSubmit={handleUpdateStockAndVariants} className="p-8 space-y-8">
             <div className="space-y-4">
-              <label className="block text-sm font-bold text-gray-700">Inventory Management</label>
+              <label className="block text-sm font-bold text-gray-700">Price & Inventory Management</label>
               <div className="p-6 bg-pink-50/50 rounded-2xl border border-pink-100 space-y-6">
+                {/* Price Fields */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-pink-100/50">
+                  <div>
+                    <label className="block text-xs font-bold text-pink-500 uppercase tracking-widest mb-2">Base Price (₹)</label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      step="0.01"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-pink-100 rounded-xl text-lg font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all shadow-sm"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">The main selling price of the product.</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-pink-500 uppercase tracking-widest mb-2">Original Price (₹) - Optional</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={originalPrice}
+                      onChange={(e) => setOriginalPrice(e.target.value)}
+                      placeholder="e.g. 999"
+                      className="w-full px-4 py-3 bg-white border border-pink-100 rounded-xl text-lg font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all shadow-sm"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">For strike-through discount comparison.</p>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold text-pink-500 uppercase tracking-widest mb-2">Base Stock Level</label>
                   <div className="flex items-center gap-4">

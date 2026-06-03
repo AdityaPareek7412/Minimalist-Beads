@@ -205,7 +205,7 @@ export async function PATCH(req: NextRequest) {
   if (authError) return authError
   try {
     const data = await req.json()
-    const { id, stock, variants } = data
+    const { id, stock, price, originalPrice, variants } = data
 
     if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 })
 
@@ -227,9 +227,21 @@ export async function PATCH(req: NextRequest) {
         }
       }
 
+      const updateData: any = {
+        stock: parseInt(stock) || 0
+      }
+
+      if (typeof price !== "undefined") {
+        updateData.price = parseFloat(price) || 0
+      }
+
+      if (typeof originalPrice !== "undefined") {
+        updateData.originalPrice = originalPrice ? parseFloat(originalPrice) : null
+      }
+
       return tx.product.update({
         where: { id },
-        data: { stock: parseInt(stock) || 0 },
+        data: updateData,
         include: {
           variants: true
         }
