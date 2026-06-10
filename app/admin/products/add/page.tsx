@@ -65,8 +65,22 @@ export default function AddProductPage() {
 
   useEffect(() => {
     fetch("/api/categories")
-      .then(res => res.json())
-      .then(data => setCategories(data))
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to fetch categories")
+        return res.json()
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          setCategories(data)
+        } else {
+          console.error("Categories is not an array:", data)
+          setCategories([])
+        }
+      })
+      .catch(err => {
+        console.error("Fetch categories error:", err)
+        setCategories([])
+      })
   }, [])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -263,7 +277,7 @@ export default function AddProductPage() {
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all appearance-none text-gray-900"
                   >
                     <option value="">Select Category</option>
-                    {categories.map(cat => (
+                    {Array.isArray(categories) && categories.map(cat => (
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
                   </select>

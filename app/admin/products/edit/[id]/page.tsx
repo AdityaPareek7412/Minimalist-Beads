@@ -19,16 +19,26 @@ export default function EditProductPage() {
   useEffect(() => {
     if (id) {
       fetch(`/api/admin/products?id=${id}`)
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error("Failed to fetch product details")
+          return res.json()
+        })
         .then(data => {
-          setProduct(data)
-          setStock(data.stock.toString())
-          setPrice(data.price.toString())
-          setOriginalPrice(data.originalPrice ? data.originalPrice.toString() : "")
-          setVariants(data.variants || [])
+          if (data && !data.error) {
+            setProduct(data)
+            setStock(data.stock?.toString() || "0")
+            setPrice(data.price?.toString() || "0")
+            setOriginalPrice(data.originalPrice ? data.originalPrice.toString() : "")
+            setVariants(data.variants || [])
+          } else {
+            console.error("Product fetch returned error:", data)
+          }
           setLoading(false)
         })
-        .catch(() => setLoading(false))
+        .catch((err) => {
+          console.error("Fetch product details error:", err)
+          setLoading(false)
+        })
     }
   }, [id])
 

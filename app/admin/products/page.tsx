@@ -316,9 +316,15 @@ export default function AdminProductsPage() {
     try {
       const res = await fetch("/api/admin/products")
       const data = await res.json()
-      setProducts(data)
+      if (Array.isArray(data)) {
+        setProducts(data)
+      } else {
+        console.error("Products is not an array:", data)
+        setProducts([])
+      }
     } catch (err) {
-      console.error("Failed to fetch products")
+      console.error("Failed to fetch products", err)
+      setProducts([])
     } finally {
       setLoading(false)
     }
