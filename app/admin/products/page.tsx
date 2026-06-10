@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { Plus, Trash2, Edit, ExternalLink, Check, Loader2, Settings, ChevronUp, ChevronDown, GripVertical, Upload } from "lucide-react"
+import { Plus, Trash2, Edit, ExternalLink, Check, Loader2, Settings, ChevronUp, ChevronDown, GripVertical, Upload, Download } from "lucide-react"
 import { formatPrice } from "@/lib/utils/helpers"
 
 // Static Row for Normal Mode - 100% native HTML, zero drag listeners, super smooth scrolling.
@@ -415,6 +415,14 @@ export default function AdminProductsPage() {
                   <Upload className="w-4.5 h-4.5 text-pink-500" />
                   Bulk Import (CSV)
                 </Link>
+                <a
+                  href="/api/admin/products/export"
+                  download="minimalist-beads-products.csv"
+                  className="inline-flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 px-5 py-3 rounded-xl font-bold transition-all shadow-md"
+                >
+                  <Download className="w-4.5 h-4.5 text-blue-500" />
+                  Export CSV
+                </a>
                 <Link
                   href="/admin/products/add"
                   className="inline-flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white px-5 py-3 rounded-xl font-bold transition-all shadow-lg shadow-pink-200"
