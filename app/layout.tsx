@@ -5,6 +5,7 @@ import { Inter, Cormorant_Garamond, Dancing_Script } from "next/font/google"
 import "@/styles/globals.css"
 import { Header } from "@/components/common/Header"
 import { Footer } from "@/components/common/Footer"
+import { LayoutWrapper } from "@/components/common/LayoutWrapper"
 import { CartProvider } from "@/context/cartContext"
 import { WishlistProvider } from "@/context/wishlistContext"
 import { Analytics } from "@vercel/analytics/react"
@@ -42,9 +43,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans antialiased bg-[#fdf0f5] text-gray-900 min-h-screen">
         <WishlistProvider>
           <CartProvider>
-            <Header />
+            <LayoutWrapper>
+              <Header />
+            </LayoutWrapper>
             <main className="min-h-screen">{children}</main>
-            <Footer />
+            <LayoutWrapper>
+              <Footer />
+            </LayoutWrapper>
             <Analytics />
           </CartProvider>
         </WishlistProvider>
