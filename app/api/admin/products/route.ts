@@ -17,6 +17,7 @@ cloudinary.config({
 const getCachedProducts = unstable_cache(
   async () => {
     return prisma.product.findMany({
+      where: { isArchived: false },
       select: {
         id: true,
         name: true,
@@ -59,7 +60,6 @@ const getCachedProducts = unstable_cache(
 )
 
 export async function GET(req: NextRequest) {
-  // Products list is public (used by shop page) — no auth required for GET
   try {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get("id")
@@ -76,6 +76,53 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(product)
     }
 
+    // Check if requester is logged in as admin
+    const isAdmin = requireAdmin(req) === null
+
+    if (isAdmin) {
+      // Admin gets all products directly from DB (including archived ones)
+      const products = await prisma.product.findMany({
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          price: true,
+          originalPrice: true,
+          stock: true,
+          featured: true,
+          trending: true,
+          newArrival: true,
+          displayOrder: true,
+          categoryId: true,
+          isArchived: true,
+          createdAt: true,
+          images: {
+            select: {
+              url: true,
+              alt: true,
+              order: true,
+            },
+            orderBy: {
+              order: "asc"
+            }
+          },
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            }
+          }
+        },
+        orderBy: [
+          { displayOrder: "asc" },
+          { createdAt: "desc" }
+        ],
+      })
+      return NextResponse.json(products)
+    }
+
+    // Public users get only cached non-archived products
     const products = await getCachedProducts()
     return NextResponse.json(products)
   } catch (error: any) {
@@ -187,6 +234,25 @@ export async function DELETE(req: NextRequest) {
 
     if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 })
 
+    // Check if the product has associated order items
+    const orderItemsCount = await prisma.orderItem.count({
+      where: { productId: id }
+    })
+
+    if (orderItemsCount > 0) {
+      // Soft-delete by setting isArchived to true
+      await prisma.product.update({
+        where: { id },
+        data: { isArchived: true }
+      })
+
+      // Trigger cache revalidation
+      revalidateTag("products")
+
+      return NextResponse.json({ success: true, archived: true })
+    }
+
+    // Permanent delete
     await prisma.product.delete({
       where: { id },
     })
@@ -194,7 +260,7 @@ export async function DELETE(req: NextRequest) {
     // Trigger cache revalidation
     revalidateTag("products")
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, archived: false })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
@@ -205,7 +271,7 @@ export async function PATCH(req: NextRequest) {
   if (authError) return authError
   try {
     const data = await req.json()
-    const { id, stock, price, originalPrice, variants } = data
+    const { id, stock, price, originalPrice, variants, isArchived } = data
 
     if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 })
 
@@ -237,6 +303,10 @@ export async function PATCH(req: NextRequest) {
 
       if (typeof originalPrice !== "undefined") {
         updateData.originalPrice = originalPrice ? parseFloat(originalPrice) : null
+      }
+
+      if (typeof isArchived !== "undefined") {
+        updateData.isArchived = !!isArchived
       }
 
       return tx.product.update({

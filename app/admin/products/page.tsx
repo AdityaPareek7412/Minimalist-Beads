@@ -2,15 +2,23 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { Plus, Trash2, Edit, ExternalLink, Check, Loader2, Settings, ChevronUp, ChevronDown, GripVertical, Upload, Download } from "lucide-react"
+import { Plus, Trash2, Edit, ExternalLink, Check, Loader2, Settings, ChevronUp, ChevronDown, GripVertical, Upload, Download, RotateCcw } from "lucide-react"
 import { formatPrice } from "@/lib/utils/helpers"
 
 // Static Row for Normal Mode - 100% native HTML, zero drag listeners, super smooth scrolling.
-function StaticProductRow({ product, handleDelete }: { product: any, handleDelete: (id: string) => void }) {
+function StaticProductRow({ 
+  product, 
+  handleDelete, 
+  handleRestore 
+}: { 
+  product: any, 
+  handleDelete: (id: string) => void,
+  handleRestore: (id: string) => void
+}) {
   return (
     <div 
       id={`product-row-${product.id}`}
-      className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 flex items-center gap-4 hover:border-pink-200 transition-all"
+      className={`bg-white rounded-2xl p-4 sm:p-5 shadow-sm border flex items-center gap-4 hover:border-pink-200 transition-all ${product.isArchived ? 'opacity-75 bg-gray-50/50 border-dashed border-gray-200' : 'border-gray-100'}`}
     >
       {/* Thumbnail */}
       <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100 select-none pointer-events-none">
@@ -23,7 +31,14 @@ function StaticProductRow({ product, handleDelete }: { product: any, handleDelet
       <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
         {/* Name & Slug */}
         <div className="md:col-span-5 min-w-0">
-          <div className="font-bold text-gray-900 truncate">{product.name}</div>
+          <div className="flex items-center gap-2">
+            <div className="font-bold text-gray-900 truncate">{product.name}</div>
+            {product.isArchived && (
+              <span className="inline-block px-2 py-0.5 bg-gray-200 text-gray-600 rounded text-[9px] font-bold uppercase tracking-wider">
+                Archived
+              </span>
+            )}
+          </div>
           <div className="text-xs text-gray-400 font-mono truncate">/{product.slug}</div>
         </div>
 
@@ -60,23 +75,35 @@ function StaticProductRow({ product, handleDelete }: { product: any, handleDelet
 
       {/* Actions */}
       <div className="flex items-center gap-2 flex-shrink-0">
-        <Link
-          href={`/admin/products/edit/${product.id}`}
-          onClick={() => {
-            sessionStorage.setItem("lastEditedProductId", product.id)
-          }}
-          className="p-2.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-xl transition-all"
-          title="Edit Inventory"
-        >
-          <Edit className="w-4.5 h-4.5" />
-        </Link>
-        <button
-          onClick={() => handleDelete(product.id)}
-          className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-          title="Delete"
-        >
-          <Trash2 className="w-4.5 h-4.5" />
-        </button>
+        {!product.isArchived ? (
+          <>
+            <Link
+              href={`/admin/products/edit/${product.id}`}
+              onClick={() => {
+                sessionStorage.setItem("lastEditedProductId", product.id)
+              }}
+              className="p-2.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-xl transition-all"
+              title="Edit Inventory"
+            >
+              <Edit className="w-4.5 h-4.5" />
+            </Link>
+            <button
+              onClick={() => handleDelete(product.id)}
+              className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+              title="Delete"
+            >
+              <Trash2 className="w-4.5 h-4.5" />
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => handleRestore(product.id)}
+            className="p-2.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all"
+            title="Restore / Unarchive"
+          >
+            <RotateCcw className="w-4.5 h-4.5" />
+          </button>
+        )}
         <a
           href={`/products/${product.slug}`}
           target="_blank"
@@ -169,6 +196,7 @@ export default function AdminProductsPage() {
   const [saving, setSaving] = useState(false)
   const [isReorderMode, setIsReorderMode] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [showArchived, setShowArchived] = useState(false)
   const [visibleCount, setVisibleCount] = useState(20)
   
   const [sortSearchQuery, setSortSearchQuery] = useState("")
@@ -183,25 +211,30 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     setVisibleCount(20)
-  }, [searchQuery])
+  }, [searchQuery, showArchived])
 
   useEffect(() => {
     setSortVisibleCount(50)
   }, [sortSearchQuery])
 
-  const filteredProducts = products.filter((product: any) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (product.category?.name && product.category.name.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
+  const filteredProducts = products.filter((product: any) => {
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (product.category?.name && product.category.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    
+    const matchesArchive = showArchived ? product.isArchived : !product.isArchived
+    return matchesSearch && matchesArchive
+  })
 
   const sortedFilteredProducts = products
     .map((product: any, index: number) => ({ product, index }))
-    .filter(({ product }: any) =>
-      product.name.toLowerCase().includes(sortSearchQuery.toLowerCase()) ||
-      product.slug.toLowerCase().includes(sortSearchQuery.toLowerCase()) ||
-      (product.category?.name && product.category.name.toLowerCase().includes(sortSearchQuery.toLowerCase()))
-    )
+    .filter(({ product }: any) => {
+      const matchesSearch = product.name.toLowerCase().includes(sortSearchQuery.toLowerCase()) ||
+        product.slug.toLowerCase().includes(sortSearchQuery.toLowerCase()) ||
+        (product.category?.name && product.category.name.toLowerCase().includes(sortSearchQuery.toLowerCase()))
+      
+      return matchesSearch && !product.isArchived
+    })
 
   // Restore scroll position to last edited product
   useEffect(() => {
@@ -352,10 +385,47 @@ export default function AdminProductsPage() {
     if (!confirm("Are you sure you want to delete this product?")) return
 
     try {
-      await fetch(`/api/admin/products?id=${id}`, { method: "DELETE" })
-      setProducts(products.filter((p: any) => p.id !== id))
+      const res = await fetch(`/api/admin/products?id=${id}`, { method: "DELETE" })
+      const data = await res.json()
+      
+      if (!res.ok) {
+        alert(data.error || "Failed to delete product")
+        return
+      }
+
+      if (data.archived) {
+        alert("यह प्रोडक्ट पहले से ग्राहकों द्वारा खरीदा गया है, इसलिए इसे डिलीट करने के बजाय आर्काइव (छिपा) कर दिया गया है।")
+        // Update local state to reflect archived status
+        setProducts(products.map((p: any) => p.id === id ? { ...p, isArchived: true } : p))
+      } else {
+        // Permanently deleted
+        setProducts(products.filter((p: any) => p.id !== id))
+        alert("Product successfully deleted.")
+      }
     } catch (err) {
       alert("Failed to delete product")
+    }
+  }
+
+  const handleRestore = async (id: string) => {
+    try {
+      const product = products.find((p: any) => p.id === id)
+      if (!product) return
+
+      const res = await fetch(`/api/admin/products`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, isArchived: false, stock: product.stock }),
+      })
+      
+      if (!res.ok) throw new Error("Failed to restore product")
+      
+      // Update local state
+      setProducts(products.map((p: any) => p.id === id ? { ...p, isArchived: false } : p))
+      alert("Product successfully restored!")
+    } catch (err) {
+      console.error(err)
+      alert("Failed to restore product")
     }
   }
 
@@ -435,16 +505,22 @@ export default function AdminProductsPage() {
           </div>
         </div>
 
-        {/* Search Bar */}
+        {/* Search Bar & Archive Toggle */}
         {!isReorderMode && !loading && products.length > 0 && (
-          <div className="mb-6">
+          <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center">
             <input
               type="text"
               placeholder="Search products by name, slug, or category..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all shadow-sm font-medium"
+              className="flex-1 w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all shadow-sm font-medium"
             />
+            <button
+              onClick={() => setShowArchived(!showArchived)}
+              className={`w-full sm:w-auto px-5 py-3.5 rounded-2xl font-bold border transition-all flex items-center justify-center gap-2 shadow-sm ${showArchived ? 'bg-pink-50 border-pink-200 text-pink-700 hover:bg-pink-100' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+            >
+              {showArchived ? "Hide Archived Products" : "Show Archived Products"}
+            </button>
           </div>
         )}
 
@@ -513,6 +589,7 @@ export default function AdminProductsPage() {
                     key={product.id}
                     product={product}
                     handleDelete={handleDelete}
+                    handleRestore={handleRestore}
                   />
                 ))}
               </div>
