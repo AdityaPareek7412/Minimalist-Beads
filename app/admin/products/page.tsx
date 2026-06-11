@@ -394,7 +394,7 @@ export default function AdminProductsPage() {
       }
 
       if (data.archived) {
-        alert("यह प्रोडक्ट पहले से ग्राहकों द्वारा खरीदा गया है, इसलिए इसे डिलीट करने के बजाय आर्काइव (छिपा) कर दिया गया है।")
+        alert("This product has past customer orders, so it has been archived (hidden) instead of deleted to protect order history.")
         // Update local state to reflect archived status
         setProducts(products.map((p: any) => p.id === id ? { ...p, isArchived: true } : p))
       } else {
