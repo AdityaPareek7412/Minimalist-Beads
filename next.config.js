@@ -29,6 +29,14 @@ const nextConfig = {
   },
   compress: true,
   poweredByHeader: false,
+  rewrites: async () => {
+    return [
+      {
+        source: "/images-cdn/:path*",
+        destination: `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dfka0sdnl"}/:path*`,
+      },
+    ];
+  },
   headers: async () => {
     return [
       {

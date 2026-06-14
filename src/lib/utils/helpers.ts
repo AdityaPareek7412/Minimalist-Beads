@@ -67,9 +67,25 @@ export function validatePhone(phone: string): boolean {
 export function getImageUrl(url: string | undefined): string {
   if (!url) return "/images/placeholder.jpg"
   if (url.startsWith("http")) {
-    if (url.includes("res.cloudinary.com") && url.includes("/upload/")) {
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dfka0sdnl"
+    const cloudinaryHost = `res.cloudinary.com/${cloudName}`
+    
+    if (url.includes(cloudinaryHost) && url.includes("/upload/")) {
+      let modifiedUrl = url
       if (!url.includes("/q_auto")) {
-        return url.replace("/upload/", "/upload/q_auto,f_auto/")
+        modifiedUrl = url.replace("/upload/", "/upload/q_auto,f_auto/")
+      }
+      return modifiedUrl.replace(`https://${cloudinaryHost}/`, "/images-cdn/")
+    }
+    
+    if (url.includes("res.cloudinary.com") && url.includes("/upload/")) {
+      let modifiedUrl = url
+      if (!url.includes("/q_auto")) {
+        modifiedUrl = url.replace("/upload/", "/upload/q_auto,f_auto/")
+      }
+      const match = url.match(/res\.cloudinary\.com\/([^/]+)\//)
+      if (match && match[1]) {
+        return modifiedUrl.replace(`https://res.cloudinary.com/${match[1]}/`, "/images-cdn/")
       }
     }
     return url
