@@ -7,6 +7,7 @@ import { ProductCard } from "@/components/product/ProductCard"
 import { Product } from "@/types"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
+import { getImageUrl } from "@/lib/utils/helpers"
 
 interface FeaturedProductsProps {
   products: Product[]
@@ -74,7 +75,7 @@ export function FeaturedProducts({
             product.images?.[0] && (
               <div key={`${product.id}-${idx}`} className="w-32 h-32 md:w-44 md:h-44 flex-shrink-0 mx-3 relative rounded-2xl overflow-hidden bg-white shadow-sm border border-pink-100/50">
                 <img
-                  src={product.images[0].url}
+                  src={getImageUrl(product.images[0].url)}
                   alt={product.images[0].alt || product.name}
                   className="object-cover w-full h-full hover:scale-105 transition-transform duration-500"
                 />

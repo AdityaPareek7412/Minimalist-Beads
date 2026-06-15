@@ -4,7 +4,7 @@ export const SITE_CONFIG = {
   name: 'MinimalistBeads',
   description: 'Handcrafted minimalist jewelry and aesthetic accessories',
   url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-  ogImage: 'https://res.cloudinary.com/demo/image/fetch/w_1200,h_630,c_fill/https://minimalistbeads.com/og-image.jpg',
+  ogImage: '/images/og-image.jpg',
   twitterHandle: '@minimalistbeads',
   email: 'hello@minimalistbeads.com',
   phone: '+91 12345 67890',
