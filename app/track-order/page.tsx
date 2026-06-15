@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Search, Package, Truck, CheckCircle, Clock, MapPin, Loader2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { formatPrice } from "@/lib/utils/helpers"
+import { formatPrice, getImageUrl } from "@/lib/utils/helpers"
 
 export default function TrackOrderPage() {
   const [orderNumber, setOrderNumber] = useState("")
@@ -117,7 +117,7 @@ export default function TrackOrderPage() {
                     {order.items.map((item: any) => (
                       <div key={item.id} className="flex items-center gap-4">
                         <div className="w-16 h-16 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0">
-                          {item.product?.images?.[0] && <img src={item.product.images[0].url} alt="" className="w-full h-full object-cover" />}
+                          {item.product?.images?.[0] && <img src={getImageUrl(item.product.images[0].url)} alt="" className="w-full h-full object-cover" />}
                         </div>
                         <div className="flex-1">
                           <p className="font-bold text-gray-900 text-sm">{item.product?.name}</p>

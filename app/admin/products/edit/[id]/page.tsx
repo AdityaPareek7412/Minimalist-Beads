@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { ArrowLeft, Save, Loader2, Plus, Trash2 } from "lucide-react"
 import Link from "next/link"
+import { getImageUrl } from "@/lib/utils/helpers"
 
 export default function EditProductPage() {
   const { id } = useParams()
@@ -118,7 +119,7 @@ export default function EditProductPage() {
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
           <div className="p-8 border-b border-gray-100 bg-gray-50/50 flex items-center gap-6">
             <div className="w-20 h-20 rounded-xl bg-gray-200 overflow-hidden flex-shrink-0 border border-gray-100">
-               {product.images?.[0] && <img src={product.images[0].url} alt="" className="w-full h-full object-cover" />}
+               {product.images?.[0] && <img src={getImageUrl(product.images[0].url)} alt="" className="w-full h-full object-cover" />}
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>

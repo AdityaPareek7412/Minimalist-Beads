@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Plus, Trash2, Edit, ExternalLink, Check, Loader2, Settings, ChevronUp, ChevronDown, GripVertical, Upload, Download, RotateCcw } from "lucide-react"
-import { formatPrice } from "@/lib/utils/helpers"
+import { formatPrice, getImageUrl } from "@/lib/utils/helpers"
 
 // Static Row for Normal Mode - 100% native HTML, zero drag listeners, super smooth scrolling.
 function StaticProductRow({ 
@@ -23,7 +23,7 @@ function StaticProductRow({
       {/* Thumbnail */}
       <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100 select-none pointer-events-none">
         {product.images?.[0]?.url && (
-          <img src={product.images[0].url} alt="" className="w-full h-full object-cover" />
+          <img src={getImageUrl(product.images[0].url)} alt="" className="w-full h-full object-cover" />
         )}
       </div>
 
@@ -137,7 +137,7 @@ function SortProductRow({
     <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex items-center gap-4 hover:border-pink-200 transition-all">
       <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 pointer-events-none">
         {product.images?.[0]?.url && (
-          <img src={product.images[0].url} alt="" className="w-full h-full object-cover" />
+          <img src={getImageUrl(product.images[0].url)} alt="" className="w-full h-full object-cover" />
         )}
       </div>
       <div className="flex-1 min-w-0">

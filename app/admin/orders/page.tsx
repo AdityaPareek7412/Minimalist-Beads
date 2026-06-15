@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma"
-import { formatPrice } from "@/lib/utils/helpers"
+import { formatPrice, getImageUrl } from "@/lib/utils/helpers"
 import LogoutButton from "./LogoutButton"
 import DeleteOrderButton from "./DeleteOrderButton"
 import OrderStatusDropdown from "./OrderStatusDropdown"
@@ -219,7 +219,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center border border-gray-100 shadow-sm">
                             {item.product.images && item.product.images.length > 0 ? (
-                              <img src={item.product.images[0]?.url} alt="" className="w-full h-full object-cover" />
+                              <img src={getImageUrl(item.product.images[0]?.url)} alt="" className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-[10px] text-gray-400 font-medium">No Image</span>
                             )}
