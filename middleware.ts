@@ -1,8 +1,39 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// Sensitive paths that bots commonly probe for
+const BLOCKED_PATHS = [
+  '/.env',
+  '/.env.local',
+  '/.env.production',
+  '/.env.backup',
+  '/.env.bak',
+  '/.env.example',
+  '/.env.development',
+  '/.git',
+  '/wp-admin',
+  '/wp-login.php',
+  '/phpinfo.php',
+  '/config.php',
+  '/.htaccess',
+  '/.htpasswd',
+  '/server.js',
+  '/docker-compose.yml',
+  '/Dockerfile',
+  '/.vite',
+  '/.next/required-server-files.json',
+]
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Block bot probes for sensitive files — return 404 immediately
+  const isBlockedPath = BLOCKED_PATHS.some(
+    (blocked) => pathname === blocked || pathname.startsWith(blocked + '/')
+  )
+  if (isBlockedPath) {
+    return new NextResponse(null, { status: 404 })
+  }
 
   // Check if maintenance mode is enabled (defaults to true)
   const isMaintenanceMode = process.env.MAINTENANCE_MODE !== "false" && process.env.NEXT_PUBLIC_MAINTENANCE_MODE !== "false"
