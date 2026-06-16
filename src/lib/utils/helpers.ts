@@ -69,23 +69,23 @@ export function getImageUrl(url: string | undefined): string {
   if (url.startsWith("http")) {
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dfka0sdnl"
     const cloudinaryHost = `res.cloudinary.com/${cloudName}`
-    
+
     if (url.includes(cloudinaryHost) && url.includes("/upload/")) {
       let modifiedUrl = url
       if (!url.includes("/q_auto")) {
-        modifiedUrl = url.replace("/upload/", "/upload/w_1200,q_auto,f_auto/")
+        modifiedUrl = url.replace("/upload/", "/upload/w_800,q_auto,f_auto/")
       } else if (!url.includes("w_")) {
-        modifiedUrl = url.replace("/upload/q_auto", "/upload/w_1200,q_auto")
+        modifiedUrl = url.replace("/upload/q_auto", "/upload/w_800,q_auto")
       }
       return modifiedUrl.replace(`https://${cloudinaryHost}/`, "/images-cdn/")
     }
-    
+
     if (url.includes("res.cloudinary.com") && url.includes("/upload/")) {
       let modifiedUrl = url
       if (!url.includes("/q_auto")) {
-        modifiedUrl = url.replace("/upload/", "/upload/w_1200,q_auto,f_auto/")
+        modifiedUrl = url.replace("/upload/", "/upload/w_800,q_auto,f_auto/")
       } else if (!url.includes("w_")) {
-        modifiedUrl = url.replace("/upload/q_auto", "/upload/w_1200,q_auto")
+        modifiedUrl = url.replace("/upload/q_auto", "/upload/w_800,q_auto")
       }
       const match = url.match(/res\.cloudinary\.com\/([^/]+)\//)
       if (match && match[1]) {

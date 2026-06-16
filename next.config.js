@@ -39,6 +39,17 @@ const nextConfig = {
   },
   headers: async () => {
     return [
+      // Cache Cloudinary proxy images at Vercel CDN edge for 30 days
+      // This prevents hitting Cloudinary on every single request
+      {
+        source: "/images-cdn/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=2592000, s-maxage=2592000, stale-while-revalidate=86400, immutable",
+          },
+        ],
+      },
       {
         source: "/:path*",
         headers: [
