@@ -175,7 +175,7 @@ export async function POST(req: NextRequest) {
     const uploadedImages = await Promise.all(
       imagesBase64.map(async (base64, index) => {
         const uploadResponse = await cloudinary.uploader.upload(base64, {
-          folder: "minimalist_beads_products",
+          folder: "minimalist-beads-v2",
         })
         return {
           url: uploadResponse.secure_url,

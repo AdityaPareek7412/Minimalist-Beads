@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 
           try {
             const uploadResponse = await cloudinary.uploader.upload(cleanImageUrl, {
-              folder: "minimalist_beads_products",
+              folder: "minimalist-beads-v2",
             })
             finalImageUrl = uploadResponse.secure_url
           } catch (uploadErr) {
