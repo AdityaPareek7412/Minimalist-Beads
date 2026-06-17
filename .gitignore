@@ -62,3 +62,7 @@ package-lock.json
 
 # TypeScript build cache
 *.tsbuildinfo
+
+# Reupload logs
+scripts/reupload-log.json
+
