@@ -50,6 +50,17 @@ const nextConfig = {
           },
         ],
       },
+      // Cache local static images (public/images/) at Vercel CDN edge for 1 year
+      // Bots/scrapers ke repeated hits se origin server hit nahi hoga
+      {
+        source: "/images/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, s-maxage=31536000, stale-while-revalidate=86400, immutable",
+          },
+        ],
+      },
       {
         source: "/:path*",
         headers: [
