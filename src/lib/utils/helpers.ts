@@ -73,7 +73,7 @@ export function getImageUrl(url: string | undefined): string {
     if (url.includes(cloudinaryHost) && url.includes("/upload/")) {
       let modifiedUrl = url
       if (!url.includes("/q_auto")) {
-        modifiedUrl = url.replace("/upload/", "/upload/w_800,q_auto,f_auto/")
+        modifiedUrl = url.replace("/upload/", "/upload/w_800,q_auto,f_webp/")
       } else if (!url.includes("w_")) {
         modifiedUrl = url.replace("/upload/q_auto", "/upload/w_800,q_auto")
       }
@@ -83,7 +83,7 @@ export function getImageUrl(url: string | undefined): string {
     if (url.includes("res.cloudinary.com") && url.includes("/upload/")) {
       let modifiedUrl = url
       if (!url.includes("/q_auto")) {
-        modifiedUrl = url.replace("/upload/", "/upload/w_800,q_auto,f_auto/")
+        modifiedUrl = url.replace("/upload/", "/upload/w_800,q_auto,f_webp/")
       } else if (!url.includes("w_")) {
         modifiedUrl = url.replace("/upload/q_auto", "/upload/w_800,q_auto")
       }
