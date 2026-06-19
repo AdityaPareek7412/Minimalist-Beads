@@ -29,27 +29,10 @@ const nextConfig = {
   },
   compress: true,
   poweredByHeader: false,
-  rewrites: async () => {
-    return [
-      {
-        source: "/images-cdn/:path*",
-        destination: `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dfka0sdnl"}/:path*`,
-      },
-    ];
-  },
+  // Note: /images-cdn/ is now handled by app/images-cdn/[...path]/route.ts (Edge Function)
+  // Edge Functions are cached by Vercel CDN (unlike rewrites to external URLs)
   headers: async () => {
     return [
-      // Cache Cloudinary proxy images at Vercel CDN edge for 30 days
-      // This prevents hitting Cloudinary on every single request
-      {
-        source: "/images-cdn/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=2592000, s-maxage=2592000, stale-while-revalidate=86400, immutable",
-          },
-        ],
-      },
       // Cache local static images (public/images/) at Vercel CDN edge for 1 year
       // Bots/scrapers ke repeated hits se origin server hit nahi hoga
       {
