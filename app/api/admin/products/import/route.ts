@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { v2 as cloudinary } from "cloudinary"
-import { revalidateTag } from "next/cache"
+import { revalidateTag, revalidatePath } from "next/cache"
 import { requireAdmin } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
@@ -128,6 +128,7 @@ export async function POST(req: NextRequest) {
     }
 
     revalidateTag("products")
+    revalidatePath("/", "layout")
 
     return NextResponse.json({
       success: true,

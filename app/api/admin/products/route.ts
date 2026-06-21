@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { v2 as cloudinary } from "cloudinary"
-import { unstable_cache, revalidateTag } from "next/cache"
+import { unstable_cache, revalidateTag, revalidatePath } from "next/cache"
 import { requireAdmin } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
@@ -153,6 +153,7 @@ export async function PUT(req: NextRequest) {
 
     // Trigger cache revalidation
     revalidateTag("products")
+    revalidatePath("/", "layout")
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
@@ -217,6 +218,7 @@ export async function POST(req: NextRequest) {
 
     // Trigger cache revalidation
     revalidateTag("products")
+    revalidatePath("/", "layout")
 
     return NextResponse.json(product)
   } catch (error: any) {
@@ -248,6 +250,7 @@ export async function DELETE(req: NextRequest) {
 
       // Trigger cache revalidation
       revalidateTag("products")
+      revalidatePath("/", "layout")
 
       return NextResponse.json({ success: true, archived: true })
     }
@@ -259,6 +262,7 @@ export async function DELETE(req: NextRequest) {
 
     // Trigger cache revalidation
     revalidateTag("products")
+    revalidatePath("/", "layout")
 
     return NextResponse.json({ success: true, archived: false })
   } catch (error: any) {
@@ -320,6 +324,7 @@ export async function PATCH(req: NextRequest) {
 
     // Trigger cache revalidation
     revalidateTag("products")
+    revalidatePath("/", "layout")
 
     return NextResponse.json(product)
   } catch (error: any) {

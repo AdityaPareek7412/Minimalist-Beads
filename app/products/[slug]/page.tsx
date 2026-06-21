@@ -1,9 +1,7 @@
 import { notFound } from "next/navigation"
 import ProductDetailsClient from "./ProductDetailsClient"
 import prisma from "@/lib/prisma"
-
-export const revalidate = 30
-
+// Statically generated page, revalidated on-demand when products change
 export default async function ProductPage({ params }: { params: { slug: string } }) {
   const product = await prisma.product.findUnique({
     where: { slug: params.slug },
