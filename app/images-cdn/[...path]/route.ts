@@ -12,6 +12,11 @@ export async function GET(
     const response = await fetch(cloudinaryUrl, {
       headers: {
         'Accept': 'image/webp,image/*,*/*;q=0.8',
+        // Required for Cloudinary Strict Transformations:
+        // Cloudinary checks Referer against the "Allowed strict referral domains" list.
+        // Without this, the Edge Function's server-side fetch has no referrer → 401.
+        'Referer': 'https://www.minimalistbeads.in/',
+        'Origin': 'https://www.minimalistbeads.in',
       },
     })
 
