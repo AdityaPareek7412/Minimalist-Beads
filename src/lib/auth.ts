@@ -82,7 +82,7 @@ export function setAdminCookie(response: NextResponse, secret: string): void {
     value: token,
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: "lax", // "strict" blocks cookies on mobile direct navigation
     maxAge: 60 * 60 * 24 * 7, // 7 days
     path: "/",
   })
@@ -95,7 +95,7 @@ export function clearAdminCookie(response: NextResponse): void {
     value: "",
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: "lax",
     maxAge: 0,
     path: "/",
   })
