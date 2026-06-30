@@ -1,6 +1,19 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// Known bad bots, AI crawlers, and scrapers that caused Cloudinary/Vercel overages
+const BLOCKED_USER_AGENTS = [
+  // AI Crawlers (caused the June 2026 spike)
+  'gptbot', 'chatgpt-user', 'ccbot', 'anthropic-ai', 'claude-web',
+  'google-extended', 'meta-externalagent', 'bytespider', 'amazonbot',
+  'applebot-extended', 'cohere-ai', 'perplexitybot', 'youbot',
+  'semrushbot', 'ahrefsbot', 'mj12bot', 'dotbot', 'blexbot',
+  // Generic scrapers
+  'python-requests', 'go-http-client', 'axios/', 'scrapy',
+  'curl/', 'wget/', 'libwww-perl', 'java/', 'okhttp',
+  'petalbot', 'sogou', 'baiduspider', 'yandexbot',
+]
+
 // Sensitive paths that bots commonly probe for
 const BLOCKED_PATHS = [
   '/.env',
@@ -26,6 +39,13 @@ const BLOCKED_PATHS = [
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Block known bad bots & AI crawlers by User-Agent — 403 immediately
+  // This fires BEFORE any path checks, saving CPU and bandwidth
+  const userAgent = (request.headers.get('user-agent') || '').toLowerCase()
+  if (!userAgent || BLOCKED_USER_AGENTS.some((bot) => userAgent.includes(bot))) {
+    return new NextResponse(null, { status: 403 })
+  }
 
   // Block bot probes for sensitive files — return 404 immediately
   const isBlockedPath = BLOCKED_PATHS.some(
