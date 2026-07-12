@@ -4,7 +4,8 @@ import { v2 as cloudinary } from "cloudinary"
 import { unstable_cache, revalidateTag, revalidatePath } from "next/cache"
 import { requireAdmin } from "@/lib/auth"
 
-export const dynamic = "force-dynamic"
+// Note: NOT force-dynamic — we want CDN caching for public product listings
+// Admin routes still get fresh data via direct Prisma calls
 
 // Configure Cloudinary
 cloudinary.config({
@@ -122,9 +123,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(products)
     }
 
-    // Public users get only cached non-archived products
+    // Public users get cached non-archived products
+    // Cache at Vercel CDN for 5 min — dramatically reduces Supabase egress
     const products = await getCachedProducts()
-    return NextResponse.json(products)
+    const res = NextResponse.json(products)
+    res.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60')
+    return res
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
