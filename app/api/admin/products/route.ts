@@ -4,6 +4,23 @@ import { v2 as cloudinary } from "cloudinary"
 import { unstable_cache, revalidateTag, revalidatePath } from "next/cache"
 import { requireAdmin } from "@/lib/auth"
 
+// Proper slug sanitization — removes curly quotes, apostrophes, emojis, and ALL
+// non-alphanumeric characters that break Next.js URL routing.
+export function sanitizeSlug(name: string): string {
+  return name
+    .normalize('NFD')                    // Decompose accented chars
+    .replace(/[\u0300-\u036f]/g, '')    // Strip diacritical marks
+    .replace(/[\u2018\u2019\u201A\u201B]/g, '') // Strip curly single quotes
+    .replace(/[\u201C\u201D\u201E\u201F]/g, '') // Strip curly double quotes
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')       // Remove ALL remaining special chars
+    .trim()                              // Remove leading/trailing whitespace
+    .replace(/\s+/g, '-')               // Spaces → hyphens
+    .replace(/-+/g, '-')                // Collapse consecutive hyphens
+    .replace(/^-|-$/g, '')              // Trim leading/trailing hyphens
+    + '-' + Date.now()
+}
+
 // Note: NOT force-dynamic — we want CDN caching for public product listings
 // Admin routes still get fresh data via direct Prisma calls
 
@@ -190,8 +207,8 @@ export async function POST(req: NextRequest) {
       })
     )
 
-    // 2. Create slug
-    const slug = name.toLowerCase().replace(/ /g, "-") + "-" + Date.now()
+    // 2. Create slug (sanitized — removes curly quotes, emojis, special chars)
+    const slug = sanitizeSlug(name)
 
     // 3. Save to DB
     const product = await prisma.product.create({

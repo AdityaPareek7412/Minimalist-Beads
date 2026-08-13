@@ -194,6 +194,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [fixingSlug, setFixingSlug] = useState(false)
   const [isReorderMode, setIsReorderMode] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [showArchived, setShowArchived] = useState(false)
@@ -429,6 +430,25 @@ export default function AdminProductsPage() {
     }
   }
 
+  const handleFixSlugs = async () => {
+    if (!confirm("This will regenerate clean URLs for all products that have special characters (curly quotes, etc.) in their slugs. Continue?")) return
+    setFixingSlug(true)
+    try {
+      const res = await fetch("/api/admin/fix-slugs", { method: "POST" })
+      const data = await res.json()
+      if (res.ok) {
+        alert(`✅ ${data.message}\n\n${data.fixed > 0 ? `Fixed products:\n${data.details.map((d: any) => `• ${d.newSlug}`).join("\n")}` : ""}`)
+        if (data.fixed > 0) fetchProducts()
+      } else {
+        alert("❌ Failed: " + (data.error || "Unknown error"))
+      }
+    } catch (err) {
+      alert("Something went wrong while fixing slugs.")
+    } finally {
+      setFixingSlug(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -477,6 +497,19 @@ export default function AdminProductsPage() {
                 >
                   <GripVertical className="w-4.5 h-4.5 text-pink-400" />
                   Sort Products
+                </button>
+                <button
+                  onClick={handleFixSlugs}
+                  disabled={fixingSlug}
+                  className={`inline-flex items-center gap-2 border px-5 py-3 rounded-xl font-bold transition-all shadow-md ${
+                    fixingSlug
+                      ? 'bg-orange-50 border-orange-200 text-orange-400 cursor-not-allowed'
+                      : 'bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-700'
+                  }`}
+                  title="Fix product URLs with special characters (curly quotes, etc.)"
+                >
+                  {fixingSlug ? <Loader2 className="w-4.5 h-4.5 animate-spin" /> : <Settings className="w-4.5 h-4.5" />}
+                  {fixingSlug ? 'Fixing...' : 'Fix URLs'}
                 </button>
                 <Link
                   href="/admin/products/import"
