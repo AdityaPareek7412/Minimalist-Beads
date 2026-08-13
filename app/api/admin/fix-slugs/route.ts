@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { requireAdmin } from "@/lib/auth"
 import { revalidateTag, revalidatePath } from "next/cache"
-import { sanitizeSlug } from "@/app/api/admin/products/route"
+import { sanitizeSlug } from "@/lib/utils/slugify"
 
 // POST /api/admin/fix-slugs
 // Scans all products and sanitizes any slugs that contain non-alphanumeric characters
