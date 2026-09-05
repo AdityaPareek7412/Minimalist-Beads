@@ -1,7 +1,7 @@
 // app/api/general-reviews/route.ts
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
-import { unstable_cache, revalidateTag } from "next/cache"
+import { unstable_cache } from "next/cache"
 
 // Cache approved reviews for 5 minutes (reviews require admin approval — staleness is safe)
 const getCachedReviews = unstable_cache(
