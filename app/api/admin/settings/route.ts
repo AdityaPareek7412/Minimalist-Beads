@@ -1,25 +1,33 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { requireAdmin } from "@/lib/auth"
+import { unstable_cache, revalidateTag } from "next/cache"
 
-// GET is public — needed by Header to show announcement, and checkout for shipping fees
-export async function GET() {
-  try {
+// Cache settings for 10 minutes server-side (barely ever changes)
+const getCachedSettings = unstable_cache(
+  async () => {
     let settings = await prisma.siteSettings.findUnique({
       where: { id: "default" }
     })
-
     if (!settings) {
       settings = await prisma.siteSettings.create({
-        data: {
-          id: "default",
-          shippingFee: 80,
-          freeShippingLimit: 0,
-        }
+        data: { id: "default", shippingFee: 80, freeShippingLimit: 0 }
       })
     }
+    return settings
+  },
+  ["site-settings"],
+  { revalidate: 600, tags: ["settings"] }
+)
 
-    return NextResponse.json(settings)
+// GET is public — needed by Header, WhyChooseUs, Cart, Checkout for shipping fees & announcement
+export async function GET() {
+  try {
+    const settings = await getCachedSettings()
+    const res = NextResponse.json(settings)
+    // CDN caches for 5 min — eliminates repeated Lambda hits per user session
+    res.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60')
+    return res
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch settings" }, { status: 500 })
   }
@@ -48,6 +56,9 @@ export async function POST(req: NextRequest) {
         announcement
       }
     })
+
+    // Bust settings cache so next request picks up the new values
+    revalidateTag("settings")
 
     return NextResponse.json(settings)
   } catch (error) {

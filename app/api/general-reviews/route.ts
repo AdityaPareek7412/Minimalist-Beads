@@ -1,15 +1,28 @@
 // app/api/general-reviews/route.ts
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { unstable_cache, revalidateTag } from "next/cache"
 
-export async function GET() {
-  try {
-    const reviews = await (prisma as any).generalReview.findMany({
+// Cache approved reviews for 5 minutes (reviews require admin approval — staleness is safe)
+const getCachedReviews = unstable_cache(
+  async () => {
+    return (prisma as any).generalReview.findMany({
       where: { approved: true },
       orderBy: { createdAt: 'desc' },
       take: 12
     })
-    return NextResponse.json(reviews)
+  },
+  ["general-reviews-list"],
+  { revalidate: 300, tags: ["general-reviews"] }
+)
+
+export async function GET() {
+  try {
+    const reviews = await getCachedReviews()
+    const res = NextResponse.json(reviews)
+    // CDN caches for 5 min — homepage visits stop hitting Lambda every time
+    res.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60')
+    return res
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch reviews" }, { status: 500 })
   }

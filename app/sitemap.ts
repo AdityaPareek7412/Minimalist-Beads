@@ -1,20 +1,29 @@
 import { MetadataRoute } from 'next'
 import prisma from '@/lib/prisma'
+import { unstable_cache } from 'next/cache'
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://www.minimalistbeads.in'
+const baseUrl = 'https://www.minimalistbeads.in'
 
-  try {
-    // 1. Fetch all active products
+// Cache sitemap data for 10 minutes — bots crawl this repeatedly
+// Tagged with "products" and "categories" so it auto-busts when admin updates either
+const getCachedSitemapData = unstable_cache(
+  async () => {
     const products = await prisma.product.findMany({
       where: { isArchived: false },
       select: { slug: true, updatedAt: true }
     })
-
-    // 2. Fetch all categories
     const categories = await prisma.category.findMany({
       select: { slug: true, updatedAt: true }
     })
+    return { products, categories }
+  },
+  ["sitemap-data"],
+  { revalidate: 600, tags: ["products", "categories"] }
+)
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  try {
+    const { products, categories } = await getCachedSitemapData()
 
     const productUrls = products.map((p) => ({
       url: `${baseUrl}/products/${p.slug}`,
@@ -47,7 +56,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return [...staticUrls, ...categoryUrls, ...productUrls]
   } catch (error) {
     console.error('Error generating sitemap:', error)
-    // Return static URLs as a fallback in case DB is down
     return [
       { url: baseUrl, lastModified: new Date(), changeFrequency: 'daily' as const, priority: 1.0 },
       { url: `${baseUrl}/shop`, lastModified: new Date(), changeFrequency: 'daily' as const, priority: 0.9 },

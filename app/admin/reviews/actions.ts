@@ -1,7 +1,7 @@
 "use server"
 
 import prisma from "@/lib/prisma"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 
 export async function toggleReviewStatus(id: string, currentStatus: boolean) {
   try {
@@ -9,6 +9,7 @@ export async function toggleReviewStatus(id: string, currentStatus: boolean) {
       where: { id },
       data: { approved: !currentStatus }
     })
+    revalidateTag("general-reviews") // Bust cached reviews API response
     revalidatePath("/admin/reviews")
     revalidatePath("/") // Revalidate homepage to reflect changes immediately
     return { success: true }
@@ -23,6 +24,7 @@ export async function deleteReview(id: string) {
     await (prisma as any).generalReview.delete({
       where: { id }
     })
+    revalidateTag("general-reviews") // Bust cached reviews API response
     revalidatePath("/admin/reviews")
     revalidatePath("/") // Revalidate homepage to reflect changes immediately
     return { success: true }
