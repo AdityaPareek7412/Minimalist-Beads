@@ -5,7 +5,10 @@ import { WhyChooseUs } from "@/components/sections/WhyChooseUs"
 import { ReviewsSection } from "@/components/sections/ReviewsSection"
 import { NewsletterSection } from "@/components/sections/NewsletterSection"
 import prisma from "@/lib/prisma"
-// Statically generated page, revalidated on-demand when products/reviews change
+
+// Statically generated at build time, revalidated on-demand via revalidatePath() from admin panel
+export const revalidate = false
+
 export default async function Home() {
   const featuredProducts = await prisma.product.findMany({
     where: { featured: true },
