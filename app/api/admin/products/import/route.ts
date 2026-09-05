@@ -129,6 +129,7 @@ export async function POST(req: NextRequest) {
 
     revalidateTag("products")
     revalidatePath("/", "layout")
+    revalidatePath("/products/[slug]", "page")
 
     return NextResponse.json({
       success: true,

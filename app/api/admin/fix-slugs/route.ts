@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
     // Bust all caches so shop & homepage pick up new slugs immediately
     revalidateTag("products")
     revalidatePath("/", "layout")
+    revalidatePath("/products/[slug]", "page")
 
     return NextResponse.json({
       fixed: updates.length,

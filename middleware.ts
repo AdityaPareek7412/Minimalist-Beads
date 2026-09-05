@@ -35,6 +35,15 @@ const BLOCKED_PATHS = [
   '/Dockerfile',
   '/.vite',
   '/.next/required-server-files.json',
+  // Phantom API paths — don't exist in this codebase but are probed by bots/AI scanners
+  // Blocking here at the Edge eliminates Lambda invocations for these 404s
+  '/api/demo',
+  '/api/blog',
+  '/api/generate',
+  '/api/chat',
+  '/api/ai',
+  '/api/gpt',
+  '/api/openai',
 ]
 
 export function middleware(request: NextRequest) {
