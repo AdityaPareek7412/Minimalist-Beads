@@ -8,8 +8,18 @@ import { sendOrderConfirmationEmail, sendOrderCancelledEmail } from "@/lib/mail"
 export const dynamic = "force-dynamic"
 
 export async function POST(req: NextRequest) {
+  // Capture payment details early — needed for emergency logging if DB fails later
+  // This ensures we can ALWAYS recover a payment even if DB throws an error
+  let paymentId = ""
+  let dbOrderId = ""
+  let razorpayOrderId = ""
+
   try {
-    const { razorpayOrderId, paymentId, razorpaySignature, dbOrderId } = await req.json()
+    const body = await req.json()
+    paymentId = body.paymentId || ""
+    dbOrderId = body.dbOrderId || ""
+    razorpayOrderId = body.razorpayOrderId || ""
+    const razorpaySignature = body.razorpaySignature || ""
 
     if (!razorpayOrderId || !paymentId || !razorpaySignature || !dbOrderId) {
       return NextResponse.json(
@@ -18,11 +28,11 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Verify signature
-    const body = razorpayOrderId + "|" + paymentId
+    // Verify signature FIRST — before any DB operations
+    const signatureBody = razorpayOrderId + "|" + paymentId
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
-      .update(body.toString())
+      .update(signatureBody.toString())
       .digest("hex")
 
     if (expectedSignature !== razorpaySignature) {
@@ -89,7 +99,6 @@ export async function POST(req: NextRequest) {
           key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
           key_secret: process.env.RAZORPAY_KEY_SECRET!,
         });
-        // Assuming order.total is the total amount in INR
         await razorpay.payments.refund(paymentId, {
           amount: Math.round(Number(order.total) * 100), // convert to paise
           notes: {
@@ -226,9 +235,28 @@ export async function POST(req: NextRequest) {
       order: confirmedOrder,
     })
   } catch (error: any) {
-    console.error("Order confirmation failed:", error)
+    // 🚨 CRITICAL: Payment was verified by Razorpay but DB update failed.
+    // Customer was CHARGED but the order record may be missing or stuck as PENDING.
+    // These logs appear in Vercel → Functions → Logs — search "CRITICAL ORDER"
+    // to manually recover the order from Razorpay dashboard.
+    console.error("=== CRITICAL ORDER CONFIRMATION FAILURE ===")
+    console.error(`Razorpay Payment ID : ${paymentId}`)
+    console.error(`Razorpay Order ID   : ${razorpayOrderId}`)
+    console.error(`DB Order ID         : ${dbOrderId}`)
+    console.error(`Error               : ${error.message}`)
+    console.error(`Time                : ${new Date().toISOString()}`)
+    console.error("===========================================")
+    console.error("Full error:", error)
+
     return NextResponse.json(
-      { success: false, error: error.message || "Order confirmation failed" },
+      {
+        success: false,
+        error: error.message || "Order confirmation failed",
+        // Return payment ID to client so customer can reference it with support
+        paymentRef: paymentId || undefined,
+        // Special code so frontend can show appropriate message
+        code: "DB_CONFIRM_FAILED",
+      },
       { status: 500 }
     )
   }
