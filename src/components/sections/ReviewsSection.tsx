@@ -107,8 +107,8 @@ export function ReviewsSection({ initialReviews }: ReviewsSectionProps) {
               viewport={{ once: true }}
               className="bg-white p-8 rounded-[2rem] shadow-xl shadow-pink-900/5 border border-pink-100/50 flex flex-col relative group hover:-translate-y-2 transition-all duration-500"
             >
-              <div className="absolute -top-4 -left-4 w-10 h-10 bg-[#2d111a] text-white rounded-full flex items-center justify-center shadow-lg transform -rotate-12">
-                <Quote size={18} />
+              <div className="absolute -top-3 left-3 sm:-top-4 sm:-left-4 w-9 h-9 sm:w-10 sm:h-10 bg-[#2d111a] text-white rounded-full flex items-center justify-center shadow-lg transform -rotate-12">
+                <Quote size={16} className="sm:w-[18px] sm:h-[18px]" />
               </div>
 
               <div className="flex gap-1 mb-6">

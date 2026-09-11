@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { sendOrderConfirmationEmail } from "@/lib/mail"
+import crypto from "crypto"
 
 export const dynamic = "force-dynamic"
 
@@ -149,10 +150,33 @@ export async function POST(req: NextRequest) {
 
     const isCod = data.paymentMethod === "cod"
 
+    // Sanitize customer note: strip HTML tags and limit length to 300 chars
+    const rawNote = typeof data.customerNote === "string" ? data.customerNote : ""
+    const sanitizedCustomerNote = rawNote.replace(/<[^>]*>?/gm, "").trim().slice(0, 300) || null
+
+    // Generate collision-safe temporary reference for checkout (never touches OrderCounter)
+    const pendingOrderNumber = `PENDING-${crypto.randomBytes(6).toString("hex").toUpperCase()}`
+
     const result = await prisma.$transaction(async (tx) => {
+      let finalOrderNumber = pendingOrderNumber
+      if (isCod) {
+        // COD orders are confirmed immediately on placement, so allocate MB number atomically
+        const counters = await tx.$queryRaw<{ lastNumber: number }[]>`
+          UPDATE "OrderCounter"
+          SET "lastNumber" = "lastNumber" + 1, "updatedAt" = NOW()
+          WHERE id = 'mb_order_number'
+          RETURNING "lastNumber";
+        `
+        if (counters && counters.length > 0) {
+          finalOrderNumber = `MB${counters[0].lastNumber}`
+        }
+      }
+
       // 1. Create the order with SERVER-COMPUTED prices
       const order = await tx.order.create({
         data: {
+          orderNumber: finalOrderNumber,
+          customerNote: sanitizedCustomerNote,
           shippingAddressId: address.id,
           subtotal: serverSubtotal,
           shippingCost: serverShippingCost,

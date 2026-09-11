@@ -12,6 +12,7 @@ export default function EditProductPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [product, setProduct] = useState<any>(null)
+  const [name, setName] = useState("")
   const [stock, setStock] = useState("0")
   const [price, setPrice] = useState("0")
   const [originalPrice, setOriginalPrice] = useState("")
@@ -27,6 +28,7 @@ export default function EditProductPage() {
         .then(data => {
           if (data && !data.error) {
             setProduct(data)
+            setName(data.name || "")
             setStock(data.stock?.toString() || "0")
             setPrice(data.price?.toString() || "0")
             setOriginalPrice(data.originalPrice ? data.originalPrice.toString() : "")
@@ -72,6 +74,7 @@ export default function EditProductPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           id, 
+          name: name.trim(),
           stock: parseInt(stock) || 0,
           price: parseFloat(price) || 0,
           originalPrice: originalPrice ? parseFloat(originalPrice) : null,
@@ -128,6 +131,20 @@ export default function EditProductPage() {
           </div>
 
           <form onSubmit={handleUpdateStockAndVariants} className="p-8 space-y-8">
+            {/* Product Name Field */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest">Product Title / Name</label>
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Pink Beaded Necklace"
+                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-lg font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all shadow-sm"
+              />
+              <p className="text-xs text-gray-400">Updates the visible title across store and catalog without breaking existing links.</p>
+            </div>
+
             <div className="space-y-4">
               <label className="block text-sm font-bold text-gray-700">Price & Inventory Management</label>
               <div className="p-6 bg-pink-50/50 rounded-2xl border border-pink-100 space-y-6">

@@ -222,6 +222,7 @@ model Order {
   
   // Notes
   notes         String?
+  customerNote  String?
   
   // Tracking
   trackingId    String?
@@ -234,6 +235,7 @@ model Order {
   @@index([status])
   @@index([paymentStatus])
   @@index([createdAt])
+  @@index([orderNumber])
 }
 
 // OrderItem model
@@ -364,3 +366,11 @@ model ProductVariant {
 
   @@index([productId])
 }
+
+// Transaction-safe order sequence counter table
+model OrderCounter {
+  id         String   @id
+  lastNumber Int      @default(0)
+  updatedAt  DateTime @updatedAt
+}
+

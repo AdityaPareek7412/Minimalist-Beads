@@ -8,7 +8,7 @@ import { ArrowRight, Sparkles, Heart } from "lucide-react"
 
 export function AestheticStory() {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white relative">
+    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white relative overflow-hidden max-w-full">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
           {/* Text Content */}
@@ -92,7 +92,7 @@ export function AestheticStory() {
               <motion.div
                 animate={{ y: [0, -10, 0], rotate: [0, 5, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-12 -right-2 md:-top-16 md:-right-12 w-32 h-32 md:w-48 md:h-48 xl:w-56 xl:h-56 aspect-square bg-white rounded-full p-2 md:p-4 shadow-2xl z-[30] border border-pink-50 flex items-center justify-center"
+                className="absolute -top-8 right-0 sm:-top-12 sm:-right-2 md:-top-16 md:-right-12 w-28 h-28 sm:w-36 sm:h-36 md:w-48 md:h-48 xl:w-56 xl:h-56 aspect-square bg-white rounded-full p-2 md:p-4 shadow-2xl z-[30] border border-pink-50 flex items-center justify-center"
               >
                 <div className="w-full h-full rounded-full overflow-hidden relative shadow-inner">
                   <img 

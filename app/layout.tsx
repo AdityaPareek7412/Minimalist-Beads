@@ -79,7 +79,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               {/* Settings passed as prop — no client-side DB call */}
               <Header initialSettings={settings} />
             </LayoutWrapper>
-            <main className="min-h-screen">{children}</main>
+            <main className="min-h-screen w-full max-w-full overflow-x-clip">{children}</main>
             <LayoutWrapper>
               <Footer />
             </LayoutWrapper>

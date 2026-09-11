@@ -79,6 +79,7 @@ export default function CheckoutPage() {
     countryCode: "+91", street: "", city: "", state: "",
     postalCode: "", country: "India",
   })
+  const [customerNote, setCustomerNote] = useState("")
   const [paymentMethod, setPaymentMethod] = useState<"razorpay">("razorpay")
 
   const subtotal = getCartTotal()
@@ -167,6 +168,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          customerNote,
           cart,
           subtotal,
           shippingCost: shipping,
@@ -238,9 +240,29 @@ export default function CheckoutPage() {
           }
         },
         prefill: {
-          name: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          contact: `${formData.countryCode}${formData.phone}`,
+          name: `${formData.firstName} ${formData.lastName}`.trim(),
+          email: formData.email.trim(),
+          contact: `${formData.countryCode}${formData.phone}`.trim(),
+        },
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: "Pay via UPI (GPay, PhonePe, Paytm, QR)",
+                instruments: [{ method: "upi" }]
+              },
+              other: {
+                name: "Cards, NetBanking & Wallets",
+                instruments: [
+                  { method: "card" },
+                  { method: "netbanking" },
+                  { method: "wallet" }
+                ]
+              }
+            },
+            sequence: ["block.upi", "block.other"],
+            preferences: { show_default_blocks: true }
+          }
         },
         theme: { color: "#f472b6" },
         modal: { ondismiss: () => setIsProcessing(false) },
@@ -378,6 +400,26 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
+                  {/* Customer Order Note / Special Instructions */}
+                  <div className="space-y-1.5 pt-2">
+                    <div className="flex justify-between items-center ml-4 mr-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                        Order Note / Special Instructions (Optional)
+                      </label>
+                      <span className="text-[10px] font-medium text-gray-400">
+                        {customerNote.length}/300
+                      </span>
+                    </div>
+                    <textarea
+                      rows={3}
+                      maxLength={300}
+                      placeholder="Example: Please send pink color / gift packing / any other request..."
+                      value={customerNote}
+                      onChange={e => setCustomerNote(e.target.value)}
+                      className="w-full px-6 py-3.5 bg-pink-50/30 border border-pink-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all text-sm placeholder-gray-400 font-sans resize-none"
+                    />
+                  </div>
+
                   <button type="submit" className="w-full py-4 bg-gray-900 text-white font-bold rounded-full shadow-lg hover:bg-pink-600 transition-all mt-6 uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-2">
                     Continue to Payment <ArrowRight size={18} />
                   </button>
@@ -394,7 +436,8 @@ export default function CheckoutPage() {
                     <input type="radio" checked={true} readOnly className="w-5 h-5 text-pink-600 focus:ring-pink-500" />
                     <div className="flex-1">
                       <p className="font-bold text-gray-900 flex items-center gap-2">Pay Online (Razorpay) <span className="text-[10px] bg-blue-50 text-blue-500 px-2 py-0.5 rounded uppercase tracking-widest">Secure</span></p>
-                      <p className="text-xs text-gray-500 mt-0.5">UPI, Cards, NetBanking, Wallets</p>
+                      <p className="text-xs text-gray-600 mt-0.5 font-medium">UPI (GPay, PhonePe, Paytm, QR), Cards, NetBanking</p>
+                      <p className="text-[10px] text-pink-600 mt-1 font-medium">💡 Tip: For direct UPI app payments (GPay/PhonePe), use Chrome or Safari browser.</p>
                     </div>
                     <CreditCard size={24} className="text-pink-300" />
                   </label>

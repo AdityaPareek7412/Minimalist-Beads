@@ -35,10 +35,15 @@
 
 html {
   scroll-behavior: smooth;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 body {
-  @apply bg-[#fdf0f5] text-gray-900 font-sans overflow-x-hidden;
+  @apply bg-[#fdf0f5] text-gray-900 font-sans;
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
 }
 
 /* Soft Card Style */

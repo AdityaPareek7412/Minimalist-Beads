@@ -24,6 +24,7 @@
     "cloudinary": "^2.10.0",
     "clsx": "^2.1.1",
     "framer-motion": "^10.16.0",
+    "html-to-image": "^1.11.13",
     "js-cookie": "^3.0.0",
     "lucide-react": "^0.298.0",
     "next": "^14.2.35",

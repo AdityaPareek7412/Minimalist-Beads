@@ -94,7 +94,7 @@ export function HeroSection() {
   const opacity = useTransform(scrollY, [0, 300], [1, 0])
 
   return (
-    <section className="relative w-full min-h-screen overflow-hidden flex items-center justify-center bg-[#fdf0f5] selection:bg-pink-100 selection:text-pink-600">
+    <section className="relative w-full max-w-full min-h-screen overflow-hidden overflow-x-clip flex items-center justify-center bg-[#fdf0f5] selection:bg-pink-100 selection:text-pink-600">
       {/* Premium Dreamy Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div style={{ y: yBg }} className="absolute -top-1/4 -right-1/4 w-[800px] h-[800px] bg-pink-200/40 rounded-full blur-[140px]" />
@@ -162,7 +162,7 @@ export function HeroSection() {
             initial={{ y: 40 }}
             animate={{ y: 0 }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-7xl sm:text-9xl lg:text-[10rem] font-serif font-bold text-[#2d111a] leading-[0.85] tracking-tight mb-4"
+            className="text-5xl sm:text-8xl md:text-9xl lg:text-[10rem] font-serif font-bold text-[#2d111a] leading-[0.92] sm:leading-[0.85] tracking-tight mb-4 break-words"
           >
             Wearable <br /> 
             <span className="relative">
@@ -180,7 +180,7 @@ export function HeroSection() {
             initial={{ opacity: 0, x: -20, rotate: -5 }}
             animate={{ opacity: 1, x: 0, rotate: -5 }}
             transition={{ delay: 0.6, duration: 1 }}
-            className="absolute -top-4 right-0 sm:right-[15%] text-4xl sm:text-6xl font-cursive text-pink-400 italic"
+            className="absolute -top-3 right-1 sm:-top-4 sm:right-[15%] text-2xl sm:text-4xl md:text-6xl font-cursive text-pink-400 italic pointer-events-none select-none"
           >
             for softer souls
           </motion.span>
@@ -202,20 +202,20 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1, duration: 0.8 }}
-          className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-24"
+          className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-24 w-full px-4 sm:px-0"
         >
           <MagneticButton 
             href="/shop" 
-            className="bg-[#2d111a] text-white hover:bg-pink-600 shadow-xl shadow-pink-900/10 min-w-[220px]"
+            className="bg-[#2d111a] text-white hover:bg-pink-600 shadow-xl shadow-pink-900/10 w-full sm:w-auto min-w-[200px] sm:min-w-[220px]"
           >
             Shop Collection
           </MagneticButton>
           
           <MagneticButton 
             href="https://www.instagram.com/minimalistbeads.co?igsh=d3psMDlqeXQxbjdn" 
-            className="bg-white/40 backdrop-blur-xl text-gray-600 border border-white/60 hover:bg-white/80 min-w-[220px]"
+            className="bg-white/40 backdrop-blur-xl text-gray-600 border border-white/60 hover:bg-white/80 w-full sm:w-auto min-w-[200px] sm:min-w-[220px]"
           >
-            <span className="flex items-center gap-3">
+            <span className="flex items-center justify-center gap-3">
               <Instagram className="w-4 h-4" />
               Follow Vibe on IG
             </span>

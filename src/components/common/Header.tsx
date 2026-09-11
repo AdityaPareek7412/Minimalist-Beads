@@ -68,16 +68,16 @@ export function Header({ initialSettings }: HeaderProps) {
   return (
     <motion.header 
       style={{ backgroundColor: headerBg, backdropFilter: headerBlur }}
-      className={`sticky top-0 z-50 w-full transition-all duration-500 ${isScrolled ? 'border-b border-white/20 shadow-[0_4px_30px_rgba(253,240,245,0.1)]' : 'border-b border-transparent'}`}
+      className={`sticky top-0 z-50 w-full max-w-full overflow-x-clip transition-all duration-500 ${isScrolled ? 'border-b border-white/20 shadow-[0_4px_30px_rgba(253,240,245,0.1)]' : 'border-b border-transparent'}`}
     >
       {settings?.announcement && (
-        <div className="relative overflow-hidden bg-white/5 h-8 flex items-center border-b border-white/5">
-          <div className="absolute inset-0 bg-gradient-to-r from-rose-300/10 via-pink-300/10 to-rose-300/10 animate-gradient-x" />
-          <div className="relative w-full overflow-hidden whitespace-nowrap">
+        <div className="relative overflow-hidden bg-white/5 h-8 flex items-center border-b border-white/5 w-full max-w-full">
+          <div className="absolute inset-0 bg-gradient-to-r from-rose-300/10 via-pink-300/10 to-rose-300/10 animate-gradient-x pointer-events-none" />
+          <div className="relative w-full max-w-full overflow-hidden whitespace-nowrap">
             <motion.div
               animate={{ x: ["0%", "-50%"] }}
               transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
-              className="inline-flex items-center gap-20"
+              className="inline-flex items-center gap-20 w-max pointer-events-none select-none"
             >
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="flex items-center gap-6">
@@ -93,7 +93,7 @@ export function Header({ initialSettings }: HeaderProps) {
         </div>
       )}
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex items-center justify-between h-16 sm:h-20">
           
           <div className="flex items-center gap-4 sm:gap-8">
