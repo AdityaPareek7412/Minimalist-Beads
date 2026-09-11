@@ -2,20 +2,15 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Heart, Sparkles, CreditCard, ShieldCheck } from "lucide-react"
 
-export function WhyChooseUs() {
-  const [settings, setSettings] = useState({ freeShippingLimit: 0 })
+interface WhyChooseUsProps {
+  freeShippingLimit?: number
+}
 
-  useEffect(() => {
-    fetch("/api/admin/settings")
-      .then(res => res.json())
-      .then(data => setSettings(data))
-      .catch(() => {})
-  }, [])
-
+export function WhyChooseUs({ freeShippingLimit = 0 }: WhyChooseUsProps) {
+  // freeShippingLimit is passed server-side — no client DB fetch needed
   const features = [
     {
       icon: Sparkles,

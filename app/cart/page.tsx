@@ -15,7 +15,8 @@ export default function CartPage() {
   const [settings, setSettings] = useState({ shippingFee: 80, freeShippingLimit: 0 })
 
   useEffect(() => {
-    fetch("/api/admin/settings")
+    // Settings are CDN-cached (s-maxage=300) — browser fetches from Vercel edge, not DB
+    fetch("/api/admin/settings", { cache: "force-cache" })
       .then(res => res.json())
       .then(data => setSettings(data))
       .catch(() => { })

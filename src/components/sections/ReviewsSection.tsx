@@ -3,8 +3,20 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Star, Quote, CheckCircle, X, Send } from "lucide-react"
 
-export function ReviewsSection() {
-  const [reviews, setReviews] = useState<any[]>([])
+type Review = {
+  id: string
+  name: string
+  rating: number
+  comment: string
+  createdAt: string
+}
+
+interface ReviewsSectionProps {
+  initialReviews?: Review[]
+}
+
+export function ReviewsSection({ initialReviews }: ReviewsSectionProps) {
+  const [reviews, setReviews] = useState<Review[]>(initialReviews ?? [])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -17,6 +29,9 @@ export function ReviewsSection() {
   })
 
   useEffect(() => {
+    // Only fetch client-side if no server-side data was provided
+    // (e.g., if this component is ever used outside the homepage)
+    if (initialReviews && initialReviews.length > 0) return
     fetch("/api/general-reviews")
       .then(res => res.json())
       .then(data => {

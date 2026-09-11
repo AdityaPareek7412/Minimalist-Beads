@@ -1,15 +1,4 @@
-import { PrismaClient } from "@prisma/client"
-
-const prismaClientSingleton = () => {
-  return new PrismaClient()
-}
-
-declare global {
-  var prisma: undefined | ReturnType<typeof prismaClientSingleton>
-}
-
-const prisma = globalThis.prisma ?? prismaClientSingleton()
-
-export default prisma
-
-if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma
+// Re-export the canonical Prisma client from src/lib/db/prisma.ts
+// Having two separate PrismaClient instances wastes Supabase connection pool slots.
+// All imports via @/lib/prisma now share the same singleton connection.
+export { prisma as default } from "@/lib/db/prisma"

@@ -9,13 +9,25 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { MobileMenu } from "./MobileMenu"
 
-export function Header() {
+type HeaderSettings = {
+  shippingFee: number
+  freeShippingLimit: number
+  announcement: string | null
+}
+
+interface HeaderProps {
+  initialSettings?: HeaderSettings
+}
+
+export function Header({ initialSettings }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [settings, setSettings] = useState<any>(null)
   const [isScrolled, setIsScrolled] = useState(false)
-  
+
+  // Use server-provided settings — no client-side DB fetch needed
+  const settings = initialSettings ?? { shippingFee: 80, freeShippingLimit: 0, announcement: null }
+
   const { getCartCount } = useCart()
   const { wishlistItems } = useWishlist()
   const router = useRouter()
@@ -30,13 +42,6 @@ export function Header() {
     const updateScroll = () => setIsScrolled(window.scrollY > 20)
     window.addEventListener("scroll", updateScroll)
     return () => window.removeEventListener("scroll", updateScroll)
-  }, [])
-  
-  useEffect(() => {
-    fetch("/api/admin/settings")
-      .then(res => res.json())
-      .then(data => setSettings(data))
-      .catch(() => {})
   }, [])
 
   useEffect(() => {

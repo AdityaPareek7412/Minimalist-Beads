@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import Razorpay from "razorpay"
+import { requireAdmin } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // 🔒 Admin only — this endpoint reveals Razorpay key configuration details
+  const authError = requireAdmin(req)
+  if (authError) return authError
+
   try {
     const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
     const keySecret = process.env.RAZORPAY_KEY_SECRET
@@ -43,3 +48,4 @@ export async function GET() {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
+

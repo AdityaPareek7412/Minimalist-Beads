@@ -1,8 +1,9 @@
 # robots.txt - MinimalistBeads.in
-# Last updated: June 2026
+# Last updated: September 2026
 
 # -----------------------------------------------
 # Allow legitimate search engine crawlers
+# Add Crawl-delay to prevent burst crawling
 # -----------------------------------------------
 User-agent: Googlebot
 Allow: /
@@ -11,6 +12,7 @@ Disallow: /api/
 Disallow: /checkout/
 Disallow: /cart/
 Disallow: /account/
+Crawl-delay: 2
 
 User-agent: Bingbot
 Allow: /
@@ -19,6 +21,7 @@ Disallow: /api/
 Disallow: /checkout/
 Disallow: /cart/
 Disallow: /account/
+Crawl-delay: 5
 
 User-agent: DuckDuckBot
 Allow: /
@@ -27,6 +30,7 @@ Disallow: /api/
 Disallow: /checkout/
 Disallow: /cart/
 Disallow: /account/
+Crawl-delay: 5
 
 User-agent: Yandexbot
 Allow: /
@@ -35,20 +39,15 @@ Disallow: /api/
 Disallow: /checkout/
 Disallow: /cart/
 Disallow: /account/
+Crawl-delay: 10
 
 # -----------------------------------------------
-# Block Meta/Facebook AI crawler
-# -----------------------------------------------
-User-agent: meta-webindexer
-Disallow: /
-
-User-agent: FacebookBot
-Disallow: /
-
-# -----------------------------------------------
-# Block AI training crawlers
+# Block AI training crawlers (2025-2026)
 # -----------------------------------------------
 User-agent: GPTBot
+Disallow: /
+
+User-agent: OAI-SearchBot
 Disallow: /
 
 User-agent: ChatGPT-User
@@ -73,6 +72,33 @@ User-agent: CCBot
 Disallow: /
 
 User-agent: cohere-ai
+Disallow: /
+
+User-agent: Omgili
+Disallow: /
+
+User-agent: Omgilibot
+Disallow: /
+
+User-agent: img2dataset
+Disallow: /
+
+User-agent: Laion
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+# -----------------------------------------------
+# Block Meta/Facebook AI crawler
+# -----------------------------------------------
+User-agent: meta-webindexer
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: FacebookBot
 Disallow: /
 
 # -----------------------------------------------
@@ -105,6 +131,30 @@ Disallow: /
 User-agent: Amazonbot
 Disallow: /
 
+User-agent: Rogerbot
+Disallow: /
+
+# -----------------------------------------------
+# Block commercial scraping services
+# -----------------------------------------------
+User-agent: ScraperAPI
+Disallow: /
+
+User-agent: ScrapingBee
+Disallow: /
+
+User-agent: Zyte
+Disallow: /
+
+# -----------------------------------------------
+# Block archive crawlers (huge bandwidth)
+# -----------------------------------------------
+User-agent: ia_archiver
+Disallow: /
+
+User-agent: archive.org_bot
+Disallow: /
+
 # -----------------------------------------------
 # Block all other unknown bots from sensitive paths
 # -----------------------------------------------
@@ -115,6 +165,9 @@ Disallow: /checkout/
 Disallow: /cart/
 Disallow: /account/
 Disallow: /images-cdn/
+Disallow: /xmlrpc.php
+Disallow: /wp-admin/
+Disallow: /wp-login.php
 
 # -----------------------------------------------
 Sitemap: https://www.minimalistbeads.in/sitemap.xml

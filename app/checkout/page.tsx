@@ -46,7 +46,8 @@ export default function CheckoutPage() {
     script.async = true
     document.body.appendChild(script)
 
-    fetch("/api/admin/settings")
+    // Settings are CDN-cached (s-maxage=300) — browser fetches from Vercel edge, not DB
+    fetch("/api/admin/settings", { cache: "force-cache" })
       .then(res => res.json())
       .then(data => {
         if (data) setSettings({
