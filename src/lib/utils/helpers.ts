@@ -154,3 +154,38 @@ export function formatDateTime(date: Date | string): string {
     minute: "2-digit",
   })
 }
+
+/**
+ * Formats order details for parcel writing / shipping label copying:
+ * To,
+ * [Customer Name]
+ * Phone: [Phone]
+ * : [Proper Address]
+ * 
+ * From, 
+ * Sangeeta ( MinimalistBeads )
+ * B-151B kirti nagar
+ * Jaipur, 302018, Ph: 9024231035
+ */
+export function formatParcelShippingLabel(order: any): string {
+  const name = order.customerName || order.shippingAddress?.name || "Customer"
+  const rawPhone = order.customerPhone || order.shippingAddress?.phone || ""
+  const cleanPhone = rawPhone.replace(/^\+?91[\s-]*/, "").trim() || rawPhone || "N/A"
+
+  let addressText = "Address not available"
+  if (order.shippingAddress) {
+    const streetClean = (order.shippingAddress.street || "").replace(/[\r\n]+/g, ", ").trim()
+    const parts = [
+      streetClean,
+      order.shippingAddress.city,
+      order.shippingAddress.state,
+    ].filter(Boolean).join(", ")
+
+    addressText = order.shippingAddress.postalCode
+      ? `${parts} - ${order.shippingAddress.postalCode}`
+      : parts
+  }
+
+  return `To,\n\n${name}\n\nPhone: ${cleanPhone}\n\n: ${addressText}\n\nFrom, \nSangeeta ( MinimalistBeads )\nB-151B kirti nagar\nJaipur, 302018, Ph: 9024231035`
+}
+

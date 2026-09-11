@@ -6,7 +6,7 @@ import {
   MapPin, Package, CreditCard, MessageSquare, Truck, 
   Loader2, ChevronRight, AlertCircle 
 } from "lucide-react"
-import { formatPrice, getImageUrl } from "@/lib/utils/helpers"
+import { formatPrice, getImageUrl, formatParcelShippingLabel } from "@/lib/utils/helpers"
 
 interface OrderDetailDrawerProps {
   order: any | null
@@ -25,6 +25,7 @@ export default function OrderDetailDrawer({
 }: OrderDetailDrawerProps) {
   const [copiedId, setCopiedId] = useState(false)
   const [copiedPaymentId, setCopiedPaymentId] = useState(false)
+  const [copiedParcel, setCopiedParcel] = useState(false)
   const [currentStatus, setCurrentStatus] = useState(order?.status || "PENDING")
   const [updatingStatus, setUpdatingStatus] = useState(false)
   
@@ -120,6 +121,30 @@ export default function OrderDetailDrawer({
     }
   }
 
+  const handleCopyParcelDetails = async () => {
+    if (!order) return
+    const text = formatParcelShippingLabel(order)
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text)
+      } else {
+        const textarea = document.createElement("textarea")
+        textarea.value = text
+        textarea.style.position = "fixed"
+        textarea.style.opacity = "0"
+        document.body.appendChild(textarea)
+        textarea.focus()
+        textarea.select()
+        document.execCommand("copy")
+        document.body.removeChild(textarea)
+      }
+      setCopiedParcel(true)
+      setTimeout(() => setCopiedParcel(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy parcel details:", err)
+    }
+  }
+
   const cleanPhone = (order.customerPhone || "").replace(/\D/g, "")
   const whatsAppNumber = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone
 
@@ -179,6 +204,18 @@ export default function OrderDetailDrawer({
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopyParcelDetails}
+                className={`p-2.5 rounded-xl transition-all border flex items-center gap-1.5 text-xs font-bold ${
+                  copiedParcel
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : "text-gray-600 hover:text-pink-600 hover:bg-pink-50 border-gray-200 hover:border-pink-200"
+                }`}
+                title="Copy parcel shipping label (To/From)"
+              >
+                {copiedParcel ? <Check size={16} className="text-emerald-600" /> : <Copy size={16} />}
+                <span className="hidden sm:inline">{copiedParcel ? "Copied!" : "Copy Parcel"}</span>
+              </button>
               <button
                 onClick={() => onPrint(order)}
                 className="p-2.5 text-gray-600 hover:text-pink-600 hover:bg-pink-50 rounded-xl transition-all border border-gray-200 hover:border-pink-200 flex items-center gap-1.5 text-xs font-bold"
@@ -358,9 +395,23 @@ export default function OrderDetailDrawer({
 
               {order.shippingAddress && (
                 <div className="pt-3 border-t border-gray-100 text-sm">
-                  <p className="text-xs text-gray-400 flex items-center gap-1 mb-1">
-                    <MapPin size={12} /> Shipping Address
-                  </p>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <p className="text-xs text-gray-400 flex items-center gap-1">
+                      <MapPin size={12} /> Shipping Address
+                    </p>
+                    <button
+                      onClick={handleCopyParcelDetails}
+                      className={`text-xs font-bold flex items-center gap-1 px-2.5 py-1 rounded-lg transition-colors ${
+                        copiedParcel
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "text-pink-600 hover:text-pink-700 bg-pink-50 hover:bg-pink-100"
+                      }`}
+                      title="Copy parcel shipping label"
+                    >
+                      {copiedParcel ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
+                      <span>{copiedParcel ? "Copied!" : "Copy Parcel Label"}</span>
+                    </button>
+                  </div>
                   <p className="text-gray-800 font-medium leading-relaxed break-words">
                     {order.shippingAddress.street}<br />
                     {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.postalCode}<br />

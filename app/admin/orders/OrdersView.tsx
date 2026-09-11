@@ -6,9 +6,9 @@ import Link from "next/link"
 import { 
   Search, Filter, Download, Printer, Trash2, CheckSquare, 
   Square, Eye, MessageSquare, ChevronLeft, ChevronRight, 
-  Calendar, RotateCcw, Package, CreditCard, Loader2, AlertTriangle, Check, X
+  Calendar, RotateCcw, Package, CreditCard, Loader2, AlertTriangle, Check, X, Copy
 } from "lucide-react"
-import { formatPrice, getImageUrl } from "@/lib/utils/helpers"
+import { formatPrice, getImageUrl, formatParcelShippingLabel } from "@/lib/utils/helpers"
 import OrderDetailDrawer from "./OrderDetailDrawer"
 import OrderPrintModal from "./OrderPrintModal"
 import OrderStatusDropdown from "./OrderStatusDropdown"
@@ -78,6 +78,7 @@ export default function OrdersView({
   const [activeDrawerOrder, setActiveDrawerOrder] = useState<Order | null>(null)
   const [printOrders, setPrintOrders] = useState<Order[]>([])
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false)
+  const [copiedParcelOrderId, setCopiedParcelOrderId] = useState<string | null>(null)
   
   // Bulk status update state
   const [bulkStatus, setBulkStatus] = useState("")
@@ -154,6 +155,31 @@ export default function OrdersView({
 
   const handlePrintSelected = openBulkPrint
   const handlePrintSingle = openSinglePrint
+
+  // Copy parcel shipping label details
+  const handleCopyParcel = async (e: React.MouseEvent, order: Order) => {
+    e.stopPropagation()
+    const text = formatParcelShippingLabel(order)
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text)
+      } else {
+        const textarea = document.createElement("textarea")
+        textarea.value = text
+        textarea.style.position = "fixed"
+        textarea.style.opacity = "0"
+        document.body.appendChild(textarea)
+        textarea.focus()
+        textarea.select()
+        document.execCommand("copy")
+        document.body.removeChild(textarea)
+      }
+      setCopiedParcelOrderId(order.id)
+      setTimeout(() => setCopiedParcelOrderId(null), 2000)
+    } catch (err) {
+      console.error("Failed to copy parcel details:", err)
+    }
+  }
 
   // Export handlers
   const handleExport = (onlySelected: boolean = false) => {
@@ -721,6 +747,17 @@ export default function OrdersView({
                               <Eye size={16} />
                             </button>
                             <button
+                              onClick={(e) => handleCopyParcel(e, order)}
+                              className={`p-1.5 rounded-lg transition-all ${
+                                copiedParcelOrderId === order.id
+                                  ? "text-emerald-600 bg-emerald-50 scale-110"
+                                  : "text-gray-400 hover:text-pink-600 hover:bg-pink-50"
+                              }`}
+                              title={copiedParcelOrderId === order.id ? "Copied Parcel Details!" : "Copy Parcel Details (To/From)"}
+                            >
+                              {copiedParcelOrderId === order.id ? <Check size={16} /> : <Copy size={16} />}
+                            </button>
+                            <button
                               onClick={() => openSinglePrint(order)}
                               className="p-1.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors"
                               title="Print Slip"
@@ -819,6 +856,18 @@ export default function OrdersView({
                       className="flex-1 py-2 bg-gray-50 hover:bg-pink-50 text-gray-700 hover:text-pink-600 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1"
                     >
                       <Eye size={14} /> View Details
+                    </button>
+                    <button
+                      onClick={(e) => handleCopyParcel(e, order)}
+                      className={`py-2 px-3 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 ${
+                        copiedParcelOrderId === order.id
+                          ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                          : "bg-pink-50 text-pink-700 hover:bg-pink-100 border border-pink-100"
+                      }`}
+                      title="Copy Parcel Details (To/From)"
+                    >
+                      {copiedParcelOrderId === order.id ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedParcelOrderId === order.id ? "Copied!" : "Copy"}</span>
                     </button>
                     <button
                       onClick={() => openSinglePrint(order)}
