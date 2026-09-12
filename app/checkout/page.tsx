@@ -249,7 +249,12 @@ export default function CheckoutPage() {
             blocks: {
               upi: {
                 name: "Pay via UPI (GPay, PhonePe, Paytm, QR)",
-                instruments: [{ method: "upi" }]
+                instruments: [
+                  {
+                    method: "upi",
+                    flows: ["intent", "qr", "collect"]
+                  }
+                ]
               },
               other: {
                 name: "Cards, NetBanking & Wallets",
@@ -263,6 +268,10 @@ export default function CheckoutPage() {
             sequence: ["block.upi", "block.other"],
             preferences: { show_default_blocks: true }
           }
+        },
+        retry: {
+          enabled: true,
+          max_count: 4
         },
         theme: { color: "#f472b6" },
         modal: { ondismiss: () => setIsProcessing(false) },
