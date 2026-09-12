@@ -8,16 +8,16 @@ import { ShoppingBag, Box, Ticket, Settings as SettingsIcon, BarChart3, Star, Lo
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  
-  // Skip layout for login page
-  if (pathname === "/admin/login") {
-    return <>{children}</>
-  }
 
   // Close mobile drawer on route change
   useEffect(() => {
     setMobileMenuOpen(false)
   }, [pathname])
+
+  // Skip layout for login page (must be after all hooks)
+  if (pathname === "/admin/login") {
+    return <>{children}</>
+  }
 
   const navItems = [
     { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
