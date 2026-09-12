@@ -9,9 +9,13 @@ export const revalidate = false // Only revalidate on-demand via revalidatePath(
 export const dynamicParams = true // Allow slugs not in generateStaticParams to still render
 
 export async function generateStaticParams() {
+  // Only pre-build top 12 featured products at deploy time.
+  // This prevents hammering Supabase with 1,700+ queries during build and cuts Vercel deploy time from 20 min to ~1 min.
+  // All other products render on-demand via dynamicParams = true and are cached at Vercel edge on first visit.
   const products = await prisma.product.findMany({
-    where: { isArchived: false },
+    where: { isArchived: false, featured: true },
     select: { slug: true },
+    take: 12,
   })
   return products.map((p) => ({ slug: p.slug }))
 }
