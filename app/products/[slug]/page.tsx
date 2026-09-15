@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import ProductDetailsClient from "./ProductDetailsClient"
 import prisma from "@/lib/prisma"
+import { unstable_cache } from "next/cache"
 
 // ISR: Pre-build all known product slugs at deploy time.
 // After first visit (or admin revalidation), pages are served from CDN.
@@ -20,31 +21,49 @@ export async function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }))
 }
 
+// Cache product details for 24h — busts automatically on admin edit via revalidateTag("products")
+const getCachedProduct = unstable_cache(
+  async (slug: string) => {
+    return prisma.product.findUnique({
+      where: { slug },
+      include: {
+        images: true,
+        category: true,
+        variants: true,
+      }
+    })
+  },
+  ["product-detail-by-slug"],
+  { revalidate: 86400, tags: ["products"] }
+)
+
+// Cache related products for 24h — busts automatically on admin edit via revalidateTag("products")
+const getCachedRelatedProducts = unstable_cache(
+  async (categoryId: string, productId: string) => {
+    return prisma.product.findMany({
+      where: { 
+        categoryId,
+        id: { not: productId }
+      },
+      include: {
+        images: true
+      },
+      take: 4
+    })
+  },
+  ["product-related-by-category"],
+  { revalidate: 86400, tags: ["products"] }
+)
+
 export default async function ProductPage({ params }: { params: { slug: string } }) {
-  const product = await prisma.product.findUnique({
-    where: { slug: params.slug },
-    include: {
-      images: true,
-      category: true,
-      variants: true,
-    }
-  })
+  const product = await getCachedProduct(params.slug)
 
   if (!product) {
     notFound()
   }
 
   // Get related products from the same category
-  const relatedProducts = await prisma.product.findMany({
-    where: { 
-      categoryId: product.categoryId,
-      id: { not: product.id }
-    },
-    include: {
-      images: true
-    },
-    take: 4
-  })
+  const relatedProducts = await getCachedRelatedProducts(product.categoryId, product.id)
 
   // Serialize dates for client component
   const serializedProduct = JSON.parse(JSON.stringify(product))
@@ -57,3 +76,4 @@ export default async function ProductPage({ params }: { params: { slug: string }
     />
   )
 }
+

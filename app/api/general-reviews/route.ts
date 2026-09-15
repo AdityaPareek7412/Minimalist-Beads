@@ -13,15 +13,14 @@ const getCachedReviews = unstable_cache(
     })
   },
   ["general-reviews-list"],
-  { revalidate: 300, tags: ["general-reviews"] }
+  { revalidate: 86400, tags: ["general-reviews"] }
 )
 
 export async function GET() {
   try {
     const reviews = await getCachedReviews()
     const res = NextResponse.json(reviews)
-    // CDN caches for 5 min — homepage visits stop hitting Lambda every time
-    res.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60')
+    res.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400')
     return res
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch reviews" }, { status: 500 })

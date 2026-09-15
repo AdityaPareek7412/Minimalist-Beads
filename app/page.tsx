@@ -10,7 +10,7 @@ import { unstable_cache } from "next/cache"
 // Statically generated at build time, revalidated on-demand via revalidatePath() from admin panel
 export const revalidate = false
 
-// Cache approved reviews — busts automatically when admin approves/deletes via revalidateTag("general-reviews")
+// Cache approved reviews for 24h — busts automatically when admin approves/deletes via revalidateTag("general-reviews")
 const getCachedReviews = unstable_cache(
   async () => {
     return (prisma as any).generalReview.findMany({
@@ -20,13 +20,13 @@ const getCachedReviews = unstable_cache(
     })
   },
   ["homepage-reviews"],
-  { revalidate: 300, tags: ["general-reviews"] }
+  { revalidate: 86400, tags: ["general-reviews"] }
 )
 
-export default async function Home() {
-  // Both fetches are ISR-cached — no DB hit per user visit
-  const [featuredProducts, reviews] = await Promise.all([
-    prisma.product.findMany({
+// Cache featured products for 24h — busts automatically on admin product updates via revalidateTag("products")
+const getCachedFeaturedProducts = unstable_cache(
+  async () => {
+    return prisma.product.findMany({
       where: { featured: true },
       include: { images: true },
       orderBy: [
@@ -34,7 +34,16 @@ export default async function Home() {
         { createdAt: "desc" }
       ],
       take: 8
-    }),
+    })
+  },
+  ["homepage-featured-products"],
+  { revalidate: 86400, tags: ["products"] }
+)
+
+export default async function Home() {
+  // Both fetches are ISR-cached — zero Supabase DB hit per user visit
+  const [featuredProducts, reviews] = await Promise.all([
+    getCachedFeaturedProducts(),
     getCachedReviews()
   ])
 

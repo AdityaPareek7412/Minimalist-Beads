@@ -12,14 +12,14 @@ const getCachedCategories = unstable_cache(
     })
   },
   ["categories-list"],
-  { revalidate: 300, tags: ["categories"] }
+  { revalidate: 86400, tags: ["categories"] }
 )
 
 export async function GET() {
   try {
     const categories = await getCachedCategories()
     const res = NextResponse.json(categories)
-    res.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60')
+    res.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400')
     return res
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })

@@ -57,7 +57,7 @@ const getCachedLayoutSettings = unstable_cache(
     }
   },
   ["layout-site-settings"],
-  { revalidate: 300, tags: ["settings"] }
+  { revalidate: 86400, tags: ["settings"] }
 )
 
 export type SiteSettings = {

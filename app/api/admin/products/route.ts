@@ -58,7 +58,7 @@ const getCachedProducts = unstable_cache(
     })
   },
   ["admin-products-list"],
-  { revalidate: 60, tags: ["products"] }
+  { revalidate: 86400, tags: ["products"] }
 )
 
 export async function GET(req: NextRequest) {
@@ -128,7 +128,7 @@ export async function GET(req: NextRequest) {
     // Cache at Vercel CDN for 5 min — dramatically reduces Supabase egress
     const products = await getCachedProducts()
     const res = NextResponse.json(products)
-    res.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=60')
+    res.headers.set('Cache-Control', 'public, max-age=300, s-maxage=86400, stale-while-revalidate=3600')
     return res
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })

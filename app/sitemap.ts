@@ -18,7 +18,7 @@ const getCachedSitemapData = unstable_cache(
     return { products, categories }
   },
   ["sitemap-data"],
-  { revalidate: 600, tags: ["products", "categories"] }
+  { revalidate: 86400, tags: ["products", "categories"] }
 )
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
