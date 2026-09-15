@@ -12,10 +12,14 @@ import {
   Upload, 
   Star, 
   MoveLeft, 
-  MoveRight 
+  MoveRight,
+  Crop,
+  GripVertical,
+  Sparkles
 } from "lucide-react"
 import Link from "next/link"
 import { getImageUrl } from "@/lib/utils/helpers"
+import ImageCropModal from "@/components/admin/ImageCropModal"
 
 export default function EditProductPage() {
   const { id } = useParams()
@@ -33,6 +37,14 @@ export default function EditProductPage() {
   const [images, setImages] = useState<any[]>([])
   const [compressingCount, setCompressingCount] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Drag & Drop Reordering State
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+
+  // Crop Modal State
+  const [cropModalOpen, setCropModalOpen] = useState(false)
+  const [cropTargetIndex, setCropTargetIndex] = useState<number | null>(null)
 
   const compressImage = (base64Str: string): Promise<string> => {
     return new Promise((resolve) => {
@@ -139,6 +151,61 @@ export default function EditProductPage() {
       }
     }
     setImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  // HTML5 Drag & Drop handlers
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index)
+    e.dataTransfer.effectAllowed = "move"
+    e.dataTransfer.setData("text/plain", index.toString())
+  }
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = "move"
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault()
+    if (draggedIndex === null || draggedIndex === targetIndex) {
+      setDraggedIndex(null)
+      setDragOverIndex(null)
+      return
+    }
+    moveImage(draggedIndex, targetIndex)
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
+  // Crop Modal handlers
+  const openCropModal = (index: number) => {
+    setCropTargetIndex(index)
+    setCropModalOpen(true)
+  }
+
+  const handleCropComplete = (croppedBase64: string) => {
+    if (cropTargetIndex !== null) {
+      setImages(prev => {
+        const updated = [...prev]
+        updated[cropTargetIndex] = {
+          ...updated[cropTargetIndex],
+          url: croppedBase64,
+          base64: croppedBase64,
+          isNew: true
+        }
+        return updated
+      })
+    }
+    setCropModalOpen(false)
+    setCropTargetIndex(null)
   }
 
   const handleAddImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -348,117 +415,156 @@ export default function EditProductPage() {
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {images.map((img, index) => {
-                    const isCover = index === 0
-                    const displaySrc = img.base64 || getImageUrl(img.url)
-                    return (
-                      <div 
-                        key={img.id || index}
-                        className={`group relative rounded-2xl overflow-hidden border-2 transition-all shadow-sm bg-white flex flex-col ${
-                          isCover ? 'border-pink-500 ring-2 ring-pink-200 shadow-pink-50' : 'border-gray-200 hover:border-pink-300'
-                        }`}
-                      >
-                        {/* Image Preview Card */}
-                        <div className="relative aspect-square w-full bg-gray-100 overflow-hidden">
-                          <img 
-                            src={displaySrc} 
-                            alt={`Product photo ${index + 1}`} 
-                            className="w-full h-full object-cover"
-                          />
-                          
-                          {/* Position Badge */}
-                          <div className="absolute top-2 left-2 z-10">
-                            {isCover ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-pink-600 text-white shadow-md">
-                                <Star size={11} className="fill-white" /> #1 Cover
+                      const isCover = index === 0
+                      const displaySrc = img.base64 || getImageUrl(img.url)
+                      const isDragging = draggedIndex === index
+                      const isOver = dragOverIndex === index
+
+                      return (
+                        <div 
+                          key={img.id || index}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, index)}
+                          onDragOver={(e) => handleDragOver(e, index)}
+                          onDrop={(e) => handleDrop(e, index)}
+                          onDragEnd={handleDragEnd}
+                          className={`group relative rounded-2xl overflow-hidden border-2 transition-all shadow-sm bg-white flex flex-col cursor-grab active:cursor-grabbing select-none ${
+                            isDragging ? 'opacity-40 scale-95 border-dashed border-pink-400' : ''
+                          } ${
+                            isOver ? 'ring-4 ring-pink-400 scale-[1.03] border-pink-500 shadow-xl' : isCover ? 'border-pink-500 ring-2 ring-pink-200 shadow-pink-50' : 'border-gray-200 hover:border-pink-300'
+                          }`}
+                        >
+                          {/* Image Preview Card */}
+                          <div className="relative aspect-square w-full bg-gray-100 overflow-hidden">
+                            <img 
+                              src={displaySrc} 
+                              alt={`Product photo ${index + 1}`} 
+                              className="w-full h-full object-cover pointer-events-none"
+                            />
+                            
+                            {/* Position Badge */}
+                            <div className="absolute top-2 left-2 z-10">
+                              {isCover ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-pink-600 text-white shadow-md">
+                                  <Star size={11} className="fill-white" /> #1 Cover
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handlePositionPrompt(index)}
+                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-900/80 hover:bg-pink-600 text-white backdrop-blur-sm transition-colors shadow"
+                                  title="Click to jump to another position"
+                                >
+                                  #{index + 1}
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Drag Grip Indicator */}
+                            <div className="absolute top-2 right-9 z-10 opacity-70 group-hover:opacity-100 transition-opacity">
+                              <span className="inline-flex items-center p-1 rounded-md bg-black/40 text-white backdrop-blur-sm shadow text-[10px]" title="Drag to reorder">
+                                <GripVertical size={13} />
                               </span>
-                            ) : (
+                            </div>
+
+                            {/* Delete Button */}
+                            <div className="absolute top-2 right-2 z-10">
                               <button
                                 type="button"
-                                onClick={() => handlePositionPrompt(index)}
-                                className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-900/80 hover:bg-pink-600 text-white backdrop-blur-sm transition-colors shadow"
-                                title="Click to jump to another position"
+                                onClick={() => removeImage(index)}
+                                className="w-7 h-7 rounded-full bg-red-600/90 hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-sm"
+                                title="Remove this photo"
                               >
-                                #{index + 1}
+                                <Trash2 size={13} />
                               </button>
+                            </div>
+
+                            {/* Crop Button Overlay */}
+                            <div className="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-center">
+                              <button
+                                type="button"
+                                onClick={() => openCropModal(index)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-900/85 hover:bg-pink-600 text-white rounded-lg text-[10px] font-bold backdrop-blur-md shadow-md transition-all hover:scale-105 active:scale-95"
+                                title="Crop & adjust this photo"
+                              >
+                                <Crop size={11} />
+                                ✂️ Crop
+                              </button>
+                            </div>
+
+                            {img.isNew && (
+                              <div className="absolute top-9 left-2 z-10">
+                                <span className="px-2 py-0.5 bg-green-600 text-white text-[9px] font-bold rounded-full shadow">
+                                  New / Edited
+                                </span>
+                              </div>
                             )}
                           </div>
 
-                          {/* Delete Button */}
-                          <div className="absolute top-2 right-2 z-10">
+                          {/* Position Action Controls */}
+                          <div className="p-2 bg-gray-50 flex items-center justify-between gap-1 border-t border-gray-100">
+                            {/* Shift Left */}
                             <button
                               type="button"
-                              onClick={() => removeImage(index)}
-                              className="w-7 h-7 rounded-full bg-red-600/90 hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-sm"
-                              title="Remove this photo"
+                              onClick={() => moveImage(index, index - 1)}
+                              disabled={index === 0}
+                              className="p-1.5 rounded-lg bg-white border border-gray-200 hover:bg-pink-50 hover:text-pink-600 text-gray-600 disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-gray-600 transition-colors"
+                              title="Move Left / Earlier"
                             >
-                              <Trash2 size={13} />
+                              <MoveLeft size={14} />
+                            </button>
+
+                            {/* 1-Click Set as Cover Photo */}
+                            {!isCover ? (
+                              <button
+                                type="button"
+                                onClick={() => setAsCover(index)}
+                                className="px-2 py-1 bg-white hover:bg-pink-50 border border-gray-200 hover:border-pink-300 text-pink-600 rounded-lg text-[10px] font-bold transition-all truncate"
+                                title="Make this photo #1 Cover"
+                              >
+                                Make #1
+                              </button>
+                            ) : (
+                              <span className="text-[10px] font-bold text-pink-600 font-mono">
+                                Main
+                              </span>
+                            )}
+
+                            {/* Position Number Jumper */}
+                            <button
+                              type="button"
+                              onClick={() => handlePositionPrompt(index)}
+                              className="px-2 py-1 bg-white hover:bg-pink-50 border border-gray-200 hover:border-pink-300 text-gray-700 rounded-lg text-[10px] font-mono font-bold transition-all"
+                              title="Click to jump to any position (e.g. 1 or 2)"
+                            >
+                              #{index + 1}
+                            </button>
+
+                            {/* Shift Right */}
+                            <button
+                              type="button"
+                              onClick={() => moveImage(index, index + 1)}
+                              disabled={index === images.length - 1}
+                              className="p-1.5 rounded-lg bg-white border border-gray-200 hover:bg-pink-50 hover:text-pink-600 text-gray-600 disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-gray-600 transition-colors"
+                              title="Move Right / Later"
+                            >
+                              <MoveRight size={14} />
                             </button>
                           </div>
-
-                          {img.isNew && (
-                            <div className="absolute bottom-2 left-2 z-10">
-                              <span className="px-2 py-0.5 bg-green-600 text-white text-[9px] font-bold rounded-full shadow">
-                                New
-                              </span>
-                            </div>
-                          )}
                         </div>
+                      )
+                    })}
+                  </div>
+                )}
 
-                        {/* Position Action Controls */}
-                        <div className="p-2 bg-gray-50 flex items-center justify-between gap-1 border-t border-gray-100">
-                          {/* Shift Left */}
-                          <button
-                            type="button"
-                            onClick={() => moveImage(index, index - 1)}
-                            disabled={index === 0}
-                            className="p-1.5 rounded-lg bg-white border border-gray-200 hover:bg-pink-50 hover:text-pink-600 text-gray-600 disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-gray-600 transition-colors"
-                            title="Move Left / Earlier"
-                          >
-                            <MoveLeft size={14} />
-                          </button>
-
-                          {/* 1-Click Set as Cover Photo */}
-                          {!isCover ? (
-                            <button
-                              type="button"
-                              onClick={() => setAsCover(index)}
-                              className="px-2 py-1 bg-white hover:bg-pink-50 border border-gray-200 hover:border-pink-300 text-pink-600 rounded-lg text-[10px] font-bold transition-all truncate"
-                              title="Make this photo #1 Cover"
-                            >
-                              Make #1
-                            </button>
-                          ) : (
-                            <span className="text-[10px] font-bold text-pink-600 font-mono">
-                              Main
-                            </span>
-                          )}
-
-                          {/* Position Number Jumper */}
-                          <button
-                            type="button"
-                            onClick={() => handlePositionPrompt(index)}
-                            className="px-2 py-1 bg-white hover:bg-pink-50 border border-gray-200 hover:border-pink-300 text-gray-700 rounded-lg text-[10px] font-mono font-bold transition-all"
-                            title="Click to jump to any position (e.g. 1 or 2)"
-                          >
-                            #{index + 1}
-                          </button>
-
-                          {/* Shift Right */}
-                          <button
-                            type="button"
-                            onClick={() => moveImage(index, index + 1)}
-                            disabled={index === images.length - 1}
-                            className="p-1.5 rounded-lg bg-white border border-gray-200 hover:bg-pink-50 hover:text-pink-600 text-gray-600 disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-gray-600 transition-colors"
-                            title="Move Right / Later"
-                          >
-                            <MoveRight size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
+                {images.length > 0 && (
+                  <div className="p-3 bg-pink-50/50 rounded-xl border border-pink-100 text-[11px] text-pink-800 flex items-start gap-2">
+                    <Sparkles className="w-4 h-4 text-pink-500 flex-shrink-0 mt-0.5" />
+                    <span>
+                      <strong>Photo Management:</strong> Drag and drop any card to reorder (#1 is Main Cover). Click <strong>✂️ Crop</strong> on any picture (including existing ones) to crop, zoom, or rotate!
+                    </span>
+                  </div>
+                )}
             </div>
 
             {/* 2. Product Name Field */}
@@ -635,6 +741,19 @@ export default function EditProductPage() {
           </form>
         </div>
       </div>
+
+      {/* Image Crop Modal */}
+      {cropModalOpen && cropTargetIndex !== null && images[cropTargetIndex] && (
+        <ImageCropModal
+          isOpen={cropModalOpen}
+          imageSrc={images[cropTargetIndex].base64 || getImageUrl(images[cropTargetIndex].url)}
+          onClose={() => {
+            setCropModalOpen(false)
+            setCropTargetIndex(null)
+          }}
+          onCropComplete={handleCropComplete}
+        />
+      )}
     </div>
   )
 }

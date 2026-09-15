@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Upload, Image as ImageIcon, X, Plus, Trash2 } from "lucide-react"
+import { ArrowLeft, Upload, Image as ImageIcon, X, Plus, Trash2, Crop, Star, MoveLeft, MoveRight, GripVertical, Sparkles } from "lucide-react"
 import Link from "next/link"
+import ImageCropModal from "@/components/admin/ImageCropModal"
 
 export default function AddProductPage() {
   const [name, setName] = useState("")
@@ -17,6 +18,14 @@ export default function AddProductPage() {
   const [loading, setLoading] = useState(false)
   const [compressingCount, setCompressingCount] = useState(0)
   
+  // Cropping State
+  const [cropModalOpen, setCropModalOpen] = useState(false)
+  const [cropTargetIndex, setCropTargetIndex] = useState<number | null>(null)
+
+  // Drag-and-drop Reordering State
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+
   // Variants State
   const [variants, setVariants] = useState<any[]>([])
 
@@ -116,6 +125,87 @@ export default function AddProductPage() {
     setImages(prev => prev.filter((_, i) => i !== index))
   }
 
+  // Reordering & Position management
+  const moveImage = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= images.length || fromIndex === toIndex) return
+    setImages(prev => {
+      const updated = [...prev]
+      const [moved] = updated.splice(fromIndex, 1)
+      updated.splice(toIndex, 0, moved)
+      return updated
+    })
+  }
+
+  const setAsCover = (index: number) => {
+    if (index === 0) return
+    moveImage(index, 0)
+  }
+
+  const handlePositionPrompt = (currentIndex: number) => {
+    const input = prompt(
+      `Enter position for this photo (1 to ${images.length}):\n• #1 will be the Main Cover Photo\n• #2 will be the second photo, etc.`,
+      (currentIndex + 1).toString()
+    )
+    if (input) {
+      const targetPos = parseInt(input.trim(), 10)
+      if (!isNaN(targetPos) && targetPos >= 1 && targetPos <= images.length) {
+        moveImage(currentIndex, targetPos - 1)
+      } else {
+        alert(`Please enter a valid number between 1 and ${images.length}`)
+      }
+    }
+  }
+
+  // HTML5 Drag & Drop handlers
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index)
+    e.dataTransfer.effectAllowed = "move"
+    e.dataTransfer.setData("text/plain", index.toString())
+  }
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = "move"
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault()
+    if (draggedIndex === null || draggedIndex === targetIndex) {
+      setDraggedIndex(null)
+      setDragOverIndex(null)
+      return
+    }
+    moveImage(draggedIndex, targetIndex)
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
+  // Cropping Modal handlers
+  const openCropModal = (index: number) => {
+    setCropTargetIndex(index)
+    setCropModalOpen(true)
+  }
+
+  const handleCropComplete = (croppedBase64: string) => {
+    if (cropTargetIndex !== null) {
+      setImages(prev => {
+        const updated = [...prev]
+        updated[cropTargetIndex] = croppedBase64
+        return updated
+      })
+    }
+    setCropModalOpen(false)
+    setCropTargetIndex(null)
+  }
+
   const addVariant = () => {
     setVariants(prev => [...prev, { name: "", price: "", stock: "10" }])
   }
@@ -188,34 +278,147 @@ export default function AddProductPage() {
           <form onSubmit={handleSubmit} className="p-8 space-y-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
               {/* Image Upload Area */}
-              <div className="lg:col-span-5 space-y-6">
-                <label className="block text-sm font-bold text-gray-700 flex items-center justify-between">
-                  Product Gallery
-                  <span className="text-[10px] font-bold text-pink-500 uppercase tracking-widest">{images.length}/10 Photos</span>
-                </label>
+              <div className="lg:col-span-5 space-y-4">
+                <div className="flex items-center justify-between pb-1 border-b border-gray-100">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-800">
+                      Product Gallery
+                    </label>
+                    <p className="text-[11px] text-gray-400">
+                      Drag to reorder • Position #1 is Main Cover
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-bold text-pink-600 bg-pink-50 border border-pink-200 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    {images.length}/10 Photos
+                  </span>
+                </div>
                 
-                <div className="grid grid-cols-2 gap-4">
-                   {images.map((img, idx) => (
-                     <div key={idx} className="relative aspect-square group">
-                        <img src={img} alt="" className="w-full h-full object-cover rounded-xl border border-pink-100" />
-                        {idx === 0 && (
-                          <span className="absolute top-2 left-2 bg-pink-500 text-white text-[8px] font-bold px-2 py-0.5 rounded-full shadow-lg">MAIN</span>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => removeImage(idx)}
-                          className="absolute -top-2 -right-2 bg-white text-gray-500 hover:text-red-500 rounded-full p-1 shadow-lg border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X size={12} />
-                        </button>
-                     </div>
-                   ))}
+                <div className="grid grid-cols-2 gap-3">
+                   {images.map((img, idx) => {
+                     const isCover = idx === 0
+                     const isDragging = draggedIndex === idx
+                     const isOver = dragOverIndex === idx
+
+                     return (
+                       <div 
+                         key={idx}
+                         draggable
+                         onDragStart={(e) => handleDragStart(e, idx)}
+                         onDragOver={(e) => handleDragOver(e, idx)}
+                         onDrop={(e) => handleDrop(e, idx)}
+                         onDragEnd={handleDragEnd}
+                         className={`group relative rounded-2xl overflow-hidden border-2 transition-all shadow-sm bg-white flex flex-col cursor-grab active:cursor-grabbing select-none ${
+                           isDragging ? "opacity-40 scale-95 border-dashed border-pink-400" : ""
+                         } ${
+                           isOver ? "ring-4 ring-pink-400 scale-[1.03] border-pink-500 shadow-xl" : isCover ? "border-pink-500 ring-2 ring-pink-200 shadow-pink-50" : "border-gray-200 hover:border-pink-300"
+                         }`}
+                       >
+                          {/* Image Box */}
+                          <div className="relative aspect-square w-full bg-gray-100 overflow-hidden">
+                            <img 
+                              src={img} 
+                              alt={`Photo ${idx + 1}`} 
+                              className="w-full h-full object-cover pointer-events-none" 
+                            />
+                            
+                            {/* Position Badge */}
+                            <div className="absolute top-2 left-2 z-10">
+                              {isCover ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-pink-600 text-white shadow-md">
+                                  <Star size={10} className="fill-white" /> #1 Cover
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handlePositionPrompt(idx)}
+                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-gray-900/80 hover:bg-pink-600 text-white backdrop-blur-sm transition-colors shadow"
+                                  title="Click to jump to another position"
+                                >
+                                  #{idx + 1}
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Drag Grip Icon */}
+                            <div className="absolute top-2 right-8 z-10 opacity-70 group-hover:opacity-100 transition-opacity">
+                              <span className="inline-flex items-center p-1 rounded-md bg-black/40 text-white backdrop-blur-sm shadow text-[10px]" title="Drag to reorder">
+                                <GripVertical size={12} />
+                              </span>
+                            </div>
+
+                            {/* Delete Button */}
+                            <div className="absolute top-2 right-2 z-10">
+                              <button
+                                type="button"
+                                onClick={() => removeImage(idx)}
+                                className="w-5 h-5 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition-all shadow"
+                                title="Remove photo"
+                              >
+                                <X size={11} />
+                              </button>
+                            </div>
+
+                            {/* Crop Button Overlay */}
+                            <div className="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-center">
+                              <button
+                                type="button"
+                                onClick={() => openCropModal(idx)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-900/85 hover:bg-pink-600 text-white rounded-lg text-[10px] font-bold backdrop-blur-md shadow-md transition-all hover:scale-105 active:scale-95"
+                                title="Crop & adjust this photo"
+                              >
+                                <Crop size={11} />
+                                ✂️ Crop
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Action Controls */}
+                          <div className="p-1.5 bg-gray-50 flex items-center justify-between gap-1 border-t border-gray-100 text-[10px]">
+                            <button
+                              type="button"
+                              onClick={() => moveImage(idx, idx - 1)}
+                              disabled={idx === 0}
+                              className="p-1 rounded bg-white border border-gray-200 hover:bg-pink-50 hover:text-pink-600 text-gray-600 disabled:opacity-20 transition-colors"
+                              title="Move Earlier"
+                            >
+                              <MoveLeft size={11} />
+                            </button>
+
+                            {!isCover ? (
+                              <button
+                                type="button"
+                                onClick={() => setAsCover(idx)}
+                                className="px-1.5 py-0.5 bg-white hover:bg-pink-50 border border-gray-200 hover:border-pink-300 text-pink-600 rounded text-[9px] font-bold transition-all truncate"
+                                title="Set as Main Cover"
+                              >
+                                Make #1
+                              </button>
+                            ) : (
+                              <span className="text-[9px] font-bold text-pink-600 font-mono">
+                                Cover
+                              </span>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => moveImage(idx, idx + 1)}
+                              disabled={idx === images.length - 1}
+                              className="p-1 rounded bg-white border border-gray-200 hover:bg-pink-50 hover:text-pink-600 text-gray-600 disabled:opacity-20 transition-colors"
+                              title="Move Later"
+                            >
+                              <MoveRight size={11} />
+                            </button>
+                          </div>
+                       </div>
+                     )
+                   })}
                    
                    {images.length < 10 && (
                      <div className="relative aspect-square">
-                        <div className="w-full h-full rounded-xl border-2 border-dashed border-gray-200 hover:border-pink-300 bg-gray-50 flex flex-col items-center justify-center transition-all">
-                           <Upload className="w-6 h-6 text-gray-400 mb-2" />
-                           <span className="text-[10px] font-bold text-gray-400 uppercase">Add Photo</span>
+                        <div className="w-full h-full rounded-2xl border-2 border-dashed border-gray-200 hover:border-pink-400 bg-pink-50/20 hover:bg-pink-50/40 flex flex-col items-center justify-center transition-all cursor-pointer">
+                           <Upload className="w-6 h-6 text-pink-500 mb-1.5" />
+                           <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">Add Photo</span>
+                           <span className="text-[9px] text-gray-400">or multiple</span>
                         </div>
                         <input
                           type="file"
@@ -228,7 +431,12 @@ export default function AddProductPage() {
                    )}
                 </div>
                 
-                <p className="text-[10px] text-gray-400 italic">✨ Use high-quality photos for a premium look.</p>
+                <div className="p-3 bg-pink-50/50 rounded-xl border border-pink-100 text-[11px] text-pink-800 flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-pink-500 flex-shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Photo Tips:</strong> Drag & drop cards to reorder. Click <strong>✂️ Crop</strong> on any picture to crop to square (1:1), rotate, or zoom before launching!
+                  </span>
+                </div>
               </div>
 
               {/* Basic Info */}
@@ -399,6 +607,19 @@ export default function AddProductPage() {
           </form>
         </div>
       </div>
+
+      {/* Image Crop Modal */}
+      {cropModalOpen && cropTargetIndex !== null && images[cropTargetIndex] && (
+        <ImageCropModal
+          isOpen={cropModalOpen}
+          imageSrc={images[cropTargetIndex]}
+          onClose={() => {
+            setCropModalOpen(false)
+            setCropTargetIndex(null)
+          }}
+          onCropComplete={handleCropComplete}
+        />
+      )}
     </div>
   )
 }
