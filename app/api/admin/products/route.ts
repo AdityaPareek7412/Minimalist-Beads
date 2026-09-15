@@ -165,6 +165,8 @@ export async function PUT(req: NextRequest) {
     // Trigger cache revalidation — bust product listing cache and ISR cache for all product pages
     revalidateTag("products")
     revalidatePath("/", "layout")
+    revalidatePath("/shop", "page")
+    revalidatePath("/shop")
     revalidatePath("/products/[slug]", "page")
 
     return NextResponse.json({ success: true })
@@ -231,6 +233,11 @@ export async function POST(req: NextRequest) {
     // Trigger cache revalidation — new product; bust listing cache
     revalidateTag("products")
     revalidatePath("/", "layout")
+    revalidatePath("/shop", "page")
+    revalidatePath("/shop")
+    if (slug) {
+      revalidatePath(`/products/${slug}`, "page")
+    }
     revalidatePath("/products/[slug]", "page")
 
     return NextResponse.json(product)
@@ -264,6 +271,8 @@ export async function DELETE(req: NextRequest) {
       // Trigger cache revalidation — product archived; bust its ISR page cache
       revalidateTag("products")
       revalidatePath("/", "layout")
+      revalidatePath("/shop", "page")
+      revalidatePath("/shop")
       revalidatePath("/products/[slug]", "page")
 
       return NextResponse.json({ success: true, archived: true })
@@ -277,6 +286,8 @@ export async function DELETE(req: NextRequest) {
     // Trigger cache revalidation — product deleted; bust its ISR page cache
     revalidateTag("products")
     revalidatePath("/", "layout")
+    revalidatePath("/shop", "page")
+    revalidatePath("/shop")
     revalidatePath("/products/[slug]", "page")
 
     return NextResponse.json({ success: true, archived: false })
@@ -392,7 +403,12 @@ export async function PATCH(req: NextRequest) {
     // Trigger cache revalidation — bust listing cache and ISR cache for the updated product page
     revalidateTag("products")
     revalidatePath("/", "layout")
-    revalidatePath(`/products/${product.slug}`, "page")
+    revalidatePath("/shop", "page")
+    revalidatePath("/shop")
+    if (product.slug) {
+      revalidatePath(`/products/${product.slug}`, "page")
+    }
+    revalidatePath("/products/[slug]", "page")
 
     return NextResponse.json(product)
   } catch (error: any) {
