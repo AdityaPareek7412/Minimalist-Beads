@@ -70,12 +70,16 @@ export async function GET(req: NextRequest) {
       const product = await prisma.product.findUnique({
         where: { id },
         include: {
-          images: true,
+          images: {
+            orderBy: { order: "asc" }
+          },
           category: true,
           variants: true,
         },
       })
-      return NextResponse.json(product)
+      const res = NextResponse.json(product)
+      res.headers.set('Cache-Control', 'private, no-cache, no-store, max-age=0, must-revalidate')
+      return res
     }
 
     // Check if requester is logged in as admin
@@ -286,9 +290,35 @@ export async function PATCH(req: NextRequest) {
   if (authError) return authError
   try {
     const data = await req.json()
-    const { id, name, stock, price, originalPrice, variants, isArchived } = data
+    const { id, name, stock, price, originalPrice, variants, isArchived, images } = data
 
     if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 })
+
+    // Process images if provided: upload any new base64/data URLs to Cloudinary
+    let processedImages: { url: string; alt?: string; order: number }[] | null = null
+    if (images && Array.isArray(images)) {
+      processedImages = await Promise.all(
+        images.map(async (img: any, index: number) => {
+          const rawUrl = typeof img === "string" ? img : img.url || img.base64
+          if (rawUrl && (rawUrl.startsWith("data:") || img.base64)) {
+            const uploadSource = img.base64 || rawUrl
+            const uploadResponse = await cloudinary.uploader.upload(uploadSource, {
+              folder: "minimalist-beads-v2",
+            })
+            return {
+              url: uploadResponse.secure_url,
+              alt: name || img.alt || "Product image",
+              order: index,
+            }
+          }
+          return {
+            url: rawUrl,
+            alt: name || img.alt || "Product image",
+            order: index,
+          }
+        })
+      )
+    }
 
     const product = await prisma.$transaction(async (tx) => {
       if (variants && Array.isArray(variants)) {
@@ -303,6 +333,23 @@ export async function PATCH(req: NextRequest) {
               name: v.name,
               price: v.price ? parseFloat(v.price) : null,
               stock: parseInt(v.stock) || 0,
+            }))
+          })
+        }
+      }
+
+      // Update images if provided
+      if (processedImages) {
+        await tx.productImage.deleteMany({
+          where: { productId: id }
+        })
+        if (processedImages.length > 0) {
+          await tx.productImage.createMany({
+            data: processedImages.map((img, idx) => ({
+              productId: id,
+              url: img.url,
+              alt: img.alt || name || "Product image",
+              order: idx,
             }))
           })
         }
@@ -334,7 +381,10 @@ export async function PATCH(req: NextRequest) {
         where: { id },
         data: updateData,
         include: {
-          variants: true
+          variants: true,
+          images: {
+            orderBy: { order: "asc" }
+          }
         }
       })
     })
@@ -342,7 +392,7 @@ export async function PATCH(req: NextRequest) {
     // Trigger cache revalidation — bust listing cache and ISR cache for the updated product page
     revalidateTag("products")
     revalidatePath("/", "layout")
-    revalidatePath("/products/[slug]", "page")
+    revalidatePath(`/products/${product.slug}`, "page")
 
     return NextResponse.json(product)
   } catch (error: any) {
