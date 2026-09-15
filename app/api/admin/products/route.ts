@@ -121,14 +121,16 @@ export async function GET(req: NextRequest) {
           { createdAt: "desc" }
         ],
       })
-      return NextResponse.json(products)
+      const res = NextResponse.json(products)
+      res.headers.set('Cache-Control', 'private, no-cache, no-store, max-age=0, must-revalidate')
+      return res
     }
 
     // Public users get cached non-archived products
-    // Cache at Vercel CDN for 5 min — dramatically reduces Supabase egress
+    // Cached via unstable_cache on server, short edge CDN header so new admin additions show up instantly
     const products = await getCachedProducts()
     const res = NextResponse.json(products)
-    res.headers.set('Cache-Control', 'public, max-age=300, s-maxage=86400, stale-while-revalidate=3600')
+    res.headers.set('Cache-Control', 'public, s-maxage=10, stale-while-revalidate=50')
     return res
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
