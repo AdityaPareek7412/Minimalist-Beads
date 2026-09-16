@@ -5,10 +5,11 @@ import DynamicEarningsChart from "./DynamicEarningsChart"
 export const dynamic = "force-dynamic"
 
 export default async function AdminEarningsPage() {
-  const earnedStatuses = ["CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"]
-  
   const orders = await prisma.order.findMany({
-    where: { status: { in: earnedStatuses as any } },
+    where: { 
+      paymentStatus: "COMPLETED",
+      status: { not: "CANCELLED" }
+    },
     select: { createdAt: true, total: true }
   })
 

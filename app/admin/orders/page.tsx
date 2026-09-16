@@ -113,15 +113,15 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
     // Lightweight KPI aggregations (grouped counts without full row serialization)
     Promise.all([
       prisma.order.count(),
-      prisma.order.count({ where: { paymentStatus: "COMPLETED" } }),
+      prisma.order.count({ where: { paymentStatus: "COMPLETED", status: { not: "CANCELLED" } } }),
       prisma.order.count({ where: { paymentStatus: "PENDING" } }),
       prisma.order.count({ where: { status: "PENDING" } }),
       prisma.order.count({ where: { status: "DELIVERED" } }),
     ]),
 
-    // Total lifetime verified revenue
+    // Total lifetime verified revenue (excluding cancelled orders)
     prisma.order.aggregate({
-      where: { paymentStatus: "COMPLETED" },
+      where: { paymentStatus: "COMPLETED", status: { not: "CANCELLED" } },
       _sum: { total: true }
     })
   ])
